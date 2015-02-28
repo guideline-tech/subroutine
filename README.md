@@ -1,26 +1,12 @@
 # Opp
 
-TODO: Write a gem description
+A gem that provides an interface for creating feature-driven operations. See the examples below, it'll be more clear. I'm sure there's some appropriate CS pattern name I could apply to this - but I quit school too early.
 
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'opp'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install opp
+Why Opp? Because Op and Operation were taken on rubygems. Soo...
 
 ## Usage
 
-TODO: Write usage instructions here
+Coming soon, like really soon.
 
 ## Contributing
 
