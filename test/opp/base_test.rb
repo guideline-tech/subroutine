@@ -1,7 +1,7 @@
 require 'test_helper'
 
-module Opp
-  class BaseTest < ::MiniTest::Test
+module Subroutine
+  class OpTest < ::MiniTest::Test
 
     def test_simple_fields_definition
       op = ::SignupOp.new
@@ -125,7 +125,7 @@ module Opp
     def test_it_raises_an_error_when_used_with_a_bang_and_performing_or_validation_fails
       op = ::SignupOp.new(:email => 'foo@bar.com')
 
-      err = assert_raises ::Opp::Failure do
+      err = assert_raises ::Subroutine::Failure do
         op.submit!
       end
 
@@ -136,7 +136,7 @@ module Opp
       op = SignupOp.submit
       assert_equal ["can't be blank"], op.errors[:email]
 
-      assert_raises ::Opp::Failure do
+      assert_raises ::Subroutine::Failure do
         SignupOp.submit!
       end
 

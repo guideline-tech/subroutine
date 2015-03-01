@@ -1,8 +1,8 @@
-require "opp/version"
+require "subroutine/version"
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_model'
 
-module Opp
+module Subroutine
 
   class Failure < StandardError
     attr_reader :record
@@ -13,7 +13,7 @@ module Opp
     end
   end
 
-  class Base
+  class Op
 
     include ::ActiveModel::Model
     include ::ActiveModel::Validations::Callbacks
@@ -130,7 +130,7 @@ module Opp
 
     def submit!
       unless submit
-        raise ::Opp::Failure.new(self)
+        raise ::Subroutine::Failure.new(self)
       end
       true
     end

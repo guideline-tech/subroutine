@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'opp/version'
+require 'subroutine/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "opp"
-  spec.version       = Opp::VERSION
+  spec.name          = "subroutine"
+  spec.version       = Subroutine::VERSION
   spec.authors       = ["Mike Nelson"]
   spec.email         = ["mike@mnelson.io"]
   spec.summary       = %q{TODO: Write a short summary. Required.}

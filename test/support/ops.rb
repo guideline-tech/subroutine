@@ -16,7 +16,7 @@ end
 
 ## Ops ##
 
-class SignupOp < ::Opp::Base
+class SignupOp < ::Subroutine::Op
 
   field :email
   field :password
@@ -72,14 +72,14 @@ class AdminSignupOp < ::SignupOp
 
 end
 
-class BusinessSignupOp < ::Opp::Base
+class BusinessSignupOp < ::Subroutine::Op
 
   field :business_name
   inputs_from ::SignupOp
 
 end
 
-class DefaultsOp < ::Opp::Base
+class DefaultsOp < ::Subroutine::Op
 
   field :foo, :default => 'foo'
 

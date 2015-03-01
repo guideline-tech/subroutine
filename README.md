@@ -1,15 +1,15 @@
-# Opp
+# Subroutine
 
 A gem that provides an interface for creating feature-driven operations. See the examples below, it'll be more clear. I'm sure there's some appropriate CS pattern's name I could apply to this - but I quit school too early.
 
-Why Opp? Because Op and Operation were taken on rubygems. Soo...
+Why Subroutine? Because Op and Operation were taken on rubygems. Soo...
 
 ## Usage
 
 So you need to sign up a user? or maybe update one's account? or change a password? Not a problem, create an op for any of these use cases. Here's the signup example.
 
 ```ruby
-class SignupOp < ::Opp::Base
+class SignupOp < ::Subroutine::Op
 
   field :name
   field :email
@@ -98,7 +98,7 @@ end
 # I've found that a great way to handle errors with ops is to allow you top level controller to appropriately
 # render errors in a consisent way. This is exceptionally easy for api-driven apps.
 class Api::Controller < ApplicationController
-  rescue_from ::Opp::Failure, with: :render_op_failure
+  rescue_from ::Subroutine::Failure, with: :render_op_failure
 
   def render_op_failure(e)
     # however you want to do this, `e` will be similar to an ActiveRecord::RecordInvalid error
@@ -109,7 +109,7 @@ end
 # With ops, your controllers are essentially just connections between routes, operations, and templates.
 class UsersController < ::Api::Controller
   def sign_up
-    # If the op fails, an ::Opp::Failure will be raised.
+    # If the op fails, an ::Subroutine::Failure will be raised.
     op = SignupOp.submit!(params)
 
     # If the op succeeds, it will be returned so you can access it's information.
@@ -120,7 +120,7 @@ end
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/opp/fork )
+1. Fork it ( https://github.com/[my-github-username]/subroutine/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
