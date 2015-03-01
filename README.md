@@ -1,10 +1,10 @@
 # Subroutine
 
-A gem that provides an interface for creating feature-driven operations. See the examples below, it'll be more clear.
+A gem that provides an interface for creating feature-driven operations. It follows the command pattern if you're interested in the nerd reasoning. See the examples below, it'll be more clear.
 
 ## Usage
 
-So you need to sign up a user? or maybe update one's account? or change a password? Not a problem, create an op for any of these use cases. Here's the signup example.
+So you need to sign up a user? or maybe update one's account? or change a password? or maybe you need to sign up a business along with a user, associate them, send an email, and queue a worker in a single request? Not a problem, create an op for any of these use cases. Here's the signup example.
 
 ```ruby
 class SignupOp < ::Subroutine::Op
