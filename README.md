@@ -116,6 +116,9 @@ class UsersController < ::Api::Controller
 end
 ```
 
+## Todo
+1. Enable ActiveModel 3.0-3.2 users by removing the ActiveModel::Model dependency.
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/subroutine/fork )
