@@ -1,8 +1,6 @@
 # Subroutine
 
-A gem that provides an interface for creating feature-driven operations. See the examples below, it'll be more clear. I'm sure there's some appropriate CS pattern's name I could apply to this - but I quit school too early.
-
-Why Subroutine? Because Op and Operation were taken on rubygems. Soo...
+A gem that provides an interface for creating feature-driven operations. See the examples below, it'll be more clear.
 
 ## Usage
 

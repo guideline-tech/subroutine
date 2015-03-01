@@ -8,14 +8,14 @@ Gem::Specification.new do |spec|
   spec.version       = Subroutine::VERSION
   spec.authors       = ["Mike Nelson"]
   spec.email         = ["mike@mnelson.io"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{An interface for creating feature-driven operations.}
+  spec.description   = %q{An interface for creating feature-driven operations.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.test_files    = spec.files.grep(%r{^(gemfiles|test)/})
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activemodel"
