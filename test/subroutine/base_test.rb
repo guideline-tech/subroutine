@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module Subroutine
-  class OpTest < ::MiniTest::Test
+  class OpTest < TestCase
 
     def test_simple_fields_definition
       op = ::SignupOp.new
