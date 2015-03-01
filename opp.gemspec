@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["mike@mnelson.io"]
   spec.summary       = %q{An interface for creating feature-driven operations.}
   spec.description   = %q{An interface for creating feature-driven operations.}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/mnelson/subroutine"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
