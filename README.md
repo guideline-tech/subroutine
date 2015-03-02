@@ -146,6 +146,8 @@ op.submit!
 # if the op succeeds nothing will be raised, otherwise a ::Subroutine::Failure will be raised.
 ```
 
+#### Fluff
+
 Ops have some fluff. Let's see if we can cover it all with one example. I'll pretend I'm using ActiveRecord:
 
 ```ruby
@@ -248,7 +250,7 @@ class ActivateOp < ::Subroutine::Op
 end
 ```
 
-## Extending Subroutine::Op
+### Extending Subroutine::Op
 
 Great, so you're sold on using ops. Let's talk about how I usually standardize their usage in my apps. The most common thing needed is `current_user`. For this reason I usually follow the rails convention of declaring an "Application" op which declares all of my common needs. I hate writing `ApplicationOp` all the time so I usually call it `BaseOp`.
 
