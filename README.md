@@ -316,6 +316,7 @@ Clearly there are a ton of ways this could be implemented but that should be a g
 ## Todo
 
 1. Enable ActiveModel 3.0-3.2 users by removing the ActiveModel::Model dependency.
+2. Demo app?
 
 ## Contributing
 
