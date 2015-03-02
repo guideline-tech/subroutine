@@ -281,7 +281,7 @@ In the case of a more complex permission system, I'll usually utilize pundit but
 ```ruby
 class BaseOp < ::Subroutine::Op
 
-  validate :_validate_permissions
+  validate :validate_permissions
 
   protected
 
