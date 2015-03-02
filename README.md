@@ -114,7 +114,7 @@ end
 
 ## Usage
 
-Both the `Subroutine::Op` class and it's instances provide `submit` and `submit!` methods with identical signatures. Here are ways to invoke an op:
+The `Subroutine::Op` class' `submit` and `submit!` methods have the same signature as the class' constructor, enabling a few different ways to utilize an op. Here they are:
 
 #### Via the class' `submit` method
 
