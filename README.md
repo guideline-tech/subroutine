@@ -1,8 +1,8 @@
 # Subroutine
 
-A gem that provides an interface for creating feature-driven operations. It follows the command pattern if you're interested in the nerd reasoning. See the examples below, it'll be more clear.
+A gem that provides an interface for creating feature-driven operations. It loosly implements the command pattern if you're interested in nerding out a bit. See the examples below, it'll be more clear.
 
-## Usage
+## Examples
 
 So you need to sign up a user? or maybe update one's account? or change a password? or maybe you need to sign up a business along with a user, associate them, send an email, and queue a worker in a single request? Not a problem, create an op for any of these use cases. Here's the signup example.
 
@@ -107,7 +107,7 @@ end
 # With ops, your controllers are essentially just connections between routes, operations, and templates.
 class UsersController < ::Api::Controller
   def sign_up
-    # If the op fails, an ::Subroutine::Failure will be raised.
+    # If the op fails, a ::Subroutine::Failure will be raised.
     op = SignupOp.submit!(params)
 
     # If the op succeeds, it will be returned so you can access it's information.
@@ -116,7 +116,43 @@ class UsersController < ::Api::Controller
 end
 ```
 
+## General Usage
+
+Both the `Subroutine::Op` class and it's instances provide `submit` and `submit!` methods with identical signatures. Here are ways to invoke an op:
+
+#### Via the class' `submit` method
+
+```ruby
+op = MyOp.submit({foo: 'bar'})
+# if the op succeeds it will be returned, otherwise it false will be returned.
+```
+
+#### Via the class' `submit!` method
+
+```ruby
+op = MyOp.submit!({foo: 'bar'})
+# if the op succeeds it will be returned, otherwise a ::Subroutine::Failure will be raised.
+```
+
+#### Via the instance's `submit` method
+
+```ruby
+op = MyOp.new({foo: 'bar'})
+val = op.submit
+# if the op succeeds, val will be true, otherwise false
+```
+
+#### Via the instance's `submit!` method
+
+```ruby
+op = MyOp.new({foo: 'bar'})
+op.submit!
+# if the op succeeds nothing will be raised, otherwise a ::Subroutine::Failure will be raised.
+```
+
+
 ## Todo
+
 1. Enable ActiveModel 3.0-3.2 users by removing the ActiveModel::Model dependency.
 
 ## Contributing
