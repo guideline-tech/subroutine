@@ -137,7 +137,7 @@ module Subroutine
 
     # the action which should be invoked upon form submission (from the controller)
     def submit
-      debug_submission do
+      observe_submission do
         @params = filter_params(@original_params)
 
         set_accessors(@params)
@@ -156,14 +156,29 @@ module Subroutine
 
     protected
 
-    def debug_submission
+    # these enable you to 1) add log output or 2) add performance monitoring such as skylight.
+    def observe_submission
+      yield
+    end
+
+    def observe_validation
+      yield
+    end
+
+    def observe_perform
       yield
     end
 
 
     def validate_and_perform
-      return false unless valid?
-      perform
+      bool = observe_validation do
+        valid?
+      end
+      return false unless bool
+
+      observe_perform do
+        perform
+      end
     end
 
     # implement this in your concrete class.
