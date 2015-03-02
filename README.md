@@ -248,6 +248,68 @@ class ActivateOp < ::Subroutine::Op
 end
 ```
 
+## Extending Subroutine::Op
+
+Great, so you're sold on using ops. Let's talk about how I usually standardize their usage in my apps. The most common thing needed is `current_user`. For this reason I usually follow the rails convention of declaring an "Application" op which declares all of my common needs. I hate writing `ApplicationOp` all the time so I usually call it `BaseOp`.
+
+```ruby
+class BaseOp < ::Subroutine::Op
+
+  attr_reader :current_user
+
+  def initialize(*args)
+    params = args.extract_options!
+    @current_user = args[0]
+    super(params)
+  end
+
+end
+```
+
+Great, so now I can pass the current user as my first argument to any op constructor. The next most common case is permissions. In a common role-based system things become pretty easy. I usually just add a class method which declares the minimum required role.
+
+```ruby
+class SendInvitationOp < BaseOp
+  require_role :admin
+end
+```
+
+In the case of a more complex permission system, I'll usually utilize pundit but still standardize the check as a validation.
+
+```ruby
+class BaseOp < ::Subroutine::Op
+
+  validate :_validate_permissions
+
+  protected
+
+  # default implementation is to allow access.
+  def validate_permissions
+    true
+  end
+
+  def not_authorized!
+    errors.add(:current_user, :not_authorized)
+    false
+  end
+end
+
+class SendInvitationOp < BaseOp
+
+  protected
+
+  def validate_permissions
+    unless UserPolicy.new(current_user).send_invitations?
+      return not_authorized!
+    end
+
+    true
+  end
+
+end
+```
+
+Clearly there are a ton of ways this could be implemented but that should be a good jumping-off point.
 
 ## Todo
 
