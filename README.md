@@ -313,6 +313,33 @@ end
 
 Clearly there are a ton of ways this could be implemented but that should be a good jumping-off point.
 
+Performance monitoring is also important to me so I've added a few hooks to observe what's going on during an op's submission. I'm primarily using Skylight at the moment.
+
+```ruby
+class BaseOp < ::Subroutine::Op
+
+  protected
+
+  def observe_submission
+    Skylight.instrument category: 'op.submission', title: "#{self.class.name}#submit" do
+      yield
+    end
+  end
+
+  def observe_validation
+    Skylight.instrument category: 'op.validation', title: "#{self.class.name}#valid?" do
+      yield
+    end
+  end
+
+  def observe_perform
+    Skylight.instrument category: 'op.perform', title: "#{self.class.name}#perform" do
+      yield
+    end
+  end
+end
+```
+
 ## Todo
 
 1. Enable ActiveModel 3.0-3.2 users by removing the ActiveModel::Model dependency.
