@@ -1,6 +1,6 @@
 # Subroutine
 
-A gem that provides an interface for creating feature-driven operations. It loosly implements the command pattern if you're interested in nerding out a bit. See the examples below, it'll be more clear.
+A gem that provides an interface for creating feature-driven operations. It loosely implements the command pattern if you're interested in nerding out a bit. See the examples below, it'll be more clear.
 
 ## Examples
 
