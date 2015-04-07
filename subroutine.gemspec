@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Subroutine::VERSION
   spec.authors       = ["Mike Nelson"]
   spec.email         = ["mike@mnelson.io"]
-  spec.summary       = %q{An interface for creating feature-driven operations.}
+  spec.summary       = %q{Feature-driven operation objects.}
   spec.description   = %q{An interface for creating feature-driven operations.}
   spec.homepage      = "https://github.com/mnelson/subroutine"
   spec.license       = "MIT"
