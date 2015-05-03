@@ -182,7 +182,7 @@ module Subroutine
       assert_equal 0, op.time_input.min
       assert_equal 0, op.time_input.sec
 
-      op.time_input = "2023-05-05T10:00:30"
+      op.time_input = "2023-05-05T10:00:30Z"
       assert_equal ::Time, op.time_input.class
       refute_equal ::DateTime, op.time_input.class
 
@@ -192,18 +192,6 @@ module Subroutine
       assert_equal 10, op.time_input.hour
       assert_equal 0, op.time_input.min
       assert_equal 30, op.time_input.sec
-
-      op.time_input = "2020-05-03 13:44:45 -0400"
-
-      assert_equal ::Time, op.time_input.class
-      refute_equal ::DateTime, op.time_input.class
-
-      assert_equal 2020, op.time_input.year
-      assert_equal 5, op.time_input.month
-      assert_equal 3, op.time_input.day
-      assert_equal 13, op.time_input.hour
-      assert_equal 44, op.time_input.min
-      assert_equal 45, op.time_input.sec
     end
 
     def test_iso_date_inputs
