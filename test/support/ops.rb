@@ -18,13 +18,11 @@ end
 
 class SignupOp < ::Subroutine::Op
 
-  field :email
-  field :password
+  string :email
+  string :password
 
   validates :email, :presence => true
   validates :password, :presence => true
-
-  error_map :email_address => :email
 
   attr_reader :perform_called
   attr_reader :perform_finished
@@ -74,7 +72,7 @@ end
 
 class BusinessSignupOp < ::Subroutine::Op
 
-  field :business_name
+  string :business_name
   inputs_from ::SignupOp
 
 end
@@ -82,16 +80,27 @@ end
 class DefaultsOp < ::Subroutine::Op
 
   field :foo, :default => 'foo'
-
-  field baz: 'baz'
-
-  field :bar
-  default :bar => 'bar'
+  field :bar, :default => 'bar'
 
 end
 
 class InheritedDefaultsOp < ::DefaultsOp
 
-  default :bar => 'barstool'
+  field :bar, :default => 'barstool'
+
+end
+
+class TypeCastOp < ::Subroutine::Op
+
+  integer :integer_input
+  number :number_input
+  string :string_input
+  boolean :boolean_input
+  date :date_input
+  time :time_input, :default => lambda{ Time.now }
+  iso_date :iso_date_input
+  iso_time :iso_time_input
+  object :object_input
+  array :array_input, :default => 'foo'
 
 end

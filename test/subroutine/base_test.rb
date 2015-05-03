@@ -5,12 +5,12 @@ module Subroutine
 
     def test_simple_fields_definition
       op = ::SignupOp.new
-      assert_equal ['email', 'password'], op._fields
+      assert_equal [:email, :password], op._fields.keys.sort
     end
 
     def test_inherited_fields
       op = ::AdminSignupOp.new
-      assert_equal ['email', 'password', 'priveleges'], op._fields
+      assert_equal [:email, :password, :priveleges], op._fields.keys.sort
     end
 
     def test_class_attribute_usage
@@ -20,45 +20,28 @@ module Subroutine
       bid = ::AdminSignupOp._fields.object_id
 
       refute_equal sid, bid
-
-      sid = ::SignupOp._defaults.object_id
-      bid = ::AdminSignupOp._defaults.object_id
-
-      refute_equal sid, bid
-
-      sid = ::SignupOp._error_map.object_id
-      bid = ::AdminSignupOp._error_map.object_id
-
-      refute_equal sid, bid
-
     end
 
     def test_inputs_from_inherited_fields_without_inheriting_from_the_class
       refute ::BusinessSignupOp < ::SignupOp
 
-      ::SignupOp._fields.each do |field|
-        assert_includes ::BusinessSignupOp._fields, field
-      end
+      user_fields = ::SignupOp._fields.keys
+      biz_fields = ::BusinessSignupOp._fields.keys
 
-      ::SignupOp._defaults.each_pair do |k,v|
-        assert_equal v, ::BusinessSignupOp._defaults[k]
-      end
-
-      ::SignupOp._error_map.each_pair do |k,v|
-        assert_equal v, ::BusinessSignupOp._error_map[k]
+      user_fields.each do |field|
+        assert_includes biz_fields, field
       end
     end
 
     def test_defaults_declaration_options
-      assert_equal ::DefaultsOp._defaults, {
-        'foo' => 'foo',
-        'baz' => 'baz',
-        'bar' => 'bar'
-      }
+      op = ::DefaultsOp.new
+      assert_equal 'foo', op.foo
+      assert_equal 'bar', op.bar
     end
 
     def test_inherited_defaults_override_correctly
-      assert_equal 'barstool', ::InheritedDefaultsOp._defaults['bar']
+      op = ::InheritedDefaultsOp.new
+      assert_equal 'barstool', op.bar
     end
 
     def test_accessors_are_created
@@ -87,6 +70,9 @@ module Subroutine
       assert_nil op.email
       assert_nil op.password
       assert_equal 'min', op.priveleges
+
+      op.priveleges = 'max'
+      assert_equal 'max', op.priveleges
     end
 
     def test_validations_are_evaluated_before_perform_is_invoked
@@ -107,7 +93,7 @@ module Subroutine
       assert op.perform_called
       refute op.perform_finished
 
-      assert_equal ["has gotta be @admin.com"], op.errors[:email]
+      assert_equal ["Email address has gotta be @admin.com"], op.errors[:base]
     end
 
     def test_when_valid_perform_completes_it_returns_control
