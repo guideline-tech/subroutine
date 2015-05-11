@@ -222,8 +222,8 @@ Notice we do not declare `perform` as a public method. This is to ensure the "pu
 
 Reporting errors is very important in Subroutine Ops since these can be used as form objects. Errors can be reported a couple different ways:
 
-1) `errors.add(:key, :error)` That is, the way you add errors to an ActiveModel object. Then either return false from your op OR raise an error like `raise ::Subroutine::Failure.new(this)`.
-2) `inherit_errors(error_object_or_activemodel_object)` Same as `errors.add`, but it iterates an existing error hash and inherits the errors. As part of this iteration,
+1. `errors.add(:key, :error)` That is, the way you add errors to an ActiveModel object. Then either return false from your op OR raise an error like `raise ::Subroutine::Failure.new(this)`.
+2. `inherit_errors(error_object_or_activemodel_object)` Same as `errors.add`, but it iterates an existing error hash and inherits the errors. As part of this iteration,
 it checks whether the key in the provided error_object matches a field (or aka of a field) in our op. If there is a match, the error will be placed on
 that field, but if there is not, the error will be placed on `:base`. Again, after adding the errors to our op, we must return `false` from the perform method or raise a Subroutine::Failure.
 
