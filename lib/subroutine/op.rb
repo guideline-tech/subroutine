@@ -52,6 +52,7 @@ module Subroutine
       def inherited(child)
         super
         child._fields = self._fields.dup
+        child._error_map = self._error_map.dup
       end
 
 
@@ -72,6 +73,12 @@ module Subroutine
 
       def _field(field_name, options = {})
         self._fields[field_name.to_sym] = options
+
+        if options[:aka]
+          Array(options[:aka]).each do |as|
+            self._error_map[as.to_sym] = field_name.to_sym
+          end
+        end
 
         class_eval <<-EV, __FILE__, __LINE__ + 1
 
@@ -101,6 +108,9 @@ module Subroutine
 
     class_attribute :_fields
     self._fields = {}
+
+    class_attribute :_error_map
+    self._error_map = {}
 
     attr_reader :original_params
     attr_reader :params
@@ -181,19 +191,17 @@ module Subroutine
       @params.has_key?(key)
     end
 
-    # applies the errors to the form object from the child object
-    def inherit_errors_from(object)
-      inherit_errors(object.errors)
-    end
-
-
     # applies the errors in error_object to self
     # returns false so failure cases can end with this invocation
     def inherit_errors(error_object)
+      error_object = error_object.errors if error_object.respond_to?(:errors)
+
       error_object.each do |k,v|
 
         if respond_to?("#{k}")
           errors.add(k, v)
+        elsif self._error_map[k.to_sym]
+          errors.add(self._error_map[k.to_sym], v)
         else
           errors.add(:base, error_object.full_message(k,v))
         end

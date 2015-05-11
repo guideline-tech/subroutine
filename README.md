@@ -1,6 +1,6 @@
 # Subroutine
 
-A gem that provides an interface for creating feature-driven operations. It loosely implements the command pattern if you're interested in nerding out a bit. See the examples below, it'll be more clear.
+A gem that provides an interface for creating feature-driven operations. It utilizes the command pattern, enables the usage of "ops" as "form objects", and just all-around enables clear, concise, meaningful code.
 
 ## Examples
 
@@ -32,7 +32,7 @@ class SignupOp < ::Subroutine::Op
   end
 
   def build_user
-    User.new(filtered_params)
+    User.new(params)
   end
 
   def deliver_welcome_email!(u)
@@ -76,21 +76,26 @@ app/
 ```
 
 #### Model
+
+When ops are around, the point of the model is to ensure data validity. That's essentially it.
+So most of your models are a series of validations, common accessors, queries, etc.
+
 ```ruby
-# When ops are around, the point of the model is to ensure the data entering the db is 100% valid.
-# So most of your models are a series of validations and common accessors, queries, etc.
 class User
-  validates :name, presence: true
-  validates :email, email: true
+  validates :name,   presence: true
+  validates :email,     email: true
 
   has_secure_password
 end
 ```
 
 #### Controller(s)
+
+I've found that a great way to handle errors with ops is to allow you top level controller to appropriately
+render errors in a consisent way. This is exceptionally easy for api-driven apps.
+
+
 ```ruby
-# I've found that a great way to handle errors with ops is to allow you top level controller to appropriately
-# render errors in a consisent way. This is exceptionally easy for api-driven apps.
 class Api::Controller < ApplicationController
   rescue_from ::Subroutine::Failure, with: :render_op_failure
 
@@ -99,10 +104,14 @@ class Api::Controller < ApplicationController
     # e.record.errors, etc
   end
 end
+```
 
-# With ops, your controllers are essentially just connections between routes, operations, and templates.
+With ops, your controllers are essentially just connections between routes, operations, and templates.
+
+```ruby
 class UsersController < ::Api::Controller
   def sign_up
+
     # If the op fails, a ::Subroutine::Failure will be raised.
     op = SignupOp.submit!(params)
 
@@ -111,10 +120,154 @@ class UsersController < ::Api::Controller
   end
 end
 ```
+## Op Implementation
+
+Ops have some fluff, but not much. The `Subroutine::Op` class entire purpose in life is to validate user input and execute
+a series of operations. To enable this we filter input params, type cast params (if desired), and execute validations. Only
+after these things are complete will the `Op` perform it's operation.
+
+#### Input Declaration
+
+Inputs are declared via the `field` method and have just a couple of options:
+
+```ruby
+class MyOp < ::Subroutine::Op
+  field :first_name
+  field :age, type: :integer
+  field :subscribed, type: :boolean, default: false
+  # ...
+end
+```
+
+* **type** - declares the type which the input should be cast to. Available types are declared in `Subroutine::TypeCaster::TYPES`
+* **default** - the default value of the input if not otherwise provided. If the provided default responds to `call` (ie. proc, lambda) the result of that `call` will be used at runtime.
+* **aka** - an alias (or aliases) that is checked when errors are inherited from other objects.
+
+Since we like a clean & simple dsl, you can also declare inputs via the `values` of `Subroutine::TypeCaster::TYPES`. When declared
+this way, the `:type` option is assumed.
+
+```ruby
+class MyOp < ::Subroutine::Op
+  string :first_name
+  date :dob
+  boolean :tos, :default => false
+end
+
+#### Validations
+
+Since Ops inlcude ActiveModel::Model, validations can be used just like any other ActiveModel object.
+
+```ruby
+class MyOp < ::Subroutine::Op
+  field :first_name
+
+  validates :first_name, presence: true
+end
+```
+
+#### Input Usage
+
+Inputs are accessible within the op via public accessors. You can see if an input was provided via the `field_provided?` method.
+
+```ruby
+class MyOp < ::Subroutine::Op
+
+  field :first_name
+  validate :validate_first_name_is_not_bob
+
+  protected
+
+  def perform
+   # whatever this op does
+   true
+  end
+
+  def validate_first_name_is_not_bob
+    return true unless field_provided?(:first_name)
+
+    if first_name.downcase == 'bob'
+      errors.add(:first_name, 'should not be bob')
+      return false
+    end
+
+    true
+  end
+end
+```
+
+#### Execution
+
+Every op must implement a `perform` instance method. This is the method which will be executed if all validations pass.
+The return value of this op determines whether the operation was a success or not. Truthy values are assumed to be successful,
+while falsy values are assumed to be failures. In general, returning `true` at the end of the perform method is desired.
+
+```ruby
+class MyOp < ::Subroutine::Op
+  field :first_name
+  validates :first_name, presence: true
+
+  protected
+
+  def perform
+    $logger.info "#{first_name} submitted this op"
+    true
+  end
+
+end
+```
+
+Notice we do not declare `perform` as a public method. This is to ensure the "public" api of the op remains as `submit` or `submit!`.
+
+#### Errors
+
+Reporting errors is very important in Subroutine Ops since these can be used as form objects. Errors can be reported a couple different ways:
+
+1) `errors.add(:key, :error)` That is, the way you add errors to an ActiveModel object. Then either return false from your op OR raise an error like `raise ::Subroutine::Failure.new(this)`.
+2) `inherit_errors(error_object_or_activemodel_object)` Same as `errors.add`, but it iterates an existing error hash and inherits the errors. As part of this iteration,
+it checks whether the key in the provided error_object matches a field (or aka of a field) in our op. If there is a match, the error will be placed on
+that field, but if there is not, the error will be placed on `:base`. Again, after adding the errors to our op, we must return `false` from the perform method or raise a Subroutine::Failure.
+
+```ruby
+class MyOp < ::Subroutine::Op
+
+  string :first_name, aka: :firstname
+  string :last_name, aka: [:lastname, :surname]
+
+  protected
+
+  def perform
+
+    if first_name == 'bill'
+      errors.add(:first_name, 'cannot be bill')
+      return false
+    end
+
+    if first_name == 'john'
+      errors.add(:first_name, 'cannot be john')
+      raise Subroutine::Failure.new(this)
+    end
+
+    unless _user.valid?
+
+      # if there are :first_name or :firstname errors on _user, they will be added to our :first_name
+      # if there are :last_name, :lastname, or :surname errors on _user, they will be added to our :last_name
+      inherit_errors(_user)
+      return false
+    end
+
+    true
+  end
+
+  def _user
+    @_user ||= User.new(params)
+  end
+end
+```
+
 
 ## Usage
 
-The `Subroutine::Op` class' `submit` and `submit!` methods have the same signature as the class' constructor, enabling a few different ways to utilize an op. Here they are:
+The `Subroutine::Op` class' `submit` and `submit!` methods have identical signatures to the class' constructor, enabling a few different ways to utilize an op:
 
 #### Via the class' `submit` method
 
@@ -146,111 +299,7 @@ op.submit!
 # if the op succeeds nothing will be raised, otherwise a ::Subroutine::Failure will be raised.
 ```
 
-#### Fluff
-
-Ops have some fluff. Let's see if we can cover it all with one example. I'll pretend I'm using ActiveRecord:
-
-```ruby
-class ActivateOp < ::Subroutine::Op
-
-  # This will inherit all fields, error mappings, and default values from the SignupOp class.
-  # It currently does not inherit validations
-  inputs_from ::SignupOp
-
-  # This defines new inputs for this op.
-  field :invitation_token
-  field :thank_you_message
-
-  # This maps any "inherited" errors to the op's input.
-  # So if one of our objects that we inherit errors from has an email_address error, it will end up on our errors as "email".
-  error_map email_address: :email
-
-  # If you wanted default values, they can be declared a couple different ways:
-  # default thank_you_message: "Thanks so much"
-  # field thank_you_message: "Thanks so much"
-  # field :thank_you_message, default: "Thanks so much"
-
-  # If your default values need to be evaluated at runtime, simply wrap them in a proc:
-  # default thank_you_message: -> { I18n.t('thank_you') }
-
-  # Validations are declared just like any other ActiveModel
-  validates :token, presence: true
-  validate :validate_invitation_available
-
-  protected
-
-  # This is where the actual operation takes place.
-  def perform
-    user = nil
-
-    # Jump into a transaction to make sure any failure rolls back all changes.
-    ActiveRecord::Base.transaction do
-      user = create_user!
-      associate_invitation!(user)
-    end
-
-    # Set our "success" accessors.
-    @activated_user = user
-
-    # Return a truthy value to declare success.
-    true
-  end
-
-  # Use an existing op! OMG SO DRY
-  # You have access to the original inputs via original_params
-  def create_user!
-    op = ::SignupOp.submit!(original_params)
-    op.signed_up_user
-  end
-
-  # Deal with our invitation after our user is saved.
-  def associate_invitation!(user)
-    _invitation.user_id = user.id
-    _invitation.thank_you_message = defaulted_thank_you_message
-    _invitation.convert!
-  end
-
-  # Build a default value if the user didn't provide one.
-  def defaulted_thank_you_message
-    # You can check to see if a specific field was provided via field_provided?()
-    return thank_you_message if field_provided?(:thank_you_message)
-    thank_you_message.presence || I18n.t('thanks')
-  end
-
-  # Fetch the invitation via the provided token.
-  def _invitation
-    return @_invitation if defined?(@_invitation)
-    @_invitation = token ? ::Invitation.find_by(token: token) : nil
-  end
-
-  # Verbosely validate the existence of the invitation.
-  # In most cases, these validations can be written simpler.
-  # The true/false return value is a style I like but not required.
-  def validate_invitation_available
-
-    # The other validation has already added a message for a blank token.
-    return true if token.blank?
-
-    # Ensure we found an invitation matching the token.
-    # We could have used find_by!() in `_invitation` as well.
-    unless _invitation.present?
-      errors.add(:token, :not_found)
-      return false
-    end
-
-    # Ensure the token is valid.
-    unless _invitation.can_be_converted?
-      errors.add(:token, :not_convertable)
-      return false
-    end
-
-    true
-  end
-
-end
-```
-
-### Extending Subroutine::Op
+## Extending Subroutine::Op
 
 Great, so you're sold on using ops. Let's talk about how I usually standardize their usage in my apps. The most common thing needed is `current_user`. For this reason I usually follow the rails convention of declaring an "Application" op which declares all of my common needs. I hate writing `ApplicationOp` all the time so I usually call it `BaseOp`.
 
@@ -268,7 +317,7 @@ class BaseOp < ::Subroutine::Op
 end
 ```
 
-Great, so now I can pass the current user as my first argument to any op constructor. The next most common case is permissions. In a common role-based system things become pretty easy. I usually just add a class method which declares the minimum required role.
+So now I can pass the current user as my first argument to any op constructor. The next most common case is permissions. In a common role-based system things become pretty easy. I usually just add a class method which declares the minimum required role.
 
 ```ruby
 class SendInvitationOp < BaseOp
@@ -344,11 +393,3 @@ end
 
 1. Enable ActiveModel 3.0-3.2 users by removing the ActiveModel::Model dependency.
 2. Demo app?
-
-## Contributing
-
-1. Fork it ( https://github.com/[my-github-username]/subroutine/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request

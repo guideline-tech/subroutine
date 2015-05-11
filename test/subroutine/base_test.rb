@@ -93,7 +93,7 @@ module Subroutine
       assert op.perform_called
       refute op.perform_finished
 
-      assert_equal ["Email address has gotta be @admin.com"], op.errors[:base]
+      assert_equal ["has gotta be @admin.com"], op.errors[:email]
     end
 
     def test_when_valid_perform_completes_it_returns_control

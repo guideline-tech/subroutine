@@ -18,7 +18,7 @@ end
 
 class SignupOp < ::Subroutine::Op
 
-  string :email
+  string :email, :aka => :email_address
   string :password
 
   validates :email, :presence => true
