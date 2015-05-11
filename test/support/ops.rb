@@ -36,7 +36,7 @@ class SignupOp < ::Subroutine::Op
     u = build_user
 
     unless u.valid?
-      inherit_errors_from(u)
+      inherit_errors(u)
       return false
     end
 

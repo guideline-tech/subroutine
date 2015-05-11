@@ -142,7 +142,7 @@ module Subroutine
     rescue Exception => e
 
       if e.respond_to?(:record)
-        inherit_errors_from(e.record) unless e.record == self
+        inherit_errors(e.record) unless e.record == self
         false
       else
         raise e
