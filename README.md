@@ -122,7 +122,7 @@ end
 ```
 ## Op Implementation
 
-Ops have some fluff, but not much. The `Subroutine::Op` class entire purpose in life is to validate user input and execute
+Ops have some fluff, but not much. The `Subroutine::Op` class' entire purpose in life is to validate user input and execute
 a series of operations. To enable this we filter input params, type cast params (if desired), and execute validations. Only
 after these things are complete will the `Op` perform it's operation.
 
