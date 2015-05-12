@@ -152,6 +152,7 @@ class MyOp < ::Subroutine::Op
   date :dob
   boolean :tos, :default => false
 end
+```
 
 #### Validations
 
