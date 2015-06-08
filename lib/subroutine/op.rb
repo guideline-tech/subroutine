@@ -151,6 +151,15 @@ module Subroutine
 
     protected
 
+    # ensure that our type caster has the opportunity to cast each key
+    def params
+      out = {}
+      @params.keys.each do |k|
+        out[k] = send(k)
+      end
+      out
+    end
+
     def type_caster
       @type_caster ||= ::Subroutine::TypeCaster.new
     end

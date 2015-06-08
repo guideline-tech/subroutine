@@ -101,11 +101,23 @@ module Subroutine
     end
 
     def _cast_hash(value)
+      return _cast_action_controller_query_params(value) if is_action_controller_query_params?(value)
       return value if value.is_a?(Hash)
       return {} if value.blank?
+      return value.to_hash if value.respond_to?(:to_hash)
       return value.to_h if value.respond_to?(:to_h)
       return ::Hash[value.to_a] if value.respond_to?(:to_a)
       {}
+    end
+
+    def _cast_action_controller_query_params(value)
+      value = value.to_hash
+      value.each_pair{|k,v| value[k] = _cast_action_controller_query_params(v) if is_action_controller_query_params?(v) }
+      value
+    end
+
+    def is_action_controller_query_params?(value)
+      value.class.name == "ActionController::Parameters"
     end
 
     def cast_array(value)
