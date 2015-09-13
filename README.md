@@ -390,7 +390,26 @@ class BaseOp < ::Subroutine::Op
 end
 ```
 
-## Todo
+## Subroutine::Factory
 
-1. Enable ActiveModel 3.0-3.2 users by removing the ActiveModel::Model dependency.
-2. Demo app?
+There is a separate gem [subroutine-factory](https://github.com/mnelson/subroutine-factory) which enables you to easily utilize factories and operations to produce
+test data. It's a great replacement to FactoryGirl, as it ensures the data entering your DB is getting there via a real
+world operation.
+
+```ruby
+# support/factories/signups.rb
+Subroutine::Factory.define :signup do
+  op ::SignupOp
+
+  inputs :email, sequence{|n| "foo{n}@example.com" }
+  inputs :password, "password123"
+
+  # by default, the op will be returned when the factory is used.
+  # this `output` returns the value of the accessor on the resulting op
+  output :user
+end
+
+# signup_test.rb
+user = Subroutine::Factory.create :signup
+user = Subroutine::Factory.create :signup, email: "foo@bar.com"
+```
