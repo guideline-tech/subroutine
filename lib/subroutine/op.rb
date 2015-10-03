@@ -3,6 +3,7 @@ require 'active_model'
 
 require "subroutine/failure"
 require "subroutine/type_caster"
+require "subroutine/filtered_errors"
 
 module Subroutine
 
@@ -40,6 +41,12 @@ module Subroutine
 
       alias_method :fields, :field
 
+      def ignore_error(*field_names)
+        field_names.each do |f|
+          _ignore_errors(f)
+        end
+      end
+      alias_method :ignore_errors, :ignore_error
 
       def inputs_from(*ops)
         ops.each do |op|
@@ -53,6 +60,7 @@ module Subroutine
         super
         child._fields = self._fields.dup
         child._error_map = self._error_map.dup
+        child._error_ignores = self._error_ignores.dup
       end
 
 
@@ -80,6 +88,10 @@ module Subroutine
           end
         end
 
+        if options[:ignore_errors]
+          _ignore_errors(field_name)
+        end
+
         class_eval <<-EV, __FILE__, __LINE__ + 1
 
           def #{field_name}=(v)
@@ -103,6 +115,10 @@ module Subroutine
 
       end
 
+      def _ignore_errors(field_name)
+        self._error_ignores[field_name.to_sym] = true
+      end
+
     end
 
 
@@ -111,6 +127,9 @@ module Subroutine
 
     class_attribute :_error_map
     self._error_map = {}
+
+    class_attribute :_error_ignores
+    self._error_ignores = {}
 
     attr_reader :original_params
     attr_reader :params
@@ -121,6 +140,9 @@ module Subroutine
       @params           = {}
     end
 
+    def errors
+      @filtered_errors ||= Subroutine::FilteredErrors.new(super)
+    end
 
     def submit!
       unless submit

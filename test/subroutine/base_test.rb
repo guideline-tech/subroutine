@@ -131,5 +131,18 @@ module Subroutine
 
     end
 
+    def test_it_ignores_specific_errors
+      op = ::WhateverSignupOp.submit
+      assert_equal [], op.errors[:whatever]
+    end
+
+    def test_it_does_not_inherit_ignored_errors
+      op = ::WhateverSignupOp.new
+      other = ::SignupOp.new
+      other.errors.add(:whatever, "fail")
+      op.send(:inherit_errors, other)
+      assert_equal [], op.errors[:whatever]
+    end
+
   end
 end

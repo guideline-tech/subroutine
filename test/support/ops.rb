@@ -57,6 +57,10 @@ class SignupOp < ::Subroutine::Op
     ::User
   end
 end
+class WhateverSignupOp < ::SignupOp
+  string :whatever, ignore_errors: true
+  validates :whatever, presence: true
+end
 
 class AdminSignupOp < ::SignupOp
 
@@ -73,8 +77,8 @@ end
 class BusinessSignupOp < ::Subroutine::Op
 
   string :business_name
-  inputs_from ::SignupOp
 
+  inputs_from ::SignupOp
 end
 
 class DefaultsOp < ::Subroutine::Op
