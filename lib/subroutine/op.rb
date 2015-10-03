@@ -229,6 +229,8 @@ module Subroutine
 
       error_object.each do |k,v|
 
+        next if self._error_ignores[k.to_sym]
+
         if respond_to?("#{k}")
           errors.add(k, v)
         elsif self._error_map[k.to_sym]
