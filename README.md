@@ -154,9 +154,26 @@ class MyOp < ::Subroutine::Op
 end
 ```
 
+Since ops can use other ops, sometimes it's nice to explicitly state the inputs are valid. To "inherit" all the inputs from another op, simply use `inputs_from`.
+
+```ruby
+class MyOp < ::Subroutine::Op
+  string :token
+  inputs_from MyOtherOp
+
+  protected
+
+  def perform
+    verify_token!
+    MyOtherOp.submit! params.except(:token)
+  end
+
+end
+```
+
 #### Validations
 
-Since Ops inlcude ActiveModel::Model, validations can be used just like any other ActiveModel object.
+Since Ops include ActiveModel::Model, validations can be used just like any other ActiveModel object.
 
 ```ruby
 class MyOp < ::Subroutine::Op
