@@ -115,8 +115,8 @@ module Subroutine
       op.object_input = {foo: 'bar'}
       assert_equal({'foo' => 'bar'}, op.object_input)
 
-      op.object_input = {"foo" => {:bar => :baz}}
-      assert_equal({"foo" => {:bar => :baz}}, op.object_input)
+      op.object_input = {"foo" => {"bar" => :baz}}
+      assert_equal({"foo" => {"bar" => :baz}}, op.object_input)
     end
 
     def test_array_inputs
@@ -132,8 +132,8 @@ module Subroutine
       op.array_input = ['foo']
       assert_equal ['foo'], op.array_input
 
-      op.array_input = {:bar => true}
-      assert_equal [{:bar => true}], op.array_input
+      op.array_input = {"bar" => true}
+      assert_equal [{"bar" => true}], op.array_input
     end
 
     def test_date_inputs

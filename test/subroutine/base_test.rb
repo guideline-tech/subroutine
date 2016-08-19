@@ -144,5 +144,29 @@ module Subroutine
       assert_equal [], op.errors[:whatever]
     end
 
+    def test_it_sets_the_params_immediately_and_includes_defaults
+      op = ::AdminSignupOp.new(email: "foo")
+      assert_equal({
+        "priveleges" => "min",
+        "email" => "foo"
+      }, op.params)
+    end
+
+    def test_it_overrides_defaults_with_nils
+      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+      assert_equal({
+        "priveleges" => nil,
+        "email" => "foo"
+      }, op.params)
+    end
+
+    def test_it_casts_params_on_the_way_in
+      op = ::TypeCastOp.new(integer_input: "25")
+      assert_equal(25, op.params["integer_input"])
+
+      op.decimal_input = "25.3"
+      assert_equal(BigDecimal("25.3"), op.params["decimal_input"])
+    end
+
   end
 end

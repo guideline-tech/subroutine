@@ -1,5 +1,6 @@
 require 'date'
 require 'time'
+require 'bigdecimal'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/object/try'
 require 'active_support/core_ext/array/wrap'
@@ -10,7 +11,8 @@ module Subroutine
 
     TYPES = {
       :integer => [:int, :integer, :epoch],
-      :number => [:number, :float, :decimal],
+      :number => [:number, :float],
+      :decimal => [:decimal, :big_decimal],
       :string => [:string, :text],
       :boolean => [:bool, :boolean],
       :iso_date => [:iso_date],
@@ -29,7 +31,10 @@ module Subroutine
       when *TYPES[:integer]
         cast_number(value).try(:to_i)
       when *TYPES[:number]
-        cast_number(value)
+        cast_number(value).try(:to_f)
+      when *TYPES[:decimal]
+        d = cast_number(value)
+        d ? BigDecimal(d.to_s) : nil
       when *TYPES[:string]
         cast_string(value)
       when *TYPES[:boolean]
@@ -57,7 +62,7 @@ module Subroutine
     def cast_number(value)
       val = cast_string(value).strip
       return nil if val.blank?
-      val.to_f
+      val
     end
 
     def cast_string(value)

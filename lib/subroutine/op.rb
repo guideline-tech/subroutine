@@ -96,15 +96,12 @@ module Subroutine
 
           def #{field_name}=(v)
             config = #{field_name}_config
-            @#{field_name} = type_caster.cast(v, config[:type])
+            v = type_caster.cast(v, config[:type])
+            @params["#{field_name}"] = v
           end
 
           def #{field_name}
-            return @#{field_name} if defined?(@#{field_name})
-            config = #{field_name}_config
-            deflt = config[:default]
-            deflt = deflt.call if deflt.respond_to?(:call)
-            type_caster.cast(deflt, config[:type])
+            @params["#{field_name}"]
           end
 
           def #{field_name}_config
@@ -137,7 +134,7 @@ module Subroutine
 
     def initialize(inputs = {})
       @original_params  = inputs.with_indifferent_access
-      @params           = {}
+      @params = sanitize_params(@original_params)
     end
 
     def errors
@@ -154,10 +151,6 @@ module Subroutine
     # the action which should be invoked upon form submission (from the controller)
     def submit
       observe_submission do
-        @params = filter_params(@original_params)
-
-        set_accessors(@params)
-
         validate_and_perform
       end
 
@@ -172,15 +165,6 @@ module Subroutine
     end
 
     protected
-
-    # ensure that our type caster has the opportunity to cast each key
-    def params
-      out = {}
-      @params.keys.each do |k|
-        out[k] = send(k)
-      end
-      out
-    end
 
     def type_caster
       @type_caster ||= ::Subroutine::TypeCaster.new
@@ -247,15 +231,19 @@ module Subroutine
 
     # if you want to use strong parameters or something in your form object you can do so here.
     # by default we just slice the inputs to the defined fields
-    def filter_params(inputs)
-      inputs.slice(*_fields.keys)
-    end
-
-
-    def set_accessors(inputs)
-      inputs.each do |key, value|
-        send("#{key}=", value) if respond_to?("#{key}=")
+    def sanitize_params(inputs)
+      out = {}.with_indifferent_access
+      self._fields.each_pair do |field, config|
+        if inputs.has_key?(field)
+          out[field] = type_caster.cast(inputs[field], config[:type])
+        elsif config[:default]
+          deflt = config[:default]
+          deflt = deflt.call if deflt.respond_to?(:call)
+          out[field] = type_caster.cast(deflt, config[:type])
+        end
       end
+
+      out
     end
 
   end

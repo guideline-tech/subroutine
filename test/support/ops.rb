@@ -98,6 +98,7 @@ class TypeCastOp < ::Subroutine::Op
 
   integer :integer_input
   number :number_input
+  decimal :decimal_input
   string :string_input
   boolean :boolean_input
   date :date_input
