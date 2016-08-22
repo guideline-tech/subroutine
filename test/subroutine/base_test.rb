@@ -144,12 +144,38 @@ module Subroutine
       assert_equal [], op.errors[:whatever]
     end
 
-    def test_it_sets_the_params_immediately_and_includes_defaults
+    def test_it_sets_the_params_and_defaults_immediately
       op = ::AdminSignupOp.new(email: "foo")
       assert_equal({
-        "priveleges" => "min",
         "email" => "foo"
       }, op.params)
+
+      assert_equal({
+        "priveleges" => "min",
+      }, op.defaults)
+
+      assert_equal({
+        "email" => "foo",
+        "priveleges" => "min",
+      }, op.params_with_defaults)
+    end
+
+    def test_it_allows_defaults_to_be_overridden
+      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+
+      assert_equal({
+        "email" => "foo",
+        "priveleges" => nil
+      }, op.params)
+
+      assert_equal({
+        "priveleges" => "min",
+      }, op.defaults)
+
+      assert_equal({
+        "email" => "foo",
+        "priveleges" => nil,
+      }, op.params_with_defaults)
     end
 
     def test_it_overrides_defaults_with_nils
@@ -162,10 +188,10 @@ module Subroutine
 
     def test_it_casts_params_on_the_way_in
       op = ::TypeCastOp.new(integer_input: "25")
-      assert_equal(25, op.params["integer_input"])
+      assert_equal(25, op.params_with_defaults["integer_input"])
 
       op.decimal_input = "25.3"
-      assert_equal(BigDecimal("25.3"), op.params["decimal_input"])
+      assert_equal(BigDecimal("25.3"), op.params_with_defaults["decimal_input"])
     end
 
   end

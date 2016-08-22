@@ -213,6 +213,32 @@ class MyOp < ::Subroutine::Op
 end
 ```
 
+All **provided** params are accessible via the `params` accessor. All default values are accessible via the `defaults` accessor. The combination of the two is available via `params_with_defaults`.
+
+```ruby
+class MyOp < ::Subroutine::Op
+  string :name
+  string :status, default: "browsing"
+
+  def perform
+    puts params.inspect
+    puts defaults.inspect
+    puts params_with_defaults.inspect
+    true
+  end
+end
+
+MyOp.submit(name: "foobar", status: nil)
+# => { name: "foobar" }
+# => { status: "browsing" }
+# => { name: "foobar", status: nil }
+
+MyOp.submit(name: "foobar")
+# => { name: "foobar" }
+# => { status: "browsing" }
+# => { name: "foobar", status: "browsing" }
+```
+
 #### Execution
 
 Every op must implement a `perform` instance method. This is the method which will be executed if all validations pass.

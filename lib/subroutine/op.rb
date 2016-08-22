@@ -101,7 +101,7 @@ module Subroutine
           end
 
           def #{field_name}
-            @params["#{field_name}"]
+            @params.has_key?("#{field_name}") ? @params["#{field_name}"] : @defaults["#{field_name}"]
           end
 
           def #{field_name}_config
@@ -129,12 +129,13 @@ module Subroutine
     self._error_ignores = {}
 
     attr_reader :original_params
-    attr_reader :params
+    attr_reader :params, :defaults
 
 
     def initialize(inputs = {})
       @original_params  = inputs.with_indifferent_access
       @params = sanitize_params(@original_params)
+      @defaults = sanitize_defaults
     end
 
     def errors
@@ -162,6 +163,10 @@ module Subroutine
       else
         raise e
       end
+    end
+
+    def params_with_defaults
+      @defaults.merge(@params)
     end
 
     protected
@@ -236,15 +241,26 @@ module Subroutine
       self._fields.each_pair do |field, config|
         if inputs.has_key?(field)
           out[field] = type_caster.cast(inputs[field], config[:type])
-        elsif config[:default]
-          deflt = config[:default]
-          deflt = deflt.call if deflt.respond_to?(:call)
-          out[field] = type_caster.cast(deflt, config[:type])
         end
       end
 
       out
     end
+
+    def sanitize_defaults
+      defaults = {}.with_indifferent_access
+
+      self._fields.each_pair do |field, config|
+        if config[:default]
+          deflt = config[:default]
+          deflt = deflt.call if deflt.respond_to?(:call)
+          defaults[field] = type_caster.cast(deflt, config[:type])
+        end
+      end
+
+      defaults
+    end
+
 
   end
 
