@@ -220,5 +220,19 @@ module Subroutine
       assert_equal "2022-12-22T10:30:24Z", op.iso_time_input
     end
 
+    def test_field_provided
+      op = ::SignupOp.new()
+      assert_equal false, op.send(:field_provided?, :email)
+
+      op = ::SignupOp.new(email: "foo")
+      assert_equal true, op.send(:field_provided?, :email)
+
+      op = ::DefaultsOp.new()
+      assert_equal false, op.send(:field_provided?, :foo)
+
+      op = ::DefaultsOp.new(foo: "foo")
+      assert_equal true, op.send(:field_provided?, :foo)
+    end
+
   end
 end
