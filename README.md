@@ -343,93 +343,123 @@ op.submit!
 # if the op succeeds nothing will be raised, otherwise a ::Subroutine::Failure will be raised.
 ```
 
-## Extending Subroutine::Op
+## Built-in Extensions
 
-Great, so you're sold on using ops. Let's talk about how I usually standardize their usage in my apps. The most common thing needed is `current_user`. For this reason I usually follow the rails convention of declaring an "Application" op which declares all of my common needs. I hate writing `ApplicationOp` all the time so I usually call it `BaseOp`.
+### Subroutine::Association
 
-```ruby
-class BaseOp < ::Subroutine::Op
-
-  attr_reader :current_user
-
-  def initialize(*args)
-    params = args.extract_options!
-    @current_user = args[0]
-    super(params)
-  end
-
-end
-```
-
-So now I can pass the current user as my first argument to any op constructor. The next most common case is permissions. In a common role-based system things become pretty easy. I usually just add a class method which declares the minimum required role.
+The `Subroutine::Association` module provides an interface for loading ActiveRecord instances easily.
 
 ```ruby
-class SendInvitationOp < BaseOp
-  require_role :admin
-end
-```
+class UserUpdateOp < ::Subroutine::Op
+  include ::Subroutine::Association
 
-In the case of a more complex permission system, I'll usually utilize pundit but still standardize the check as a validation.
+  association :user
 
-```ruby
-class BaseOp < ::Subroutine::Op
-
-  validate :validate_permissions
+  string :first_name, :last_name
 
   protected
 
-  # default implementation is to allow access.
-  def validate_permissions
-    true
-  end
-
-  def not_authorized!
-    errors.add(:current_user, :not_authorized)
-    false
-  end
-end
-
-class SendInvitationOp < BaseOp
-
-  protected
-
-  def validate_permissions
-    unless UserPolicy.new(current_user).send_invitations?
-      return not_authorized!
-    end
+  def perform
+    user.update_attributes(
+      first_name: first_name,
+      last_name: last_name
+    )
 
     true
   end
-
 end
 ```
 
-Clearly there are a ton of ways this could be implemented but that should be a good jumping-off point.
-
-Performance monitoring is also important to me so I've added a few hooks to observe what's going on during an op's submission. I'm primarily using Skylight at the moment.
-
 ```ruby
-class BaseOp < ::Subroutine::Op
+class RecordTouchOp < ::Subroutine::Op
+  include ::Subroutine::Association
+
+  association :record, polymorphic: true
 
   protected
 
-  def observe_submission
-    Skylight.instrument category: 'op.submission', title: "#{self.class.name}#submit" do
-      yield
+  def perform
+    record.touch
+
+    true
+  end
+end
+```
+
+### Subroutine::Auth
+
+The `Subroutine::Auth` module provides basic bindings for application authorization. It assumes that, optionally, a `User` will be provided as the first argument to an Op. It forces authorization to be declared on each class it's included in.
+
+```ruby
+class SayHiOp < ::Subroutine::Op
+  include ::Subroutine::Auth
+
+  require_user!
+
+  string :say_what, default: "hi"
+
+  protected
+
+  def perform
+    puts "#{current_user.name} says: #{say_what}"
+
+    true
+  end
+end
+```
+
+```ruby
+user = User.find("john")
+SayHiOp.submit!(user)
+# => John says: hi
+
+SayHiOp.submit!(user, say_what: "hello")
+# => John says: hello
+
+
+SayHiOp.submit!
+# => raises Subroutine::Auth::NotAuthorizedError
+```
+
+There are a handful of authorization configurations:
+
+1. `require_user!` - ensures that a user is provided
+2. `require_no_user!` - ensures that a user is not present
+3. `no_user_requirements!` - explicitly doesn't matter
+
+In addition to these top-level authorization declarations you can provide custom authorizations like so:
+
+```ruby
+class AccountSetSecretOp < ::Subroutine::Op
+  include ::Subroutine::Auth
+
+  require_user!
+  authorize :authorize_first_name_is_john
+
+  policy :can_set_secret?
+
+  string :secret
+  belongs_to :account
+
+  protected
+
+  def perform
+    account.secret = secret
+    current_user.save!
+
+    true
+  end
+
+  def authorize_first_name_is_john
+    unless current_user.first_name == "john"
+      unauthorized!
     end
   end
 
-  def observe_validation
-    Skylight.instrument category: 'op.validation', title: "#{self.class.name}#valid?" do
-      yield
-    end
+  def policy
+    ::UserPolicy.new(current_user, current_user)
   end
 
-  def observe_perform
-    Skylight.instrument category: 'op.perform', title: "#{self.class.name}#perform" do
-      yield
-    end
-  end
 end
 ```
 

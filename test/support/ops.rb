@@ -1,8 +1,12 @@
+require "subroutine/auth"
+require "subroutine/association"
+
 ## Models ##
 
 class User
   include ::ActiveModel::Model
 
+  attr_accessor :id
   attr_accessor :email_address
   attr_accessor :password
 
@@ -108,4 +112,79 @@ class TypeCastOp < ::Subroutine::Op
   object :object_input
   array :array_input, :default => 'foo'
 
+end
+
+class OpWithAuth < ::Subroutine::Op
+  include ::Subroutine::Auth
+  def perform
+    true
+  end
+end
+
+class MissingAuthOp < OpWithAuth
+end
+
+class RequireUserOp < OpWithAuth
+  require_user!
+end
+
+class RequireNoUserOp < OpWithAuth
+  require_no_user!
+end
+
+class NoUserRequirementsOp < OpWithAuth
+  no_user_requirements!
+end
+
+class CustomAuthorizeOp < OpWithAuth
+
+  require_user!
+  authorize :authorize_user_is_correct
+
+  protected
+
+  def authorize_user_is_correct
+    unless current_user.email_address.to_s =~ /example\.com$/
+      unauthorized!
+    end
+  end
+end
+
+class PolicyOp < OpWithAuth
+
+  class FakePolicy
+    def user_can_access?
+      false
+    end
+  end
+
+  require_user!
+  policy :user_can_access?
+
+  def policy
+    @policy ||= FakePolicy.new
+  end
+end
+
+
+class OpWithAssociation < ::Subroutine::Op
+  include ::Subroutine::Association
+end
+
+class SimpleAssociationOp < ::OpWithAssociation
+
+  association :user
+
+end
+
+class UnscopedSimpleAssociationOp < ::OpWithAssociation
+  association :user, unscoped: true
+end
+
+class PolymorphicAssociationOp < ::OpWithAssociation
+  association :admin, polymorphic: true
+end
+
+class AssociationWithClassOp < ::OpWithAssociation
+  association :admin, class_name: "AdminUser"
 end
