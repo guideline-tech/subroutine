@@ -1,5 +1,4 @@
 require 'test_helper'
-require "byebug"
 
 module Subroutine
   class AuthTest < TestCase
