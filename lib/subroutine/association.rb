@@ -118,7 +118,7 @@ module Subroutine
       return nil unless _type && _id
 
       klass = _type
-      klass = klass.camelize.constantize if klass.is_a?(String)
+      klass = klass.classify.constantize if klass.is_a?(String)
 
       return nil unless klass
 

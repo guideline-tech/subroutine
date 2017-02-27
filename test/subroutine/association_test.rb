@@ -27,6 +27,16 @@ module Subroutine
       assert_equal doug, op.user
     end
 
+    def test_it_sanitizes_types
+      all_mock = mock
+
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find).with(1).returns(doug)
+
+      op = SimpleAssociationOp.new user_type: "users", user_id: doug.id
+      assert_equal doug, op.user
+    end
+
     def test_it_allows_an_association_to_be_looked_up_without_default_scoping
       all_mock = mock
       unscoped_mock = mock
