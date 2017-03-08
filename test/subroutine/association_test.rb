@@ -64,5 +64,43 @@ module Subroutine
       assert_equal "AdminUser", op.admin_type
     end
 
+    def test_it_inherits_associations_via_inputs_from
+      all_mock = mock
+
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find).with(1).returns(doug)
+
+      op = ::InheritedSimpleAssociation.new(user_type: "User", user_id: doug.id)
+      assert_equal doug, op.user
+      assert_equal "User", op.user_type
+      assert_equal doug.id, op.user_id
+    end
+
+    def test_it_inherits_associations_via_inputs_from_and_preserves_options
+      all_mock = mock
+      unscoped_mock = mock
+
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:unscoped).returns(unscoped_mock)
+      unscoped_mock.expects(:find).with(1).returns(doug)
+
+      op = ::InheritedUnscopedAssociation.new(user_type: "User", user_id: doug.id)
+      assert_equal doug, op.user
+      assert_equal "User", op.user_type
+      assert_equal doug.id, op.user_id
+    end
+
+    def test_it_inherits_polymorphic_associations_via_inputs_from
+      all_mock = mock
+      ::User.expects(:all).never
+      ::AdminUser.expects(:all).returns(all_mock)
+      all_mock.expects(:find).with(1).returns(doug)
+
+      op = ::InheritedPolymorphicAssociationOp.new(admin_type: "AdminUser", admin_id: doug.id)
+      assert_equal doug, op.admin
+      assert_equal "AdminUser", op.admin_type
+      assert_equal doug.id, op.admin_id
+    end
+
   end
 end

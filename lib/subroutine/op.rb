@@ -51,7 +51,12 @@ module Subroutine
       def inputs_from(*ops)
         ops.each do |op|
           op._fields.each_pair do |field_name, options|
-            field(field_name, options)
+            if options[:association]
+              include ::Subroutine::Association unless included_modules.include?(::Subroutine::Association)
+              association(field_name, options)
+            else
+              field(field_name, options)
+            end
           end
         end
       end

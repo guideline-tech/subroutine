@@ -189,3 +189,15 @@ end
 class AssociationWithClassOp < ::OpWithAssociation
   association :admin, class_name: "AdminUser"
 end
+
+class InheritedSimpleAssociation < ::Subroutine::Op
+  inputs_from SimpleAssociationOp
+end
+
+class InheritedUnscopedAssociation < ::Subroutine::Op
+  inputs_from UnscopedSimpleAssociationOp
+end
+
+class InheritedPolymorphicAssociationOp < ::Subroutine::Op
+  inputs_from PolymorphicAssociationOp
+end
