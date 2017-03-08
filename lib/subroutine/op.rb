@@ -251,7 +251,7 @@ module Subroutine
       defaults = {}.with_indifferent_access
 
       self._fields.each_pair do |field, config|
-        if config[:default]
+        unless config[:default].nil?
           deflt = config[:default]
           deflt = deflt.call if deflt.respond_to?(:call)
           defaults[field] = type_caster.cast(deflt, config[:type])

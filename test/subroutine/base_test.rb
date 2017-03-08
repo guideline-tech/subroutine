@@ -37,6 +37,7 @@ module Subroutine
       op = ::DefaultsOp.new
       assert_equal 'foo', op.foo
       assert_equal 'bar', op.bar
+      assert_equal false, op.baz
     end
 
     def test_inherited_defaults_override_correctly

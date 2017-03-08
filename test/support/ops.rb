@@ -89,6 +89,7 @@ class DefaultsOp < ::Subroutine::Op
 
   field :foo, :default => 'foo'
   field :bar, :default => 'bar'
+  field :baz, :default => false
 
 end
 
