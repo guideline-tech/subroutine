@@ -29,12 +29,11 @@ module Subroutine
 
       case type.to_sym
       when *TYPES[:integer]
-        cast_number(value).try(:to_i)
+        cast_number(value, :to_i)
       when *TYPES[:number]
-        cast_number(value).try(:to_f)
+        cast_number(value, :to_f)
       when *TYPES[:decimal]
-        d = cast_number(value)
-        d ? BigDecimal(d.to_s) : nil
+        cast_number(value, :to_d, :to_f)
       when *TYPES[:string]
         cast_string(value)
       when *TYPES[:boolean]
@@ -59,10 +58,10 @@ module Subroutine
 
     protected
 
-    def cast_number(value)
-      val = cast_string(value).strip
-      return nil if val.blank?
-      val
+    def cast_number(value, *meths)
+      return nil if value.blank?
+      meth = meths.detect{|m| value.respond_to?(m) }
+      meth ? value.send(meth) : value
     end
 
     def cast_string(value)
