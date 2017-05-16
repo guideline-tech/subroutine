@@ -47,16 +47,19 @@ module Subroutine
 
       alias_method :fields, :field
 
-      def output(name, options = {})
-        self._outputs = self._outputs.merge({
-          name.to_sym => DEFAULT_OUTPUT_OPTIONS.merge(options)
-        })
+      def outputs(*names)
+        options = names.extract_options!
+        names.each do |name|
+          self._outputs = self._outputs.merge({
+            name.to_sym => DEFAULT_OUTPUT_OPTIONS.merge(options)
+          })
 
-        class_eval <<-EV, __FILE__, __LINE__ + 1
-          def #{name}
-            @outputs[:#{name}]
-          end
-        EV
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            def #{name}
+              @outputs[:#{name}]
+            end
+          EV
+        end
       end
 
       def ignore_error(*field_names)

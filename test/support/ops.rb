@@ -28,10 +28,10 @@ class SignupOp < ::Subroutine::Op
   validates :email, :presence => true
   validates :password, :presence => true
 
-  output :perform_called
-  output :perform_finished
+  outputs :perform_called
+  outputs :perform_finished
 
-  output :created_user
+  outputs :created_user
 
   protected
 
@@ -208,21 +208,21 @@ class MissingOutputOp < ::Subroutine::Op
 end
 
 class MissingOutputSetOp < ::Subroutine::Op
-  output :foo
+  outputs :foo
   def perform
     true
   end
 end
 
 class OutputNotRequiredOp < ::Subroutine::Op
-  output :foo, required: false
+  outputs :foo, required: false
   def perform
     true
   end
 end
 
 class NoOutputNoSuccessOp < ::Subroutine::Op
-  output :foo
+  outputs :foo
   def perform
     false
   end
