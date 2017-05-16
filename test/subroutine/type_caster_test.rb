@@ -164,6 +164,9 @@ module Subroutine
       assert_equal 2020, op.date_input.year
       assert_equal 5, op.date_input.month
       assert_equal 3, op.date_input.day
+
+      op.date_input = false
+      assert_nil op.date_input
     end
 
 
