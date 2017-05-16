@@ -4,6 +4,8 @@ require 'active_model'
 require "subroutine/failure"
 require "subroutine/type_caster"
 require "subroutine/filtered_errors"
+require "subroutine/output_not_set_error"
+require "subroutine/unknown_output_error"
 
 module Subroutine
 
@@ -11,6 +13,10 @@ module Subroutine
 
     include ::ActiveModel::Model
     include ::ActiveModel::Validations::Callbacks
+
+    DEFAULT_OUTPUT_OPTIONS = {
+      required: true
+    }.freeze
 
     class << self
 
@@ -40,6 +46,18 @@ module Subroutine
       end
 
       alias_method :fields, :field
+
+      def output(name, options = {})
+        self._outputs = self._outputs.merge({
+          name.to_sym => DEFAULT_OUTPUT_OPTIONS.merge(options)
+        })
+
+        class_eval <<-EV, __FILE__, __LINE__ + 1
+          def #{name}
+            @outputs[:#{name}]
+          end
+        EV
+      end
 
       def ignore_error(*field_names)
         field_names.each do |f|
@@ -124,6 +142,9 @@ module Subroutine
     end
 
 
+    class_attribute :_outputs
+    self._outputs = {}
+
     class_attribute :_fields
     self._fields = {}
 
@@ -141,10 +162,18 @@ module Subroutine
       @original_params  = inputs.with_indifferent_access
       @params = sanitize_params(@original_params)
       @defaults = sanitize_defaults
+      @outputs = {}
     end
 
     def errors
       @filtered_errors ||= Subroutine::FilteredErrors.new(super)
+    end
+
+    def output(name, value)
+      unless _outputs.key?(name.to_sym)
+        raise ::Subroutine::UnknownOutputError.new(name)
+      end
+      @outputs[name.to_sym] = value
     end
 
     def submit!
@@ -156,9 +185,19 @@ module Subroutine
 
     # the action which should be invoked upon form submission (from the controller)
     def submit
-      observe_submission do
+      result = observe_submission do
         validate_and_perform
       end
+
+      if result
+        _outputs.each_pair do |name, config|
+          if config[:required] && !@outputs.key?(name)
+            raise ::Subroutine::OutputNotSetError.new(name)
+          end
+        end
+      end
+
+      result
 
     rescue Exception => e
 

@@ -28,15 +28,15 @@ class SignupOp < ::Subroutine::Op
   validates :email, :presence => true
   validates :password, :presence => true
 
-  attr_reader :perform_called
-  attr_reader :perform_finished
+  output :perform_called
+  output :perform_finished
 
-  attr_reader :created_user
+  output :created_user
 
   protected
 
   def perform
-    @perform_called = true
+    output :perform_called, true
     u = build_user
 
     unless u.valid?
@@ -44,9 +44,8 @@ class SignupOp < ::Subroutine::Op
       return false
     end
 
-    @perform_finished = true
-    @created_user = u
-
+    output :perform_finished, true
+    output :created_user, u
     true
   end
 
@@ -200,4 +199,31 @@ end
 
 class InheritedPolymorphicAssociationOp < ::Subroutine::Op
   inputs_from PolymorphicAssociationOp
+end
+
+class MissingOutputOp < ::Subroutine::Op
+  def perform
+    output :foo, "bar"
+  end
+end
+
+class MissingOutputSetOp < ::Subroutine::Op
+  output :foo
+  def perform
+    true
+  end
+end
+
+class OutputNotRequiredOp < ::Subroutine::Op
+  output :foo, required: false
+  def perform
+    true
+  end
+end
+
+class NoOutputNoSuccessOp < ::Subroutine::Op
+  output :foo
+  def perform
+    false
+  end
 end

@@ -195,5 +195,36 @@ module Subroutine
       assert_equal(BigDecimal("25.3"), op.params_with_defaults["decimal_input"])
     end
 
+    def test_it_allow_retrival_of_outputs
+      op = ::SignupOp.submit!(:email => 'foo@bar.com', :password => 'password123')
+      u = op.created_user
+
+      assert_equal "foo@bar.com", u.email_address
+    end
+
+    def test_it_raises_an_error_if_an_output_is_not_defined_but_is_set
+      op = ::MissingOutputOp.new
+      assert_raises ::Subroutine::UnknownOutputError do
+        op.submit
+      end
+    end
+
+    def test_it_raises_an_error_if_not_all_outputs_were_set
+      op = ::MissingOutputSetOp.new
+      assert_raises ::Subroutine::OutputNotSetError do
+        op.submit
+      end
+    end
+
+    def test_it_does_not_raise_an_error_if_output_is_not_set_and_is_not_required
+      op = ::OutputNotRequiredOp.new
+      op.submit
+    end
+
+    def test_it_does_not_raise_an_error_if_the_perform_is_not_a_success
+      op = ::NoOutputNoSuccessOp.new
+      refute op.submit
+    end
+
   end
 end
