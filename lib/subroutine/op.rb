@@ -180,35 +180,42 @@ module Subroutine
     end
 
     def submit!
-      unless submit
-        raise ::Subroutine::Failure.new(self)
-      end
-      true
-    end
 
-    # the action which should be invoked upon form submission (from the controller)
-    def submit
-      result = observe_submission do
-        validate_and_perform
+      begin
+        observe_submission do
+          validate_and_perform
+        end
+      rescue Exception => e
+        if e.respond_to?(:record)
+          inherit_errors(e.record) unless e.record == self
+          raise ::Subroutine::Failure.new(self)
+        else
+          raise
+        end
       end
 
-      if result
+      if errors.empty?
         _outputs.each_pair do |name, config|
           if config[:required] && !@outputs.key?(name)
             raise ::Subroutine::OutputNotSetError.new(name)
           end
         end
+
+        true
+      else
+        raise ::Subroutine::Failure.new(self)
       end
+    end
 
-      result
-
+    # the action which should be invoked upon form submission (from the controller)
+    def submit
+      submit!
     rescue Exception => e
-
       if e.respond_to?(:record)
         inherit_errors(e.record) unless e.record == self
         false
       else
-        raise e
+        raise
       end
     end
 

@@ -119,6 +119,11 @@ module Subroutine
       assert_equal "Password can't be blank", err.message
     end
 
+    def test_the_result_of_perform_doesnt_matter
+      op = ::FalsePerformOp.new
+      assert op.submit!
+    end
+
     def test_it_allows_submission_from_the_class
       op = SignupOp.submit
       assert_equal ["can't be blank"], op.errors[:email]

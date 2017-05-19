@@ -201,6 +201,12 @@ class InheritedPolymorphicAssociationOp < ::Subroutine::Op
   inputs_from PolymorphicAssociationOp
 end
 
+class FalsePerformOp < ::Subroutine::Op
+  def perform
+    false
+  end
+end
+
 class MissingOutputOp < ::Subroutine::Op
   def perform
     output :foo, "bar"
@@ -224,6 +230,6 @@ end
 class NoOutputNoSuccessOp < ::Subroutine::Op
   outputs :foo
   def perform
-    false
+    errors.add(:foo, "bar")
   end
 end
