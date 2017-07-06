@@ -218,6 +218,16 @@ module Subroutine
       assert_equal "foo+foo@bar.com", u.email_address
     end
 
+    def test_it_passes_validation_with_attributes_set_in_block
+      op = ::SignupOp.submit! do |sop|
+        sop.email = 'foo@bar.com'
+        sop.password = 'password123'
+      end
+      u = op.created_user
+
+      assert_equal "foo@bar.com", u.email_address
+    end
+
     def test_it_raises_an_error_if_an_output_is_not_defined_but_is_set
       op = ::MissingOutputOp.new
       assert_raises ::Subroutine::UnknownOutputError do

@@ -343,6 +343,36 @@ op.submit!
 # if the op succeeds nothing will be raised, otherwise a ::Subroutine::Failure will be raised.
 ```
 
+#### With a block for pre-op customizations
+```ruby
+class LocalizedPushOp < ::Subroutine::Op
+  field :user
+  field :message, type: :string
+  field :data, type: :hash
+
+  validates :message, presence: true
+  validates :data, presence: true
+
+  protected
+
+  def perform
+    PusherThing.push!(message, data)
+    true
+  end
+
+  def observe_submit
+    I18n.with_locale(user.locale) do
+      yield
+    end
+  end
+end
+
+LocalizedPushOp.submit!(user: user) do |op| # with localization!
+  op.message = I18n.t('th.pushes.your_order_has_shipped')
+  op.data.merge!(title: I18n.t('th.pushes.item_shipped'))
+end
+```
+
 ## Built-in Extensions
 
 ### Subroutine::Association
