@@ -368,8 +368,8 @@ class LocalizedPushOp < ::Subroutine::Op
 end
 
 LocalizedPushOp.submit!(user: user) do |op| # with localization!
-  op.message = I18n.t('th.pushes.your_order_has_shipped')
-  op.data.merge!(title: I18n.t('th.pushes.item_shipped'))
+  op.message = I18n.t('pushes.your_order_has_shipped')
+  op.data.merge!(title: I18n.t('pushes.item_shipped'))
 end
 ```
 
