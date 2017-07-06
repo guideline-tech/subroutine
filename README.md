@@ -347,8 +347,8 @@ op.submit!
 ```ruby
 class LocalizedPushOp < ::Subroutine::Op
   field :user
-  field :message, type: :string
-  field :data, type: :hash
+  field :message, type: :string, default: ''
+  field :data, type: :hash, default: {}
 
   validates :message, presence: true
   validates :data, presence: true
