@@ -1,4 +1,6 @@
 require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/object/duplicable'
+require 'active_support/core_ext/object/deep_dup'
 require 'active_model'
 
 require "subroutine/failure"
@@ -90,16 +92,15 @@ module Subroutine
       end
 
 
-      def submit!(*args)
+      def submit!(*args, &block)
         op = new(*args)
-        op.submit!
-
+        op.submit!(&block)
         op
       end
 
-      def submit(*args)
+      def submit(*args, &block)
         op = new(*args)
-        op.submit
+        op.submit(&block)
         op
       end
 
@@ -179,10 +180,10 @@ module Subroutine
       @outputs[name.to_sym] = value
     end
 
-    def submit!
-
+    def submit!(&block)
       begin
         observe_submission do
+          yield self if block_given?
           validate_and_perform
         end
       rescue Exception => e
@@ -208,8 +209,8 @@ module Subroutine
     end
 
     # the action which should be invoked upon form submission (from the controller)
-    def submit
-      submit!
+    def submit(&block)
+      submit!(&block)
     rescue Exception => e
       if e.respond_to?(:record)
         inherit_errors(e.record) unless e.record == self
@@ -307,14 +308,19 @@ module Subroutine
       self._fields.each_pair do |field, config|
         unless config[:default].nil?
           deflt = config[:default]
-          deflt = deflt.call if deflt.respond_to?(:call)
+          if deflt.respond_to?(:call)
+            deflt = deflt.call
+          elsif deflt.duplicable? # from active_support
+            # Some classes of default values need to be duplicated, or the instance field value will end up referencing
+            # the class global default value, and potentially modify it.
+            deflt = deflt.deep_dup # from active_support
+          end
           defaults[field] = type_caster.cast(deflt, config[:type])
         end
       end
 
       defaults
     end
-
 
   end
 

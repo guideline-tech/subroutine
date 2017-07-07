@@ -184,6 +184,27 @@ module Subroutine
       }, op.params_with_defaults)
     end
 
+    def test_it_overriding_default_does_not_alter_default
+      op = ::AdminSignupOp.new(email: "foo")
+      op.priveleges << "bangbang"
+
+      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+
+      assert_equal({
+                     "email" => "foo",
+                     "priveleges" => nil
+                   }, op.params)
+
+      assert_equal({
+                     "priveleges" => "min",
+                   }, op.defaults)
+
+      assert_equal({
+                     "email" => "foo",
+                     "priveleges" => nil,
+                   }, op.params_with_defaults)
+    end
+
     def test_it_overrides_defaults_with_nils
       op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
       assert_equal({
@@ -202,6 +223,27 @@ module Subroutine
 
     def test_it_allow_retrival_of_outputs
       op = ::SignupOp.submit!(:email => 'foo@bar.com', :password => 'password123')
+      u = op.created_user
+
+      assert_equal "foo@bar.com", u.email_address
+    end
+
+    def test_it_accepts_and_executes_block
+      op = ::SignupOp.submit!(:email => 'foo@bar.com', :password => 'password123') do |sop|
+        parts = sop.email.split('@')
+        parts[0] << '+foo'
+        sop.email = parts.join('@')
+      end
+      u = op.created_user
+
+      assert_equal "foo+foo@bar.com", u.email_address
+    end
+
+    def test_it_passes_validation_with_attributes_set_in_block
+      op = ::SignupOp.submit! do |sop|
+        sop.email = 'foo@bar.com'
+        sop.password = 'password123'
+      end
       u = op.created_user
 
       assert_equal "foo@bar.com", u.email_address
