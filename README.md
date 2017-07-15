@@ -198,14 +198,9 @@ class MyOp < ::Subroutine::Op
   end
 
   def validate_first_name_is_not_bob
-    return true unless field_provided?(:first_name)
-
-    if first_name.downcase == 'bob'
+    if field_provided?(:first_name) && first_name.downcase == 'bob'
       errors.add(:first_name, 'should not be bob')
-      return false
     end
-
-    true
   end
 end
 ```
@@ -221,7 +216,6 @@ class MyOp < ::Subroutine::Op
     puts params.inspect
     puts defaults.inspect
     puts params_with_defaults.inspect
-    true
   end
 end
 
@@ -291,7 +285,6 @@ class MyOp < ::Subroutine::Op
       # if there are :first_name or :firstname errors on _user, they will be added to our :first_name
       # if there are :last_name, :lastname, or :surname errors on _user, they will be added to our :last_name
       inherit_errors(_user)
-      return
     end
   end
 
@@ -357,8 +350,6 @@ class UserUpdateOp < ::Subroutine::Op
       first_name: first_name,
       last_name: last_name
     )
-
-    true
   end
 end
 ```
@@ -373,8 +364,6 @@ class RecordTouchOp < ::Subroutine::Op
 
   def perform
     record.touch
-
-    true
   end
 end
 ```
@@ -395,8 +384,6 @@ class SayHiOp < ::Subroutine::Op
 
   def perform
     puts "#{current_user.name} says: #{say_what}"
-
-    true
   end
 end
 ```
@@ -428,7 +415,11 @@ class AccountSetSecretOp < ::Subroutine::Op
 
   require_user!
   authorize :authorize_first_name_is_john
-
+  
+  # If you use a policy-based authorization framework like pundit:
+  # `policy` is a shortcut for the following:
+  # authorize -> { unauthorized! unless policy.can_set_secret? }
+  
   policy :can_set_secret?
 
   string :secret
@@ -439,8 +430,6 @@ class AccountSetSecretOp < ::Subroutine::Op
   def perform
     account.secret = secret
     current_user.save!
-
-    true
   end
 
   def authorize_first_name_is_john
@@ -471,7 +460,7 @@ Subroutine::Factory.define :signup do
   inputs :password, "password123"
 
   # by default, the op will be returned when the factory is used.
-  # this `output` returns the value of the accessor on the resulting op
+  # this `output` returns the value of the `user` output on the resulting op
   output :user
 end
 
