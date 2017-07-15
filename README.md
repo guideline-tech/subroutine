@@ -1,6 +1,6 @@
 # Subroutine
 
-A gem that provides an interface for creating feature-driven operations. It utilizes the command pattern, enables the usage of "ops" as "form objects", and just all-around enables clear, concise, meaningful code.
+A gem that provides an interface for creating feature-driven operations. You've probably heard at least one of these terms: "service objects", "form objects", or maybe even "commands". Subroutine calls these "ops" and really it's just about enabling clear, concise, testable, and meaningful code.
 
 ## Examples
 
@@ -17,21 +17,18 @@ class SignupOp < ::Subroutine::Op
   validates :email, presence: true
   validates :password, presence: true
 
-  attr_reader :signed_up_user
+  outputs :signed_up_user
 
   protected
 
   def perform
-    u = build_user
-    u.save!
-
+    u = create_user!
     deliver_welcome_email!(u)
 
-    @signed_up_user = u
-    true
+    output :signed_up_user, u
   end
 
-  def build_user
+  def create_user
     User.new(params)
   end
 
@@ -106,7 +103,7 @@ class Api::Controller < ApplicationController
 end
 ```
 
-With ops, your controllers are essentially just connections between routes, operations, and templates.
+With ops, your controllers are essentially just connections between routes, operations, and whatever you use to build responses.
 
 ```ruby
 class UsersController < ::Api::Controller
@@ -241,20 +238,18 @@ MyOp.submit(name: "foobar")
 
 #### Execution
 
-Every op must implement a `perform` instance method. This is the method which will be executed if all validations pass.
-The return value of this op determines whether the operation was a success or not. Truthy values are assumed to be successful,
-while falsy values are assumed to be failures. In general, returning `true` at the end of the perform method is desired.
+Every op must implement a `perform` method. This is the method which will be executed if all validations pass.
+When the the `perform` method is complete, the Op determins success based on whether `errors` is empty.
 
 ```ruby
-class MyOp < ::Subroutine::Op
+class MyFailingOp < ::Subroutine::Op
   field :first_name
   validates :first_name, presence: true
 
   protected
 
   def perform
-    $logger.info "#{first_name} submitted this op"
-    true
+    errors.add(:base, "This will never succeed")
   end
 
 end
@@ -266,10 +261,10 @@ Notice we do not declare `perform` as a public method. This is to ensure the "pu
 
 Reporting errors is very important in Subroutine Ops since these can be used as form objects. Errors can be reported a couple different ways:
 
-1. `errors.add(:key, :error)` That is, the way you add errors to an ActiveModel object. Then either return false from your op OR raise an error like `raise ::Subroutine::Failure.new(this)`.
+1. `errors.add(:key, :error)` That is, the way you add errors to an ActiveModel object.
 2. `inherit_errors(error_object_or_activemodel_object)` Same as `errors.add`, but it iterates an existing error hash and inherits the errors. As part of this iteration,
-it checks whether the key in the provided error_object matches a field (or aka of a field) in our op. If there is a match, the error will be placed on
-that field, but if there is not, the error will be placed on `:base`. Again, after adding the errors to our op, we must return `false` from the perform method or raise a Subroutine::Failure.
+it checks whether the key in the provided error_object matches a field (or alias of a field) in our op. If there is a match, the error will be placed on
+that field, but if there is not, the error will be placed on `:base`.
 
 ```ruby
 class MyOp < ::Subroutine::Op
@@ -283,12 +278,12 @@ class MyOp < ::Subroutine::Op
 
     if first_name == 'bill'
       errors.add(:first_name, 'cannot be bill')
-      return false
+      return
     end
 
     if first_name == 'john'
       errors.add(:first_name, 'cannot be john')
-      raise Subroutine::Failure.new(this)
+      return
     end
 
     unless _user.valid?
@@ -296,10 +291,8 @@ class MyOp < ::Subroutine::Op
       # if there are :first_name or :firstname errors on _user, they will be added to our :first_name
       # if there are :last_name, :lastname, or :surname errors on _user, they will be added to our :last_name
       inherit_errors(_user)
-      return false
+      return
     end
-
-    true
   end
 
   def _user
@@ -317,7 +310,7 @@ The `Subroutine::Op` class' `submit` and `submit!` methods have identical signat
 
 ```ruby
 op = MyOp.submit({foo: 'bar'})
-# if the op succeeds it will be returned, otherwise it false will be returned.
+# if the op succeeds it will be returned, otherwise false will be returned.
 ```
 
 #### Via the class' `submit!` method
