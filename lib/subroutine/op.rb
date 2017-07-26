@@ -90,16 +90,15 @@ module Subroutine
       end
 
 
-      def submit!(*args)
+      def submit!(*args, &block)
         op = new(*args)
-        op.submit!
-
+        op.submit!(&block)
         op
       end
 
-      def submit(*args)
+      def submit(*args, &block)
         op = new(*args)
-        op.submit
+        op.submit(&block)
         op
       end
 
@@ -179,10 +178,10 @@ module Subroutine
       @outputs[name.to_sym] = value
     end
 
-    def submit!
-
+    def submit!(&block)
       begin
         observe_submission do
+          yield self if block_given?
           validate_and_perform
         end
       rescue Exception => e
@@ -208,8 +207,8 @@ module Subroutine
     end
 
     # the action which should be invoked upon form submission (from the controller)
-    def submit
-      submit!
+    def submit(&block)
+      submit!(&block)
     rescue Exception => e
       if e.respond_to?(:record)
         inherit_errors(e.record) unless e.record == self
