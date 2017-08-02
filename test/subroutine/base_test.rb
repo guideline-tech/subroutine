@@ -184,6 +184,27 @@ module Subroutine
       }, op.params_with_defaults)
     end
 
+    def test_it_overriding_default_does_not_alter_default
+      op = ::AdminSignupOp.new(email: "foo")
+      op.priveleges << "bangbang"
+
+      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+
+      assert_equal({
+                     "email" => "foo",
+                     "priveleges" => nil
+                   }, op.params)
+
+      assert_equal({
+                     "priveleges" => "min",
+                   }, op.defaults)
+
+      assert_equal({
+                     "email" => "foo",
+                     "priveleges" => nil,
+                   }, op.params_with_defaults)
+    end
+
     def test_it_overrides_defaults_with_nils
       op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
       assert_equal({

@@ -1,4 +1,6 @@
 require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/object/duplicable'
+require 'active_support/core_ext/object/deep_dup'
 require 'active_model'
 
 require "subroutine/failure"
@@ -307,14 +309,19 @@ module Subroutine
       self._fields.each_pair do |field, config|
         unless config[:default].nil?
           deflt = config[:default]
-          deflt = deflt.call if deflt.respond_to?(:call)
+          if deflt.respond_to?(:call)
+            deflt = deflt.call
+          elsif deflt.duplicable? # from active_support
+            # Some classes of default values need to be duplicated, or the instance field value will end up referencing
+            # the class global default value, and potentially modify it.
+            deflt = deflt.deep_dup # from active_support
+          end
           defaults[field] = type_caster.cast(deflt, config[:type])
         end
       end
 
       defaults
     end
-
 
   end
 
