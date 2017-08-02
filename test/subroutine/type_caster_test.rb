@@ -9,7 +9,7 @@ module Subroutine
 
     def test_integer_inputs
       op.integer_input = nil
-      assert_equal nil, op.integer_input
+      assert_nil op.integer_input
 
       op.integer_input = 'foo'
       assert_equal 0, op.integer_input
@@ -29,7 +29,7 @@ module Subroutine
 
     def test_number_inputs
       op.number_input = nil
-      assert_equal nil, op.number_input
+      assert_nil op.number_input
 
       op.number_input = 4
       assert_equal 4.0, op.number_input
@@ -43,7 +43,7 @@ module Subroutine
 
     def test_string_inputs
       op.string_input = nil
-      assert_equal nil, op.string_input
+      assert_nil op.string_input
 
       op.string_input = ""
       assert_equal '', op.string_input
@@ -60,7 +60,7 @@ module Subroutine
 
     def test_boolean_inputs
       op.boolean_input = nil
-      assert_equal nil, op.boolean_input
+      assert_nil op.boolean_input
 
       op.boolean_input = 'yes'
       assert_equal true, op.boolean_input
@@ -101,7 +101,7 @@ module Subroutine
 
     def test_hash_inputs
       op.object_input = nil
-      assert_equal nil, op.object_input
+      assert_nil op.object_input
 
       op.object_input = ''
       assert_equal({}, op.object_input)
@@ -121,7 +121,7 @@ module Subroutine
 
     def test_array_inputs
       op.array_input = nil
-      assert_equal nil, op.array_input
+      assert_nil op.array_input
 
       op.array_input = ''
       assert_equal [], op.array_input
@@ -138,7 +138,7 @@ module Subroutine
 
     def test_date_inputs
       op.date_input = nil
-      assert_equal nil, op.date_input
+      assert_nil op.date_input
 
       op.date_input = "2022-12-22"
       assert_equal ::Date, op.date_input.class
@@ -172,7 +172,7 @@ module Subroutine
 
     def test_time_inputs
       op.time_input = nil
-      assert_equal nil, op.time_input
+      assert_nil op.time_input
 
       op.time_input = "2022-12-22"
       assert_equal ::Time, op.time_input.class
@@ -199,7 +199,7 @@ module Subroutine
 
     def test_iso_date_inputs
       op.iso_date_input = nil
-      assert_equal nil, op.iso_date_input
+      assert_nil op.iso_date_input
 
       op.iso_date_input = "2022-12-22"
       assert_equal ::String, op.iso_date_input.class
@@ -212,7 +212,7 @@ module Subroutine
 
     def test_iso_time_inputs
       op.iso_time_input = nil
-      assert_equal nil, op.iso_time_input
+      assert_nil op.iso_time_input
 
       op.iso_time_input = "2022-12-22T10:30:24Z"
       assert_equal ::String, op.iso_time_input.class

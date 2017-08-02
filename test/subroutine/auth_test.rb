@@ -8,7 +8,7 @@ module Subroutine
     end
 
     def test_it_throws_an_error_if_authorization_is_not_defined
-      assert_raises "Authorization management has not been declared on this class" do
+      assert_raises ::Subroutine::Auth::AuthorizationNotDeclaredError do
         MissingAuthOp.new
       end
     end

@@ -15,6 +15,12 @@ module Subroutine
 
     end
 
+    class AuthorizationNotDeclaredError < ::StandardError
+      def initialize(msg = nil)
+        super(msg || "Authorization management has not been declared on this class")
+      end
+    end
+
     def self.included(base)
       base.instance_eval do
         extend ::Subroutine::Auth::ClassMethods
@@ -67,7 +73,7 @@ module Subroutine
     end
 
     def initialize(*args)
-      raise "Authorization management has not been declared on this class" if(!self.class.authorization_declared)
+      raise Subroutine::Auth::AuthorizationNotDeclaredError.new if(!self.class.authorization_declared)
 
       super(args.extract_options!)
       @skip_auth_checks = false
