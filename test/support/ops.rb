@@ -67,7 +67,7 @@ end
 
 class AdminSignupOp < ::SignupOp
 
-  field :priveleges, :default => 'min'
+  field :privileges, :default => 'min'
 
   protected
 

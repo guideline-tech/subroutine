@@ -10,7 +10,7 @@ module Subroutine
 
     def test_inherited_fields
       op = ::AdminSignupOp.new
-      assert_equal [:email, :password, :priveleges], op._fields.keys.sort
+      assert_equal [:email, :password, :privileges], op._fields.keys.sort
     end
 
     def test_class_attribute_usage
@@ -70,10 +70,10 @@ module Subroutine
 
       assert_nil op.email
       assert_nil op.password
-      assert_equal 'min', op.priveleges
+      assert_equal 'min', op.privileges
 
-      op.priveleges = 'max'
-      assert_equal 'max', op.priveleges
+      op.privileges = 'max'
+      assert_equal 'max', op.privileges
     end
 
     def test_validations_are_evaluated_before_perform_is_invoked
@@ -157,58 +157,58 @@ module Subroutine
       }, op.params)
 
       assert_equal({
-        "priveleges" => "min",
+        "privileges" => "min",
       }, op.defaults)
 
       assert_equal({
         "email" => "foo",
-        "priveleges" => "min",
+        "privileges" => "min",
       }, op.params_with_defaults)
     end
 
     def test_it_allows_defaults_to_be_overridden
-      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+      op = ::AdminSignupOp.new(email: "foo", privileges: nil)
 
       assert_equal({
         "email" => "foo",
-        "priveleges" => nil
+        "privileges" => nil
       }, op.params)
 
       assert_equal({
-        "priveleges" => "min",
+        "privileges" => "min",
       }, op.defaults)
 
       assert_equal({
         "email" => "foo",
-        "priveleges" => nil,
+        "privileges" => nil,
       }, op.params_with_defaults)
     end
 
     def test_it_overriding_default_does_not_alter_default
       op = ::AdminSignupOp.new(email: "foo")
-      op.priveleges << "bangbang"
+      op.privileges << "bangbang"
 
-      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+      op = ::AdminSignupOp.new(email: "foo", privileges: nil)
 
       assert_equal({
                      "email" => "foo",
-                     "priveleges" => nil
+                     "privileges" => nil
                    }, op.params)
 
       assert_equal({
-                     "priveleges" => "min",
+                     "privileges" => "min",
                    }, op.defaults)
 
       assert_equal({
                      "email" => "foo",
-                     "priveleges" => nil,
+                     "privileges" => nil,
                    }, op.params_with_defaults)
     end
 
     def test_it_overrides_defaults_with_nils
-      op = ::AdminSignupOp.new(email: "foo", priveleges: nil)
+      op = ::AdminSignupOp.new(email: "foo", privileges: nil)
       assert_equal({
-        "priveleges" => nil,
+        "privileges" => nil,
         "email" => "foo"
       }, op.params)
     end
