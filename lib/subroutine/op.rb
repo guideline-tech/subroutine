@@ -73,11 +73,13 @@ module Subroutine
 
       def inputs_from(*ops)
         options = ops.extract_options!
-        excepts = Set.new(Array(options.delete(:except)))
+        excepts = options.key?(:except) ? Array(options.delete(:except)) : nil
+        onlys = options.key?(:only) ? Array(options.delete(:only)) : nil
 
         ops.each do |op|
           op._fields.each_pair do |field_name, op_options|
-            next if excepts.include? field_name
+            next if excepts && excepts.include?(field_name)
+            next if onlys && !onlys.include?(field_name)
 
             if op_options[:association]
               include ::Subroutine::Association unless included_modules.include?(::Subroutine::Association)
