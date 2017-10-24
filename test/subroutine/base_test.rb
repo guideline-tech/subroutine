@@ -33,6 +33,13 @@ module Subroutine
       end
     end
 
+    def test_inputs_from_ignores_except_fields
+      op = ::ExceptFooBarOp.new
+      refute op._fields.keys.include? :foo
+      refute op._fields.keys.include? :bar
+      assert_equal [:baz], op._fields.keys.sort
+    end
+
     def test_defaults_declaration_options
       op = ::DefaultsOp.new
       assert_equal 'foo', op.foo

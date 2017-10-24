@@ -92,6 +92,10 @@ class DefaultsOp < ::Subroutine::Op
 
 end
 
+class ExceptFooBarOp < ::Subroutine::Op
+  inputs_from ::DefaultsOp, except: %i[foo bar]
+end
+
 class InheritedDefaultsOp < ::DefaultsOp
 
   field :bar, :default => 'barstool'

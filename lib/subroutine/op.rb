@@ -72,13 +72,18 @@ module Subroutine
       alias_method :ignore_errors, :ignore_error
 
       def inputs_from(*ops)
+        options = ops.extract_options!
+        excepts = Set.new(Array(options.delete(:except)))
+
         ops.each do |op|
-          op._fields.each_pair do |field_name, options|
-            if options[:association]
+          op._fields.each_pair do |field_name, op_options|
+            next if excepts.include? field_name
+
+            if op_options[:association]
               include ::Subroutine::Association unless included_modules.include?(::Subroutine::Association)
-              association(field_name, options)
+              association(field_name, op_options)
             else
-              field(field_name, options)
+              field(field_name, op_options)
             end
           end
         end
