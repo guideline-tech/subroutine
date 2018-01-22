@@ -65,5 +65,26 @@ module Subroutine
       op.submit!
     end
 
+    def test_it_runs_policies_with_conditionals
+       # if: false
+      op = IfConditionalPolicyOp.new(user, check_policy: false)
+      assert op.submit!
+       # unless: true
+      op = UnlessConditionalPolicyOp.new(user, unless_check_policy: true)
+      assert op.submit!
+
+      # if: true
+      op = IfConditionalPolicyOp.new(user, check_policy: true)
+      assert_raises ::Subroutine::Auth::NotAuthorizedError do
+        op.submit!
+      end
+
+      # unless: false
+      op = UnlessConditionalPolicyOp.new(user, unless_check_policy: false)
+      assert_raises ::Subroutine::Auth::NotAuthorizedError do
+        op.submit!
+      end
+    end
+
   end
 end

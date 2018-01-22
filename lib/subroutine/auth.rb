@@ -58,11 +58,23 @@ module Subroutine
       end
 
       # policy :can_update_user
+      # policy :can_update_user, unless: :dont_do_it
+      # policy :can_update_user, if: :do_it
       # policy :can_do_whatever, policy: :foo_policy
       def policy(*meths)
         opts = meths.extract_options!
         policy_name = opts[:policy] || :policy
+
+        if_conditional = opts[:if]
+        unless_conditional = opts[:unless]
+
         validate unless: :skip_auth_checks? do
+          run_it = true
+          run_it &&= self.send(if_conditional) if if_conditional.present?
+          run_it &&= !self.send(unless_conditional) if unless_conditional.present?
+
+          next unless run_it
+
           p = self.send(policy_name)
           if !p || meths.any?{|m| !(p.respond_to?("#{m}?") ? p.send("#{m}?") : p.send(m)) }
             unauthorized! opts[:error]
