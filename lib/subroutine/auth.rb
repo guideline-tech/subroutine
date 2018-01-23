@@ -66,7 +66,7 @@ module Subroutine
         policy_name = opts[:policy] || :policy
 
         if_conditionals = Array(opts[:if])
-        unless_conditionals =Array( opts[:unless])
+        unless_conditionals = Array( opts[:unless])
 
         validate unless: :skip_auth_checks? do
           run_it = true
