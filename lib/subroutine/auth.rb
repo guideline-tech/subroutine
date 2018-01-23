@@ -70,13 +70,16 @@ module Subroutine
 
         validate unless: :skip_auth_checks? do
           run_it = true
+          # http://guides.rubyonrails.org/active_record_validations.html#combining-validation-conditions
 
+          # The validation only runs when all the :if conditions
           if if_conditionals.present?
-            run_it &&= if_conditionals.all?{|if_conditional| send(if_conditional)}
+            run_it &&= if_conditionals.all? { |i| send(i) }
           end
 
+          # and none of the :unless conditions are evaluated to true.
           if unless_conditionals.present?
-            run_it &&= unless_conditionals.all?{|unless_conditional| !send(unless_conditional) }
+            run_it &&= unless_conditionals.none? { |u| send(u) }
           end
 
           next unless run_it
