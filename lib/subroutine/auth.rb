@@ -58,11 +58,32 @@ module Subroutine
       end
 
       # policy :can_update_user
+      # policy :can_update_user, unless: :dont_do_it
+      # policy :can_update_user, if: :do_it
       # policy :can_do_whatever, policy: :foo_policy
       def policy(*meths)
         opts = meths.extract_options!
         policy_name = opts[:policy] || :policy
+
+        if_conditionals = Array(opts[:if])
+        unless_conditionals = Array( opts[:unless])
+
         validate unless: :skip_auth_checks? do
+          run_it = true
+          # http://guides.rubyonrails.org/active_record_validations.html#combining-validation-conditions
+
+          # The validation only runs when all the :if conditions
+          if if_conditionals.present?
+            run_it &&= if_conditionals.all? { |i| send(i) }
+          end
+
+          # and none of the :unless conditions are evaluated to true.
+          if unless_conditionals.present?
+            run_it &&= unless_conditionals.none? { |u| send(u) }
+          end
+
+          next unless run_it
+
           p = self.send(policy_name)
           if !p || meths.any?{|m| !(p.respond_to?("#{m}?") ? p.send("#{m}?") : p.send(m)) }
             unauthorized! opts[:error]

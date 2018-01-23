@@ -174,6 +174,42 @@ class PolicyOp < OpWithAuth
   end
 end
 
+class IfConditionalPolicyOp < OpWithAuth
+
+  class FakePolicy
+    def user_can_access?
+      false
+    end
+  end
+
+  require_user!
+  boolean :check_policy
+  validates :check_policy, inclusion: { in: [true,false] }
+  policy :user_can_access?, if: :check_policy
+
+  def policy
+    @policy ||= FakePolicy.new
+  end
+end
+
+class UnlessConditionalPolicyOp < OpWithAuth
+
+  class FakePolicy
+    def user_can_access?
+      false
+    end
+  end
+
+  require_user!
+  boolean :unless_check_policy
+  validates :unless_check_policy, inclusion: { in: [true,false] }
+  policy :user_can_access?, unless: :unless_check_policy
+
+  def policy
+    @policy ||= FakePolicy.new
+  end
+end
+
 
 class OpWithAssociation < ::Subroutine::Op
   include ::Subroutine::Association
