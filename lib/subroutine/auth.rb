@@ -65,13 +65,19 @@ module Subroutine
         opts = meths.extract_options!
         policy_name = opts[:policy] || :policy
 
-        if_conditional = opts[:if]
-        unless_conditional = opts[:unless]
+        if_conditionals = Array(opts[:if])
+        unless_conditionals =Array( opts[:unless])
 
         validate unless: :skip_auth_checks? do
           run_it = true
-          run_it &&= self.send(if_conditional) if if_conditional.present?
-          run_it &&= !self.send(unless_conditional) if unless_conditional.present?
+
+          if if_conditionals.present?
+            run_it &&= if_conditionals.all?{|if_conditional| send(if_conditional)}
+          end
+
+          if unless_conditionals.present?
+            run_it &&= unless_conditionals.all?{|unless_conditional| !send(unless_conditional) }
+          end
 
           next unless run_it
 
