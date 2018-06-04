@@ -119,7 +119,6 @@ class TypeCastOp < ::Subroutine::Op
   iso_time :iso_time_input
   object :object_input
   array :array_input, :default => 'foo'
-
 end
 
 class OpWithAuth < ::Subroutine::Op
