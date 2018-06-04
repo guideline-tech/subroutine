@@ -101,13 +101,10 @@ class OnlyFooBarOp < ::Subroutine::Op
 end
 
 class InheritedDefaultsOp < ::DefaultsOp
-
   field :bar, :default => 'barstool'
-
 end
 
 class TypeCastOp < ::Subroutine::Op
-
   integer :integer_input
   number :number_input
   decimal :decimal_input

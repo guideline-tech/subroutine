@@ -31,7 +31,7 @@ module Subroutine
   end
 end
 
-Subroutine::TypeCaster.register :number do |value, *meths|
+Subroutine::TypeCaster.register :number, :float do |value, *meths|
   next nil if value.blank?
   meth = meths.detect{|m| value.respond_to?(m) }
   meth ? value.send(meth) : value.to_f
