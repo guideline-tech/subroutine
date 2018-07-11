@@ -111,7 +111,7 @@ module Subroutine
     end
 
     def current_user
-      @current_user = ::User.find(@current_user) if Fixnum === @current_user
+      @current_user = ::User.find(@current_user) if ::Integer === @current_user
       @current_user
     end
 
