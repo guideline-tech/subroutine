@@ -266,5 +266,18 @@ module Subroutine
       refute op.submit
     end
 
+    def test_it_does_not_omit_the_backtrace_from_the_original_error
+      op = ::ErrorTraceOp.new
+      begin
+        op.submit!
+      rescue Exception => e
+        found = e.backtrace.detect do |msg|
+          msg =~ /test\/support\/ops\.rb:[\d]+.+foo/
+        end
+
+        refute_nil found, "Expected backtrace to include original caller of foo"
+      end
+    end
+
   end
 end

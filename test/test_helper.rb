@@ -3,10 +3,10 @@ require 'minitest/autorun'
 require 'minitest/unit'
 
 require 'minitest/reporters'
-require 'mocha/mini_test'
+require 'mocha/minitest'
 
 Minitest::Reporters.use!([Minitest::Reporters::DefaultReporter.new])
 
-class TestCase < (MiniTest::Unit::TestCase rescue ::MiniTest::Test); end
+class TestCase < ::Minitest::Test; end
 
 require_relative 'support/ops'

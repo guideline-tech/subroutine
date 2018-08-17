@@ -187,7 +187,8 @@ module Subroutine
       rescue Exception => e
         if e.respond_to?(:record)
           inherit_errors(e.record) unless e.record == self
-          raise ::Subroutine::Failure.new(self)
+          new_e = ::Subroutine::Failure.new(self)
+          raise new_e, new_e.message, e.backtrace
         else
           raise
         end

@@ -4,9 +4,10 @@ sudo: false
 rvm:
   - 2.0.0
   - 2.1.1
+  - 2.2.3
+  - 2.5.1
   - jruby
 
 gemfile:
-  - gemfiles/am40.gemfile
   - gemfiles/am41.gemfile
   - gemfiles/am42.gemfile

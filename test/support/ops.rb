@@ -273,3 +273,30 @@ class NoOutputNoSuccessOp < ::Subroutine::Op
     errors.add(:foo, "bar")
   end
 end
+
+class ErrorTraceOp < ::Subroutine::Op
+
+  class SomeObject
+    include ::ActiveModel::Model
+    include ::ActiveModel::Validations::Callbacks
+
+    def foo
+      errors.add(:base, "Failure of things")
+      raise Subroutine::Failure.new(self)
+    end
+
+    def bar
+      foo
+    end
+  end
+
+  class SubOp < ::Subroutine::Op
+    def perform
+      SomeObject.new.bar
+    end
+  end
+
+  def perform
+    SubOp.submit!
+  end
+end
