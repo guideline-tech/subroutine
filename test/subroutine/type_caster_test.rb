@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 
 module Subroutine
   class TypeCasterTest < TestCase
-
     def op
       @op ||= TypeCastOp.new
     end
@@ -45,10 +46,10 @@ module Subroutine
       op.string_input = nil
       assert_nil op.string_input
 
-      op.string_input = ""
-      assert_equal '', op.string_input
+      op.string_input = "
+      assert_equal ", op.string_input
 
-      op.string_input = "foo"
+      op.string_input = 'foo'
       assert_equal 'foo', op.string_input
 
       op.string_input = 4
@@ -106,17 +107,17 @@ module Subroutine
       op.object_input = ''
       assert_equal({}, op.object_input)
 
-      op.object_input = [[:a,:b]]
-      assert_equal({"a" => :b}, op.object_input)
+      op.object_input = [[:a, :b]]
+      assert_equal({ 'a' => :b }, op.object_input)
 
       op.object_input = false
       assert_equal({}, op.object_input)
 
-      op.object_input = {foo: 'bar'}
-      assert_equal({'foo' => 'bar'}, op.object_input)
+      op.object_input = { foo: 'bar' }
+      assert_equal({ 'foo' => 'bar' }, op.object_input)
 
-      op.object_input = {"foo" => {"bar" => :baz}}
-      assert_equal({"foo" => {"bar" => :baz}}, op.object_input)
+      op.object_input = { 'foo' => { 'bar' => :baz } }
+      assert_equal({ 'foo' => { 'bar' => :baz } }, op.object_input)
     end
 
     def test_array_inputs
@@ -132,15 +133,29 @@ module Subroutine
       op.array_input = ['foo']
       assert_equal ['foo'], op.array_input
 
-      op.array_input = {"bar" => true}
-      assert_equal [{"bar" => true}], op.array_input
+      op.array_input = { 'bar' => true }
+      assert_equal [{ 'bar' => true }], op.array_input
+    end
+
+    def test_typed_array_inputs
+      op.type_array_input = nil
+      assert_nil op.type_array_input
+
+      op.type_array_input = ''
+      assert_equal [], op.type_array_input
+
+      op.type_array_input = '3'
+      assert_equal [3], op.type_array_input
+
+      op.type_array_input = ['3.4']
+      assert_equal [3], op.type_array_input
     end
 
     def test_date_inputs
       op.date_input = nil
       assert_nil op.date_input
 
-      op.date_input = "2022-12-22"
+      op.date_input = '2022-12-22'
       assert_equal ::Date, op.date_input.class
       refute_equal ::DateTime, op.date_input.class
 
@@ -148,7 +163,7 @@ module Subroutine
       assert_equal 12, op.date_input.month
       assert_equal 22, op.date_input.day
 
-      op.date_input = "2023-05-05T10:00:30"
+      op.date_input = '2023-05-05T10:00:30'
       assert_equal ::Date, op.date_input.class
       refute_equal ::DateTime, op.date_input.class
 
@@ -156,7 +171,7 @@ module Subroutine
       assert_equal 5, op.date_input.month
       assert_equal 5, op.date_input.day
 
-      op.date_input = "2020-05-03 13:44:45 -0400"
+      op.date_input = '2020-05-03 13:44:45 -0400'
 
       assert_equal ::Date, op.date_input.class
       refute_equal ::DateTime, op.date_input.class
@@ -169,12 +184,11 @@ module Subroutine
       assert_nil op.date_input
     end
 
-
     def test_time_inputs
       op.time_input = nil
       assert_nil op.time_input
 
-      op.time_input = "2022-12-22"
+      op.time_input = '2022-12-22'
       assert_equal ::Time, op.time_input.class
       refute_equal ::DateTime, op.time_input.class
 
@@ -185,7 +199,7 @@ module Subroutine
       assert_equal 0, op.time_input.min
       assert_equal 0, op.time_input.sec
 
-      op.time_input = "2023-05-05T10:00:30Z"
+      op.time_input = '2023-05-05T10:00:30Z'
       assert_equal ::Time, op.time_input.class
       refute_equal ::DateTime, op.time_input.class
 
@@ -201,41 +215,55 @@ module Subroutine
       op.iso_date_input = nil
       assert_nil op.iso_date_input
 
-      op.iso_date_input = "2022-12-22"
+      op.iso_date_input = '2022-12-22'
       assert_equal ::String, op.iso_date_input.class
-      assert_equal "2022-12-22", op.iso_date_input
+      assert_equal '2022-12-22', op.iso_date_input
 
-      op.iso_date_input = Date.parse("2022-12-22")
+      op.iso_date_input = Date.parse('2022-12-22')
       assert_equal ::String, op.iso_date_input.class
-      assert_equal "2022-12-22", op.iso_date_input
+      assert_equal '2022-12-22', op.iso_date_input
     end
 
     def test_iso_time_inputs
       op.iso_time_input = nil
       assert_nil op.iso_time_input
 
-      op.iso_time_input = "2022-12-22T10:30:24Z"
+      op.iso_time_input = '2022-12-22T10:30:24Z'
       assert_equal ::String, op.iso_time_input.class
-      assert_equal "2022-12-22T10:30:24Z", op.iso_time_input
+      assert_equal '2022-12-22T10:30:24Z', op.iso_time_input
 
-      op.iso_time_input = Time.parse("2022-12-22T10:30:24Z")
+      op.iso_time_input = Time.parse('2022-12-22T10:30:24Z')
       assert_equal ::String, op.iso_time_input.class
-      assert_equal "2022-12-22T10:30:24Z", op.iso_time_input
+      assert_equal '2022-12-22T10:30:24Z', op.iso_time_input
+    end
+
+    def test_file_inputs
+      op.file_input = nil
+      assert_nil op.file_input
+
+      op.file_input = File.new(__FILE__)
+      assert_equal ::File, op.file_input.class
+
+      op.file_input = 'foobarbaz'
+      assert_equal ::Tempfile, op.file_input.class
+      assert_equal 'foobarbaz', op.file_input.read
+    ensure
+      op.file_input.close
+      op.file_input.unlink
     end
 
     def test_field_provided
-      op = ::SignupOp.new()
+      op = ::SignupOp.new
       assert_equal false, op.send(:field_provided?, :email)
 
-      op = ::SignupOp.new(email: "foo")
+      op = ::SignupOp.new(email: 'foo')
       assert_equal true, op.send(:field_provided?, :email)
 
-      op = ::DefaultsOp.new()
+      op = ::DefaultsOp.new
       assert_equal false, op.send(:field_provided?, :foo)
 
-      op = ::DefaultsOp.new(foo: "foo")
+      op = ::DefaultsOp.new(foo: 'foo')
       assert_equal true, op.send(:field_provided?, :foo)
     end
-
   end
 end

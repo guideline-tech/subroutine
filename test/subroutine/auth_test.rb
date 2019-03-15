@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 
 module Subroutine
   class AuthTest < TestCase
-
     def user
-      @user ||= ::User.new(email_address: "doug@example.com")
+      @user ||= ::User.new(email_address: 'doug@example.com')
     end
 
     def test_it_throws_an_error_if_authorization_is_not_defined
@@ -45,12 +46,12 @@ module Subroutine
       CustomAuthorizeOp.submit! user
 
       assert_raises ::Subroutine::Auth::NotAuthorizedError do
-        CustomAuthorizeOp.submit! User.new(email_address: "foo@bar.com")
+        CustomAuthorizeOp.submit! User.new(email_address: 'foo@bar.com')
       end
     end
 
     def test_it_does_not_run_authorizations_if_explicitly_bypassed
-      op = CustomAuthorizeOp.new User.new(email_address: "foo@bar.com")
+      op = CustomAuthorizeOp.new User.new(email_address: 'foo@bar.com')
       op.skip_auth_checks!
       op.submit!
     end
@@ -66,10 +67,10 @@ module Subroutine
     end
 
     def test_it_runs_policies_with_conditionals
-       # if: false
+      # if: false
       op = IfConditionalPolicyOp.new(user, check_policy: false)
       assert op.submit!
-       # unless: true
+      # unless: true
       op = UnlessConditionalPolicyOp.new(user, unless_check_policy: true)
       assert op.submit!
 
@@ -85,6 +86,5 @@ module Subroutine
         op.submit!
       end
     end
-
   end
 end

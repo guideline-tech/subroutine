@@ -1,23 +1,22 @@
+# frozen_string_literal: true
+
 module Subroutine
   module Auth
-
     class NotAuthorizedError < ::StandardError
-
       def initialize(msg = nil)
-        msg = I18n.t("errors.#{msg}", default: "Sorry, you are not authorized to perform this action.") if msg.is_a?(Symbol)
-        msg ||= I18n.t('errors.unauthorized', default: "Sorry, you are not authorized to perform this action.")
+        msg = I18n.t("errors.#{msg}", default: 'Sorry, you are not authorized to perform this action.') if msg.is_a?(Symbol)
+        msg ||= I18n.t('errors.unauthorized', default: 'Sorry, you are not authorized to perform this action.')
         super msg
       end
 
       def status
         401
       end
-
     end
 
     class AuthorizationNotDeclaredError < ::StandardError
       def initialize(msg = nil)
-        super(msg || "Authorization management has not been declared on this class")
+        super(msg || 'Authorization management has not been declared on this class')
       end
     end
 
@@ -30,9 +29,7 @@ module Subroutine
       end
     end
 
-
     module ClassMethods
-
       def authorize(validation_name)
         validate validation_name, unless: :skip_auth_checks?
       end
@@ -66,7 +63,7 @@ module Subroutine
         policy_name = opts[:policy] || :policy
 
         if_conditionals = Array(opts[:if])
-        unless_conditionals = Array( opts[:unless])
+        unless_conditionals = Array(opts[:unless])
 
         validate unless: :skip_auth_checks? do
           run_it = true
@@ -84,17 +81,16 @@ module Subroutine
 
           next unless run_it
 
-          p = self.send(policy_name)
-          if !p || meths.any?{|m| !(p.respond_to?("#{m}?") ? p.send("#{m}?") : p.send(m)) }
+          p = send(policy_name)
+          if !p || meths.any? { |m| !(p.respond_to?("#{m}?") ? p.send("#{m}?") : p.send(m)) }
             unauthorized! opts[:error]
           end
         end
       end
-
     end
 
     def initialize(*args)
-      raise Subroutine::Auth::AuthorizationNotDeclaredError.new if(!self.class.authorization_declared)
+      raise Subroutine::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared
 
       super(args.extract_options!)
       @skip_auth_checks = false
@@ -117,8 +113,7 @@ module Subroutine
 
     def unauthorized!(reason = nil)
       reason ||= :unauthorized
-      raise ::Subroutine::Auth::NotAuthorizedError.new(reason)
+      raise ::Subroutine::Auth::NotAuthorizedError, reason
     end
-
   end
 end
