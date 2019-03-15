@@ -247,6 +247,9 @@ module Subroutine
       op.file_input = 'foobarbaz'
       assert_equal ::Tempfile, op.file_input.class
       assert_equal 'foobarbaz', op.file_input.read
+    ensure
+      op.file_input.close
+      op.file_input.unlink
     end
 
     def test_field_provided
