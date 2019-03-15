@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/object/duplicable'
 require 'active_support/core_ext/object/deep_dup'
@@ -71,7 +73,7 @@ module Subroutine
 
         ops.each do |op|
           op._fields.each_pair do |field_name, op_options|
-            next if excepts && excepts.include?(field_name)
+            next if excepts&.include?(field_name)
             next if onlys && !onlys.include?(field_name)
 
             if op_options[:association]
@@ -86,9 +88,9 @@ module Subroutine
 
       def inherited(child)
         super
-        child._fields = self._fields.dup
-        child._error_map = self._error_map.dup
-        child._error_ignores = self._error_ignores.dup
+        child._fields = _fields.dup
+        child._error_map = _error_map.dup
+        child._error_ignores = _error_ignores.dup
       end
 
       def submit!(*args)
@@ -121,7 +123,7 @@ module Subroutine
 
           def #{field_name}=(v)
             config = #{field_name}_config
-            v = ::Subroutine::TypeCaster.cast(v, config[:type])
+            v = ::Subroutine::TypeCaster.cast(v, config)
             @params["#{field_name}"] = v
           end
 
@@ -134,15 +136,12 @@ module Subroutine
           end
 
         EV
-
       end
 
       def _ignore_errors(field_name)
         _error_ignores[field_name.to_sym] = true
       end
-
     end
-
 
     class_attribute :_outputs
     self._outputs = {}
@@ -159,9 +158,8 @@ module Subroutine
     attr_reader :original_params
     attr_reader :params, :defaults
 
-
     def initialize(inputs = {})
-      @original_params  = inputs.with_indifferent_access
+      @original_params = inputs.with_indifferent_access
       @params = sanitize_params(@original_params)
       @defaults = sanitize_defaults
       @outputs = {}
@@ -173,13 +171,13 @@ module Subroutine
 
     def output(name, value)
       unless _outputs.key?(name.to_sym)
-        raise ::Subroutine::UnknownOutputError.new(name)
+        raise ::Subroutine::UnknownOutputError, name
       end
+
       @outputs[name.to_sym] = value
     end
 
     def submit!
-
       begin
         observe_submission do
           validate_and_perform
@@ -197,13 +195,13 @@ module Subroutine
       if errors.empty?
         _outputs.each_pair do |name, config|
           if config[:required] && !@outputs.key?(name)
-            raise ::Subroutine::OutputNotSetError.new(name)
+            raise ::Subroutine::OutputNotSetError, name
           end
         end
 
         true
       else
-        raise ::Subroutine::Failure.new(self)
+        raise ::Subroutine::Failure, self
       end
     end
 
@@ -239,10 +237,10 @@ module Subroutine
     end
 
     def validate_and_perform
-      bool = observe_validation{ valid? }
+      bool = observe_validation { valid? }
       return false unless bool
 
-      observe_perform{ perform }
+      observe_perform { perform }
     end
 
     # implement this in your concrete class.
@@ -260,8 +258,7 @@ module Subroutine
     def inherit_errors(error_object)
       error_object = error_object.errors if error_object.respond_to?(:errors)
 
-      error_object.each do |k,v|
-
+      error_object.each do |k, v|
         next if _error_ignores[k.to_sym]
 
         if respond_to?(k)
@@ -269,7 +266,7 @@ module Subroutine
         elsif _error_map[k.to_sym]
           errors.add(_error_map[k.to_sym], v)
         else
-          errors.add(:base, error_object.full_message(k,v))
+          errors.add(:base, error_object.full_message(k, v))
         end
       end
 
@@ -282,7 +279,8 @@ module Subroutine
       out = {}.with_indifferent_access
       _fields.each_pair do |field, config|
         next unless inputs.key?(field)
-        out[field] = ::Subroutine::TypeCaster.cast(inputs[field], config[:type])
+
+        out[field] = ::Subroutine::TypeCaster.cast(inputs[field], config)
       end
 
       out
@@ -293,6 +291,7 @@ module Subroutine
 
       _fields.each_pair do |field, config|
         next if config[:default].nil?
+
         deflt = config[:default]
         if deflt.respond_to?(:call)
           deflt = deflt.call
@@ -301,7 +300,7 @@ module Subroutine
           # the class global default value, and potentially modify it.
           deflt = deflt.deep_dup # from active_support
         end
-        defaults[field] = ::Subroutine::TypeCaster.cast(deflt, config[:type])
+        defaults[field] = ::Subroutine::TypeCaster.cast(deflt, config)
       end
 
       defaults

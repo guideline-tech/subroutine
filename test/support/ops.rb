@@ -1,5 +1,7 @@
-require "subroutine/auth"
-require "subroutine/association"
+# frozen_string_literal: true
+
+require 'subroutine/auth'
+require 'subroutine/association'
 
 ## Models ##
 
@@ -10,23 +12,21 @@ class User
   attr_accessor :email_address
   attr_accessor :password
 
-  validates :email_address, :presence => true
+  validates :email_address, presence: true
 end
 
 class AdminUser < ::User
-  validates :email_address, :format => {:with => /@admin\.com/, :message => 'has gotta be @admin.com'}
+  validates :email_address, format: { with: /@admin\.com/, message: 'has gotta be @admin.com' }
 end
-
 
 ## Ops ##
 
 class SignupOp < ::Subroutine::Op
-
-  string :email, :aka => :email_address
+  string :email, aka: :email_address
   string :password
 
-  validates :email, :presence => true
-  validates :password, :presence => true
+  validates :email, presence: true
+  validates :password, presence: true
 
   outputs :perform_called
   outputs :perform_finished
@@ -66,30 +66,25 @@ class WhateverSignupOp < ::SignupOp
 end
 
 class AdminSignupOp < ::SignupOp
-
-  field :privileges, :default => 'min'
+  field :privileges, default: 'min'
 
   protected
 
   def user_class
     ::AdminUser
   end
-
 end
 
 class BusinessSignupOp < ::Subroutine::Op
-
   string :business_name
 
   inputs_from ::SignupOp
 end
 
 class DefaultsOp < ::Subroutine::Op
-
-  field :foo, :default => 'foo'
-  field :bar, :default => 'bar'
-  field :baz, :default => false
-
+  field :foo, default: 'foo'
+  field :bar, default: 'bar'
+  field :baz, default: false
 end
 
 class ExceptFooBarOp < ::Subroutine::Op
@@ -101,7 +96,7 @@ class OnlyFooBarOp < ::Subroutine::Op
 end
 
 class InheritedDefaultsOp < ::DefaultsOp
-  field :bar, :default => 'barstool'
+  field :bar, default: 'barstool'
 end
 
 class TypeCastOp < ::Subroutine::Op
@@ -111,11 +106,12 @@ class TypeCastOp < ::Subroutine::Op
   string :string_input
   boolean :boolean_input
   date :date_input
-  time :time_input, :default => lambda{ Time.now }
+  time :time_input, default: -> { Time.now }
   iso_date :iso_date_input
   iso_time :iso_time_input
   object :object_input
-  array :array_input, :default => 'foo'
+  array :array_input, default: 'foo'
+  array :type_array_input, of: :integer
 end
 
 class OpWithAuth < ::Subroutine::Op
@@ -141,21 +137,17 @@ class NoUserRequirementsOp < OpWithAuth
 end
 
 class CustomAuthorizeOp < OpWithAuth
-
   require_user!
   authorize :authorize_user_is_correct
 
   protected
 
   def authorize_user_is_correct
-    unless current_user.email_address.to_s =~ /example\.com$/
-      unauthorized!
-    end
+    unauthorized! unless /example\.com$/.match?(current_user.email_address.to_s)
   end
 end
 
 class PolicyOp < OpWithAuth
-
   class FakePolicy
     def user_can_access?
       false
@@ -171,7 +163,6 @@ class PolicyOp < OpWithAuth
 end
 
 class IfConditionalPolicyOp < OpWithAuth
-
   class FakePolicy
     def user_can_access?
       false
@@ -180,7 +171,7 @@ class IfConditionalPolicyOp < OpWithAuth
 
   require_user!
   boolean :check_policy
-  validates :check_policy, inclusion: { in: [true,false] }
+  validates :check_policy, inclusion: { in: [true, false] }
   policy :user_can_access?, if: :check_policy
 
   def policy
@@ -189,7 +180,6 @@ class IfConditionalPolicyOp < OpWithAuth
 end
 
 class UnlessConditionalPolicyOp < OpWithAuth
-
   class FakePolicy
     def user_can_access?
       false
@@ -198,7 +188,7 @@ class UnlessConditionalPolicyOp < OpWithAuth
 
   require_user!
   boolean :unless_check_policy
-  validates :unless_check_policy, inclusion: { in: [true,false] }
+  validates :unless_check_policy, inclusion: { in: [true, false] }
   policy :user_can_access?, unless: :unless_check_policy
 
   def policy
@@ -206,15 +196,12 @@ class UnlessConditionalPolicyOp < OpWithAuth
   end
 end
 
-
 class OpWithAssociation < ::Subroutine::Op
   include ::Subroutine::Association
 end
 
 class SimpleAssociationOp < ::OpWithAssociation
-
   association :user
-
 end
 
 class UnscopedSimpleAssociationOp < ::OpWithAssociation
@@ -226,7 +213,7 @@ class PolymorphicAssociationOp < ::OpWithAssociation
 end
 
 class AssociationWithClassOp < ::OpWithAssociation
-  association :admin, class_name: "AdminUser"
+  association :admin, class_name: 'AdminUser'
 end
 
 class InheritedSimpleAssociation < ::Subroutine::Op
@@ -249,7 +236,7 @@ end
 
 class MissingOutputOp < ::Subroutine::Op
   def perform
-    output :foo, "bar"
+    output :foo, 'bar'
   end
 end
 
@@ -270,19 +257,18 @@ end
 class NoOutputNoSuccessOp < ::Subroutine::Op
   outputs :foo
   def perform
-    errors.add(:foo, "bar")
+    errors.add(:foo, 'bar')
   end
 end
 
 class ErrorTraceOp < ::Subroutine::Op
-
   class SomeObject
     include ::ActiveModel::Model
     include ::ActiveModel::Validations::Callbacks
 
     def foo
-      errors.add(:base, "Failure of things")
-      raise Subroutine::Failure.new(self)
+      errors.add(:base, 'Failure of things')
+      raise Subroutine::Failure, self
     end
 
     def bar
