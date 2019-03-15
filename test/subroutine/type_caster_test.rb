@@ -46,8 +46,8 @@ module Subroutine
       op.string_input = nil
       assert_nil op.string_input
 
-      op.string_input = ''
-      assert_equal '', op.string_input
+      op.string_input = "
+      assert_equal ", op.string_input
 
       op.string_input = 'foo'
       assert_equal 'foo', op.string_input
