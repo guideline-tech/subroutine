@@ -89,7 +89,9 @@ end
 Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _options = {}|
   if value.class.name == 'ActionController::Parameters'
     value = value.to_hash
-    value.each_pair { |k, v| value[k] = Subroutine::TypeCaster.cast(v, type: :hash) if v.class.name == 'ActionController::Parameters' }
+    value.each_pair do |k, v|
+      value[k] = Subroutine::TypeCaster.cast(v, type: :hash) if v.class.name == 'ActionController::Parameters'
+    end
     next value
   end
 
@@ -108,4 +110,18 @@ Subroutine::TypeCaster.register :array do |value, options = {}|
   out = ::Array.wrap(value)
   out = out.map { |v| ::Subroutine::TypeCaster.cast(v, type: options[:of]) } if options[:of]
   out
+end
+
+Subroutine::TypeCaster.register :file do |value, options = {}|
+  next nil if value.blank?
+
+  next value if defined?(Tempfile) && value.is_a?(Tempfile)
+  next value if value.is_a?(File)
+
+  value = ::Base64.decode64(value) if options[:base64]
+
+  Tempfile.new.tap do |f|
+    f.write(value)
+    f.rewind
+  end
 end

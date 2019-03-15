@@ -237,6 +237,18 @@ module Subroutine
       assert_equal '2022-12-22T10:30:24Z', op.iso_time_input
     end
 
+    def test_file_inputs
+      op.file_input = nil
+      assert_nil op.file_input
+
+      op.file_input = File.new(__FILE__)
+      assert_equal ::File, op.file_input.class
+
+      op.file_input = 'foobarbaz'
+      assert_equal ::Tempfile, op.file_input.class
+      assert_equal 'foobarbaz', op.file_input.read
+    end
+
     def test_field_provided
       op = ::SignupOp.new
       assert_equal false, op.send(:field_provided?, :email)

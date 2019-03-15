@@ -112,6 +112,7 @@ class TypeCastOp < ::Subroutine::Op
   object :object_input
   array :array_input, default: 'foo'
   array :type_array_input, of: :integer
+  file :file_input
 end
 
 class OpWithAuth < ::Subroutine::Op
