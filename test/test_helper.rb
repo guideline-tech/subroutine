@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'subroutine'
 require 'minitest/autorun'
 require 'minitest/unit'

@@ -1,18 +1,16 @@
+# frozen_string_literal: true
+
 module Subroutine
   module Association
-
     def self.included(base)
       base.send :extend, ::Subroutine::Association::ClassMethods
       class << base
         alias_method :field_without_associations, :field
         alias_method :field, :field_with_associations
       end
-
     end
 
     module ClassMethods
-
-
       def field_with_associations(*args)
         opts = args.extract_options!
         if opts[:association]
@@ -47,9 +45,8 @@ module Subroutine
       # - unscoped => set true if the record should be looked up via Type.unscoped
 
       def association(field, options = {})
-
         if options[:as] && options[:foreign_key]
-          raise ArgumentError.new(":as and :foreign_key options should be provided together to an association invocation")
+          raise ArgumentError, ':as and :foreign_key options should be provided together to an association invocation'
         end
 
         class_name = options[:class_name]
@@ -61,13 +58,12 @@ module Subroutine
         klass = class_name.to_s if class_name
 
         foreign_key_method = (options[:foreign_key] || "#{field}_id").to_s
-        foreign_type_method = foreign_key_method.gsub(/_id$/, "_type")
-
+        foreign_type_method = foreign_key_method.gsub(/_id$/, '_type')
 
         if poly
           string foreign_type_method
         else
-          class_eval <<-EV, __FILE__, __LINE__+1
+          class_eval <<-EV, __FILE__, __LINE__ + 1
             def #{foreign_type_method}
               #{as.to_s.camelize.inspect}
             end
@@ -78,7 +74,7 @@ module Subroutine
 
         field_without_associations as, options.merge(association: true)
 
-        class_eval <<-EV, __FILE__, __LINE__+1
+        class_eval <<-EV, __FILE__, __LINE__ + 1
           def #{as}_with_association
             return @#{as} if defined?(@#{as})
             @#{as} = begin
@@ -89,7 +85,7 @@ module Subroutine
 
           def #{as}_with_association=(r)
             @#{as} = r
-            #{poly || klass ? "params['#{foreign_type_method}'] = r.nil? ? nil : #{klass.nil? ? "r.class.name" : klass.to_s.inspect}" : ""}
+            #{poly || klass ? "params['#{foreign_type_method}'] = r.nil? ? nil : #{klass.nil? ? 'r.class.name' : klass.to_s.inspect}" : ''}
             params['#{foreign_key_method}'] = r.nil? ? nil : r.id
             r
           end
@@ -100,16 +96,16 @@ module Subroutine
 
         alias_method :"#{as}_without_association=", :"#{as}="
         alias_method :"#{as}=", :"#{as}_with_association="
-
       end
     end
 
     def initialize(*args)
       super(*args)
 
-      self._fields.each_pair do |field, config|
+      _fields.each_pair do |field, config|
         next unless config[:association]
-        next unless @original_params.has_key?(field)
+        next unless @original_params.key?(field)
+
         send("#{field}=", @original_params[field]) # this gets the _id and _type into the params hash
       end
     end
@@ -127,6 +123,5 @@ module Subroutine
 
       scope.find(_id)
     end
-
   end
 end

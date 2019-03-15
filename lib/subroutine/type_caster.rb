@@ -31,30 +31,30 @@ module Subroutine
   end
 end
 
-Subroutine::TypeCaster.register :number, :float do |value, options = {}|
+::Subroutine::TypeCaster.register :number, :float do |value, options = {}|
   next nil if value.blank?
 
   meth = (options[:methods] || []).detect { |m| value.respond_to?(m) }
   meth ? value.send(meth) : value.to_f
 end
 
-Subroutine::TypeCaster.register :integer, :int, :epoch do |value, _options = {}|
-  Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_i])
+::Subroutine::TypeCaster.register :integer, :int, :epoch do |value, _options = {}|
+  ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_i])
 end
 
-Subroutine::TypeCaster.register :decimal, :big_decimal do |value, _options = {}|
-  Subroutine::TypeCaster.cast(value, type: :number, methods: %i[to_d to_f])
+::Subroutine::TypeCaster.register :decimal, :big_decimal do |value, _options = {}|
+  ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_d, :to_f])
 end
 
-Subroutine::TypeCaster.register :string, :text do |value, _options = {}|
+::Subroutine::TypeCaster.register :string, :text do |value, _options = {}|
   String(value)
 end
 
-Subroutine::TypeCaster.register :boolean, :bool do |value, _options = {}|
+::Subroutine::TypeCaster.register :boolean, :bool do |value, _options = {}|
   !!(String(value) =~ /^(yes|true|1|ok)$/)
 end
 
-Subroutine::TypeCaster.register :iso_date do |value, _options = {}|
+::Subroutine::TypeCaster.register :iso_date do |value, _options = {}|
   next nil unless value.present?
 
   d = nil
@@ -64,7 +64,7 @@ Subroutine::TypeCaster.register :iso_date do |value, _options = {}|
   d.iso8601
 end
 
-Subroutine::TypeCaster.register :iso_time do |value, _options = {}|
+::Subroutine::TypeCaster.register :iso_time do |value, _options = {}|
   next nil unless value.present?
 
   t = nil
@@ -74,23 +74,23 @@ Subroutine::TypeCaster.register :iso_time do |value, _options = {}|
   t.utc.iso8601
 end
 
-Subroutine::TypeCaster.register :date do |value, _options = {}|
+::Subroutine::TypeCaster.register :date do |value, _options = {}|
   next nil unless value.present?
 
   ::Date.parse(String(value))
 end
 
-Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, _options = {}|
+::Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, _options = {}|
   next nil unless value.present?
 
   ::Time.parse(String(value))
 end
 
-Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _options = {}|
+::Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _options = {}|
   if value.class.name == 'ActionController::Parameters'
     value = value.to_hash
     value.each_pair do |k, v|
-      value[k] = Subroutine::TypeCaster.cast(v, type: :hash) if v.class.name == 'ActionController::Parameters'
+      value[k] = ::Subroutine::TypeCaster.cast(v, type: :hash) if v.class.name == 'ActionController::Parameters'
     end
     next value
   end
@@ -104,7 +104,7 @@ Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _opti
   {}
 end
 
-Subroutine::TypeCaster.register :array do |value, options = {}|
+::Subroutine::TypeCaster.register :array do |value, options = {}|
   next [] if value.blank?
 
   out = ::Array.wrap(value)
@@ -112,15 +112,15 @@ Subroutine::TypeCaster.register :array do |value, options = {}|
   out
 end
 
-Subroutine::TypeCaster.register :file do |value, options = {}|
+::Subroutine::TypeCaster.register :file do |value, options = {}|
   next nil if value.blank?
 
-  next value if defined?(Tempfile) && value.is_a?(Tempfile)
-  next value if value.is_a?(File)
+  next value if defined?(::Tempfile) && value.is_a?(::Tempfile)
+  next value if value.is_a?(::File)
 
   value = ::Base64.decode64(value) if options[:base64]
 
-  Tempfile.new.tap do |f|
+  ::Tempfile.new.tap do |f|
     f.write(value)
     f.rewind
   end

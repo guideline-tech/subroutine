@@ -107,7 +107,7 @@ module Subroutine
       op.object_input = ''
       assert_equal({}, op.object_input)
 
-      op.object_input = [%i[a b]]
+      op.object_input = [[:a, :b]]
       assert_equal({ 'a' => :b }, op.object_input)
 
       op.object_input = false

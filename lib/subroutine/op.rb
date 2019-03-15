@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/hash/indifferent_access"
-require "active_support/core_ext/object/duplicable"
-require "active_support/core_ext/object/deep_dup"
-require "active_model"
+require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/object/duplicable'
+require 'active_support/core_ext/object/deep_dup'
+require 'active_model'
 
-require "subroutine/failure"
-require "subroutine/type_caster"
-require "subroutine/filtered_errors"
-require "subroutine/output_not_set_error"
-require "subroutine/unknown_output_error"
+require 'subroutine/failure'
+require 'subroutine/type_caster'
+require 'subroutine/filtered_errors'
+require 'subroutine/output_not_set_error'
+require 'subroutine/unknown_output_error'
 
 module Subroutine
   class Op

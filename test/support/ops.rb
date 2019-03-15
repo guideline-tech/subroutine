@@ -88,11 +88,11 @@ class DefaultsOp < ::Subroutine::Op
 end
 
 class ExceptFooBarOp < ::Subroutine::Op
-  inputs_from ::DefaultsOp, except: %i[foo bar]
+  inputs_from ::DefaultsOp, except: [:foo, :bar]
 end
 
 class OnlyFooBarOp < ::Subroutine::Op
-  inputs_from ::DefaultsOp, only: %i[foo bar]
+  inputs_from ::DefaultsOp, only: [:foo, :bar]
 end
 
 class InheritedDefaultsOp < ::DefaultsOp
