@@ -144,7 +144,7 @@ class CustomAuthorizeOp < OpWithAuth
   protected
 
   def authorize_user_is_correct
-    unauthorized! unless /example\.com$/.match?(current_user.email_address.to_s)
+    unauthorized! unless current_user.email_address.to_s =~ /example\.com$/
   end
 end
 

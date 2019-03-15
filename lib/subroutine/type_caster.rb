@@ -3,6 +3,7 @@
 require 'date'
 require 'time'
 require 'bigdecimal'
+require 'securerandom'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/object/try'
 require 'active_support/core_ext/array/wrap'
@@ -120,7 +121,7 @@ end
 
   value = ::Base64.decode64(value) if options[:base64]
 
-  ::Tempfile.new.tap do |f|
+  ::Tempfile.new(SecureRandom.hex).tap do |f|
     f.write(value)
     f.rewind
   end
