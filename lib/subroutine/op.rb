@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/object/duplicable"
-require "active_support/core_ext/object/deep_dup"
+require "active_model"
 
 require "subroutine/fields"
 require "subroutine/failure"
