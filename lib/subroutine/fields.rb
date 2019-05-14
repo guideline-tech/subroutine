@@ -20,7 +20,7 @@ module Subroutine
       attr_reader :params, :defaults
     end
 
-    class_methods do
+    module ClassMethods
       # fields can be provided in the following way:
       # field :field1, :field2
       # field :field3, :field4, default: 'my default'
