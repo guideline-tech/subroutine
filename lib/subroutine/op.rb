@@ -1,50 +1,25 @@
 # frozen_string_literal: true
 
-require 'active_support/core_ext/hash/indifferent_access'
-require 'active_support/core_ext/object/duplicable'
-require 'active_support/core_ext/object/deep_dup'
-require 'active_model'
+require "active_model"
 
-require 'subroutine/failure'
-require 'subroutine/type_caster'
-require 'subroutine/filtered_errors'
-require 'subroutine/output_not_set_error'
-require 'subroutine/unknown_output_error'
+require "subroutine/fields"
+require "subroutine/failure"
+require "subroutine/filtered_errors"
+require "subroutine/output_not_set_error"
+require "subroutine/unknown_output_error"
 
 module Subroutine
   class Op
+
+    include ::Subroutine::Fields
     include ::ActiveModel::Model
     include ::ActiveModel::Validations::Callbacks
 
     DEFAULT_OUTPUT_OPTIONS = {
-      required: true
+      required: true,
     }.freeze
 
     class << self
-      ::Subroutine::TypeCaster.casters.each_key do |caster|
-        next if method_defined?(caster)
-
-        class_eval <<-EV, __FILE__, __LINE__ + 1
-          def #{caster}(*args)
-            options = args.extract_options!
-            options[:type] = #{caster.inspect}
-            args.push(options)
-            field(*args)
-          end
-        EV
-      end
-
-      # fields can be provided in the following way:
-      # field :field1, :field2
-      # field :field3, :field4, default: 'my default'
-      def field(*fields)
-        options = fields.extract_options!
-
-        fields.each do |f|
-          _field(f, options)
-        end
-      end
-      alias fields field
 
       def outputs(*names)
         options = names.extract_options!
@@ -66,33 +41,6 @@ module Subroutine
       end
       alias ignore_errors ignore_error
 
-      def inputs_from(*ops)
-        options = ops.extract_options!
-        excepts = options.key?(:except) ? Array(options.delete(:except)) : nil
-        onlys = options.key?(:only) ? Array(options.delete(:only)) : nil
-
-        ops.each do |op|
-          op._fields.each_pair do |field_name, op_options|
-            next if excepts && excepts.include?(field_name)
-            next if onlys && !onlys.include?(field_name)
-
-            if op_options[:association]
-              include ::Subroutine::Association unless included_modules.include?(::Subroutine::Association)
-              association(field_name, op_options)
-            else
-              field(field_name, op_options)
-            end
-          end
-        end
-      end
-
-      def inherited(child)
-        super
-        child._fields = _fields.dup
-        child._error_map = _error_map.dup
-        child._error_ignores = _error_ignores.dup
-      end
-
       def submit!(*args)
         op = new(*args)
         op.submit!
@@ -109,45 +57,27 @@ module Subroutine
       protected
 
       def _field(field_name, options = {})
-        _fields[field_name.to_sym] = options
+        result = super(field_name, options)
 
         if options[:aka]
           Array(options[:aka]).each do |as|
-            _error_map[as.to_sym] = field_name.to_sym
+            self._error_map = _error_map.merge(as.to_sym => field_name.to_sym)
           end
         end
 
         _ignore_errors(field_name) if options[:ignore_errors]
 
-        class_eval <<-EV, __FILE__, __LINE__ + 1
-
-          def #{field_name}=(v)
-            config = #{field_name}_config
-            v = ::Subroutine::TypeCaster.cast(v, config)
-            @params["#{field_name}"] = v
-          end
-
-          def #{field_name}
-            @params.has_key?("#{field_name}") ? @params["#{field_name}"] : @defaults["#{field_name}"]
-          end
-
-          def #{field_name}_config
-            _fields[:#{field_name}]
-          end
-
-        EV
+        result
       end
 
       def _ignore_errors(field_name)
-        _error_ignores[field_name.to_sym] = true
+        self._error_ignores = _error_ignores.merge(field_name.to_sym => true)
       end
+
     end
 
     class_attribute :_outputs
     self._outputs = {}
-
-    class_attribute :_fields
-    self._fields = {}
 
     class_attribute :_error_map
     self._error_map = {}
@@ -155,13 +85,8 @@ module Subroutine
     class_attribute :_error_ignores
     self._error_ignores = {}
 
-    attr_reader :original_params
-    attr_reader :params, :defaults
-
     def initialize(inputs = {})
-      @original_params = inputs.with_indifferent_access
-      @params = sanitize_params(@original_params)
-      @defaults = sanitize_defaults
+      setup_fields(inputs)
       @outputs = {}
     end
 
@@ -217,10 +142,6 @@ module Subroutine
       end
     end
 
-    def params_with_defaults
-      @defaults.merge(@params)
-    end
-
     protected
 
     # these enable you to 1) add log output or 2) add performance monitoring such as skylight.
@@ -248,11 +169,6 @@ module Subroutine
       raise NotImplementedError
     end
 
-    # check if a specific field was provided
-    def field_provided?(key)
-      @params.key?(key)
-    end
-
     # applies the errors in error_object to self
     # returns false so failure cases can end with this invocation
     def inherit_errors(error_object)
@@ -273,37 +189,5 @@ module Subroutine
       false
     end
 
-    # if you want to use strong parameters or something in your form object you can do so here.
-    # by default we just slice the inputs to the defined fields
-    def sanitize_params(inputs)
-      out = {}.with_indifferent_access
-      _fields.each_pair do |field, config|
-        next unless inputs.key?(field)
-
-        out[field] = ::Subroutine::TypeCaster.cast(inputs[field], config)
-      end
-
-      out
-    end
-
-    def sanitize_defaults
-      defaults = {}.with_indifferent_access
-
-      _fields.each_pair do |field, config|
-        next if config[:default].nil?
-
-        deflt = config[:default]
-        if deflt.respond_to?(:call)
-          deflt = deflt.call
-        elsif deflt.duplicable? # from active_support
-          # Some classes of default values need to be duplicated, or the instance field value will end up referencing
-          # the class global default value, and potentially modify it.
-          deflt = deflt.deep_dup # from active_support
-        end
-        defaults[field] = ::Subroutine::TypeCaster.cast(deflt, config)
-      end
-
-      defaults
-    end
   end
 end
