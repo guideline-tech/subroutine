@@ -2,12 +2,19 @@ language: ruby
 sudo: false
 
 rvm:
-  - 2.0.0
-  - 2.1.1
-  - 2.2.3
-  - 2.5.1
-  - jruby
+  - 2.4.6
+  - 2.5.5
+  - 2.6.3
 
 gemfile:
   - gemfiles/am41.gemfile
   - gemfiles/am42.gemfile
+  - gemfiles/am50.gemfile
+  - gemfiles/am51.gemfile
+  - gemfiles/am52.gemfile
+  - gemfiles/am60.gemfile
+
+matrix:
+  exclude:
+    - rvm: 2.4.6
+      gemfile: gemfiles/am60.gemfile

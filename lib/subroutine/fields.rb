@@ -40,7 +40,7 @@ module Subroutine
 
         things.each do |thing|
           thing._fields.each_pair do |field_name, opts|
-            next if excepts&.include?(field_name)
+            next if excepts && excepts.include?(field_name)
             next if onlys && !onlys.include?(field_name)
 
             if opts[:association]
