@@ -8,6 +8,9 @@ module Subroutine
         alias_method :field_without_associations, :field
         alias_method :field, :field_with_associations
       end
+
+      base.alias_method :setup_fields_without_association, :setup_fields
+      base.alias_method :setup_fields, :setup_fields_with_association
     end
 
     module ClassMethods
@@ -99,8 +102,8 @@ module Subroutine
       end
     end
 
-    def initialize(*args)
-      super(*args)
+    def setup_fields_with_association(*args)
+      setup_fields_without_association(*args)
 
       _fields.each_pair do |field, config|
         next unless config[:association]
