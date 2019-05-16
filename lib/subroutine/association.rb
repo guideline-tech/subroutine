@@ -9,8 +9,8 @@ module Subroutine
         alias_method :field, :field_with_associations
       end
 
-      base.alias_method :setup_fields_without_association, :setup_fields
-      base.alias_method :setup_fields, :setup_fields_with_association
+      base.send(:alias_method, :setup_fields_without_association, :setup_fields)
+      base.send(:alias_method, :setup_fields, :setup_fields_with_association)
     end
 
     module ClassMethods
