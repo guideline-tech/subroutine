@@ -13,6 +13,10 @@ class User
   attr_accessor :password
 
   validates :email_address, presence: true
+
+  def self.find(id)
+    new(id: id)
+  end
 end
 
 class AdminUser < ::User
@@ -135,6 +139,11 @@ end
 
 class NoUserRequirementsOp < OpWithAuth
   no_user_requirements!
+end
+
+class DifferentUserClassOp < OpWithAuth
+  self.user_class_name = "AdminUser"
+  require_user!
 end
 
 class CustomAuthorizeOp < OpWithAuth
