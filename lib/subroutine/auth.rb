@@ -24,12 +24,21 @@ module Subroutine
       base.instance_eval do
         extend ::Subroutine::Auth::ClassMethods
 
-        class_attribute :authorization_declared
+        class_attribute :authorization_declared, instance_writer: false
         self.authorization_declared = false
+
+        class_attribute :user_class_name, instance_writer: false
+        self.user_class_name = "User"
       end
     end
 
     module ClassMethods
+
+      def supported_user_class_names
+        [user_class_name, "Integer", "NilClass"].compact
+      end
+
+
       def authorize(validation_name)
         validate validation_name, unless: :skip_auth_checks?
       end
@@ -95,6 +104,10 @@ module Subroutine
       super(args.extract_options!)
       @skip_auth_checks = false
       @current_user = args.shift
+
+      unless self.class.supported_user_class_names.include?(@current_user.class.name)
+        raise ArgumentError, "current_user must be one of the following types {#{self.class.supported_user_class_names.join(",")}} but was #{@current_user.class.name}"
+      end
     end
 
     def skip_auth_checks!
@@ -107,7 +120,7 @@ module Subroutine
     end
 
     def current_user
-      @current_user = ::User.find(@current_user) if ::Integer === @current_user
+      @current_user = self.user_class_name.constantize.find(@current_user) if ::Integer === @current_user
       @current_user
     end
 
