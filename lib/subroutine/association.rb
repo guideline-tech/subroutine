@@ -92,6 +92,10 @@ module Subroutine
             params['#{foreign_key_method}'] = r.nil? ? nil : r.id
             r
           end
+
+          def #{as}_field_provided?
+            field_provided?('#{foreign_key_method}')#{poly ? "&& field_provided?('#{foreign_type_method}')" : ""}
+          end
         EV
 
         alias_method :"#{as}_without_association", :"#{as}"

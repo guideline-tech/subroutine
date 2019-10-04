@@ -102,5 +102,45 @@ module Subroutine
       assert_equal 'AdminUser', op.admin_type
       assert_equal doug.id, op.admin_id
     end
+
+    def test_it_provides_answers_to_field_provided
+      ::User.expects(:all).never
+
+      op = SimpleAssociationOp.new user: doug
+      assert_equal true, op.field_provided?(:user)
+      assert_equal true, op.field_provided?(:user_id)
+      assert_equal false, op.field_provided?(:user_type)
+
+      op = SimpleAssociationOp.new user_id: doug.id
+      assert_equal true, op.field_provided?(:user)
+      assert_equal true, op.field_provided?(:user_id)
+      assert_equal false, op.field_provided?(:user_type)
+
+      op = SimpleAssociationOp.new
+      assert_equal false, op.field_provided?(:user)
+      assert_equal false, op.field_provided?(:user_id)
+      assert_equal false, op.field_provided?(:user_type)
+
+      op = PolymorphicAssociationOp.new admin: doug
+      assert_equal true, op.field_provided?(:admin)
+      assert_equal true, op.field_provided?(:admin_id)
+      assert_equal true, op.field_provided?(:admin_type)
+
+      op = PolymorphicAssociationOp.new admin_type: doug.class.name, admin_id: doug.id
+      assert_equal true, op.field_provided?(:admin)
+      assert_equal true, op.field_provided?(:admin_id)
+      assert_equal true, op.field_provided?(:admin_type)
+
+      op = PolymorphicAssociationOp.new admin_id: doug.id
+      assert_equal false, op.field_provided?(:admin)
+      assert_equal true, op.field_provided?(:admin_id)
+      assert_equal false, op.field_provided?(:admin_type)
+
+      op = PolymorphicAssociationOp.new
+      assert_equal false, op.field_provided?(:admin)
+      assert_equal false, op.field_provided?(:admin_id)
+      assert_equal false, op.field_provided?(:admin_type)
+
+    end
   end
 end
