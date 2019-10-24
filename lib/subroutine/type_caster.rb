@@ -10,6 +10,15 @@ require 'active_support/core_ext/array/wrap'
 
 module Subroutine
   module TypeCaster
+
+    class TypeCastError < StandardError
+
+      def initialize(message)
+        super(message)
+      end
+
+    end
+
     def self.casters
       @casters ||= {}
     end
@@ -28,6 +37,9 @@ module Subroutine
       return value unless caster
 
       caster.call(value, options)
+
+    rescue StandardError => e
+      raise ::Subroutine::TypeCaster::TypeCastError, e.to_s, e.backtrace
     end
   end
 end

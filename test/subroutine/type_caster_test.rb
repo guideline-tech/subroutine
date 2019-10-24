@@ -252,18 +252,14 @@ module Subroutine
       op.file_input.unlink
     end
 
-    def test_field_provided
-      op = ::SignupOp.new
-      assert_equal false, op.send(:field_provided?, :email)
+    def test_when_a_type_cast_fails_a_type_cast_error_is_raised
+      assert_raises Subroutine::TypeCaster::TypeCastError do
+        op.date_input = "2015-13-01"
+      end
 
-      op = ::SignupOp.new(email: 'foo')
-      assert_equal true, op.send(:field_provided?, :email)
-
-      op = ::DefaultsOp.new
-      assert_equal false, op.send(:field_provided?, :foo)
-
-      op = ::DefaultsOp.new(foo: 'foo')
-      assert_equal true, op.send(:field_provided?, :foo)
+      assert_raises "invalid date" do
+        op.date_input = "2015-13-01"
+      end
     end
   end
 end

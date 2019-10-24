@@ -115,7 +115,11 @@ module Subroutine
       _fields.each_pair do |field, config|
         next unless inputs.key?(field)
 
-        out[field] = ::Subroutine::TypeCaster.cast(inputs[field], config)
+        begin
+          out[field] = ::Subroutine::TypeCaster.cast(inputs[field], config)
+        rescue ::Subroutine::TypeCaster::TypeCastError => e
+          raise ::Subroutine::TypeCaster::TypeCastError, "Error for field `#{field}`: #{e}"
+        end
       end
 
       out
