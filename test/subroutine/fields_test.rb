@@ -12,6 +12,7 @@ module Subroutine
 
       string :foo, default: "foo"
       integer :bar, default: -> { 3 }
+      date :baz
 
       def initialize(options = {})
         setup_fields(options)
@@ -20,9 +21,10 @@ module Subroutine
     end
 
     def test_fields_are_configured
-      assert_equal 2, Whatever._fields.size
+      assert_equal 3, Whatever._fields.size
       assert_equal :string, Whatever._fields[:foo][:type]
       assert_equal :integer, Whatever._fields[:bar][:type]
+      assert_equal :date, Whatever._fields[:baz][:type]
     end
 
     def test_field_defaults_are_handled
@@ -41,6 +43,25 @@ module Subroutine
       instance = Whatever.new(foo: "abc")
       assert_equal true, instance.field_provided?(:foo)
       assert_equal false, instance.field_provided?(:bar)
+    end
+
+    def test_field_provided
+
+      instance = Whatever.new(foo: "abc")
+      assert_equal true, instance.field_provided?(:foo)
+      assert_equal false, instance.field_provided?(:bar)
+
+      instance = DefaultsOp.new
+      assert_equal false, instance.field_provided?(:foo)
+
+      instance = DefaultsOp.new(foo: 'foo')
+      assert_equal true, instance.field_provided?(:foo)
+    end
+
+    def test_invalid_typecast
+      assert_raises "Error for field `baz`: invalid date" do
+        Whatever.new(baz: "2015-13-01")
+      end
     end
 
     def test_params
