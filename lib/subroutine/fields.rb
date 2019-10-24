@@ -103,6 +103,8 @@ module Subroutine
 
     # check if a specific field was provided
     def field_provided?(key)
+      return send(:"#{key}_field_provided?") if respond_to?(:"#{key}_field_provided?", true)
+
       @params.key?(key)
     end
 
