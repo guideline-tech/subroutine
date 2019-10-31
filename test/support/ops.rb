@@ -298,8 +298,6 @@ class ErrorTraceOp < ::Subroutine::Op
 end
 
 class CustomFailureClassOp < ::Subroutine::Op
-    # Normally we'd just inherit from Subroutine::Failure,
-  # but for testing sake let's avoid sharing the hierarchy.
   class Failure < StandardError
     attr_reader :record
     def initialize(record)
