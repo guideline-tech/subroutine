@@ -26,18 +26,6 @@ end
 ## Ops ##
 
 class SignupOp < ::Subroutine::Op
-  # Normally we'd just inherit from Subroutine::Failure,
-  # but for testing sake let's avoid sharing the hierarchy.
-  class Failure < StandardError
-    attr_reader :record
-    def initialize(record)
-      @record = record
-      errors = @record.errors.full_messages.join(', ')
-      super(errors)
-    end
-  end
-
-
   string :email, aka: :email_address
   string :password
 
@@ -306,5 +294,24 @@ class ErrorTraceOp < ::Subroutine::Op
 
   def perform
     SubOp.submit!
+  end
+end
+
+class CustomFailureClassOp < ::Subroutine::Op
+    # Normally we'd just inherit from Subroutine::Failure,
+  # but for testing sake let's avoid sharing the hierarchy.
+  class Failure < StandardError
+    attr_reader :record
+    def initialize(record)
+      @record = record
+      errors = @record.errors.full_messages.join(', ')
+      super(errors)
+    end
+  end
+
+  failure_class Failure
+
+  def perform
+    errors.add(:base, "Will never work")
   end
 end

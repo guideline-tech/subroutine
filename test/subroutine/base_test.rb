@@ -135,15 +135,13 @@ module Subroutine
     end
 
     def test_uses_failure_class_to_raise_error
-      ::SignupOp.failure_class(::SignupOp::Failure)
+      op = ::CustomFailureClassOp.new
 
-      op = ::SignupOp.new(email: 'foo@bar.com')
-
-      err = assert_raises ::SignupOp::Failure do
+      err = assert_raises ::CustomFailureClassOp::Failure do
         op.submit!
       end
 
-      assert_equal "Password can't be blank", err.message
+      assert_equal "Will never work", err.message
     end
 
     def test_the_result_of_perform_doesnt_matter
