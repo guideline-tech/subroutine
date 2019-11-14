@@ -4,7 +4,7 @@ module Subroutine
   MAJOR = 0
   MINOR = 10
   PATCH = 0
-  PRE   = nil
+  PRE   = "beta"
 
   VERSION = [MAJOR, MINOR, PATCH, PRE].compact.join('.')
 end
