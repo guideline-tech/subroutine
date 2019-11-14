@@ -151,33 +151,16 @@ module Subroutine
       assert_equal 'foo@bar.com', op.created_user.email_address
     end
 
-    def test_it_ignores_specific_errors
-      op = ::WhateverSignupOp.submit
-      assert_equal [], op.errors[:whatever]
-    end
-
-    def test_it_does_not_inherit_ignored_errors
-      op = ::WhateverSignupOp.new
-      other = ::SignupOp.new
-      other.errors.add(:whatever, 'fail')
-      op.send(:inherit_errors, other)
-      assert_equal [], op.errors[:whatever]
-    end
-
     def test_it_sets_the_params_and_defaults_immediately
       op = ::AdminSignupOp.new(email: 'foo')
       assert_equal({
-                     'email' => 'foo'
+                     'email' => 'foo',
+                     'privileges' => 'min',
                    }, op.params)
 
       assert_equal({
                      'privileges' => 'min'
                    }, op.defaults)
-
-      assert_equal({
-                     'email' => 'foo',
-                     'privileges' => 'min'
-                   }, op.params_with_defaults)
     end
 
     def test_it_allows_defaults_to_be_overridden
@@ -188,14 +171,7 @@ module Subroutine
                      'privileges' => nil
                    }, op.params)
 
-      assert_equal({
-                     'privileges' => 'min'
-                   }, op.defaults)
-
-      assert_equal({
-                     'email' => 'foo',
-                     'privileges' => nil
-                   }, op.params_with_defaults)
+      assert_equal({"privileges" => "min"}, op.defaults)
     end
 
     def test_it_overriding_default_does_not_alter_default
@@ -212,11 +188,6 @@ module Subroutine
       assert_equal({
                      'privileges' => 'min'
                    }, op.defaults)
-
-      assert_equal({
-                     'email' => 'foo',
-                     'privileges' => nil
-                   }, op.params_with_defaults)
     end
 
     def test_it_overrides_defaults_with_nils
@@ -229,10 +200,10 @@ module Subroutine
 
     def test_it_casts_params_on_the_way_in
       op = ::TypeCastOp.new(integer_input: '25')
-      assert_equal(25, op.params_with_defaults['integer_input'])
+      assert_equal(25, op.params['integer_input'])
 
       op.decimal_input = '25.3'
-      assert_equal(BigDecimal('25.3'), op.params_with_defaults['decimal_input'])
+      assert_equal(BigDecimal('25.3'), op.params['decimal_input'])
     end
 
     def test_it_allow_retrival_of_outputs
@@ -276,6 +247,35 @@ module Subroutine
         end
 
         refute_nil found, 'Expected backtrace to include original caller of foo'
+      end
+    end
+
+    def test_a_block_is_accepted_on_instantiation
+      op = ::SignupOp.new do |o|
+        o.email = "foo@bar.com"
+        o.password = "password123!"
+      end
+
+      assert_equal "foo@bar.com", op.email
+      assert_equal "password123!", op.password
+
+      assert_equal true, op.field_provided?(:email)
+      assert_equal true, op.field_provided?(:password)
+    end
+
+    def test_a_block_is_not_accepted_with_submit
+      assert_raises ::ArgumentError do
+        ::SignupOp.submit! do |o|
+          o.email = "foo@bar.com"
+          o.password = "password123!"
+        end
+      end
+
+      assert_raises ::ArgumentError do
+        ::SignupOp.submit do |o|
+          o.email = "foo@bar.com"
+          o.password = "password123!"
+        end
       end
     end
   end

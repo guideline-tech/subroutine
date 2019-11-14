@@ -64,10 +64,6 @@ class SignupOp < ::Subroutine::Op
     ::User
   end
 end
-class WhateverSignupOp < ::SignupOp
-  string :whatever, ignore_errors: true
-  validates :whatever, presence: true
-end
 
 class AdminSignupOp < ::SignupOp
   field :privileges, default: 'min'

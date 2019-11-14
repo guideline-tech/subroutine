@@ -7,6 +7,8 @@ require 'minitest/unit'
 require 'minitest/reporters'
 require 'mocha/minitest'
 
+require "byebug"
+
 Minitest::Reporters.use!([Minitest::Reporters::DefaultReporter.new])
 
 class TestCase < ::Minitest::Test; end
