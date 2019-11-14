@@ -72,81 +72,108 @@ module Subroutine
 
       protected
 
-      def _field(field_name, options = {})
+      def _field(field_name, field_writer: true, field_reader: true, **options)
         self._fields = _fields.merge(field_name.to_sym => options)
 
+        if field_writer
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            silence_redefinition_of_method(:#{field_name}=)
+            def #{field_name}=(v)
+              config = #{field_name}_config
+              @fields_provided["#{field_name}"] = true
+              @params["#{field_name}"] = attempt_cast(v, config) do |e|
+                "Error during assignment of field `#{field_name}`: \#{e}"
+              end
+            end
+          EV
+        end
+
+        if field_reader
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            silence_redefinition_of_method(:#{field_name})
+            def #{field_name}
+              @params["#{field_name}"]
+            end
+          EV
+        end
+
         class_eval <<-EV, __FILE__, __LINE__ + 1
-
-          def #{field_name}=(v)
-            config = #{field_name}_config
-            v = ::Subroutine::TypeCaster.cast(v, config)
-            @params["#{field_name}"] = v
-          end
-
-          def #{field_name}
-            @params.has_key?("#{field_name}") ? @params["#{field_name}"] : @defaults["#{field_name}"]
-          end
-
+          silence_redefinition_of_method(:#{field_name}_config)
           def #{field_name}_config
             _fields[:#{field_name}]
           end
-
         EV
       end
     end
 
     def setup_fields(inputs = {})
       @original_params = inputs.with_indifferent_access
-      @params = sanitize_params(@original_params)
-      @defaults = sanitize_defaults
+      @defaults = build_defaults
+      @fields_provided = {}.with_indifferent_access
+      @params = build_params(@original_params, @defaults)
     end
 
     # check if a specific field was provided
     def field_provided?(key)
       return send(:"#{key}_field_provided?") if respond_to?(:"#{key}_field_provided?", true)
 
-      @params.key?(key)
+      !!@fields_provided[key]
     end
 
     # if you want to use strong parameters or something in your form object you can do so here.
     # by default we just slice the inputs to the defined fields
-    def sanitize_params(inputs)
+    def build_params(inputs, defaults)
       out = {}.with_indifferent_access
-      _fields.each_pair do |field, config|
-        next unless inputs.key?(field)
 
-        begin
-          out[field] = ::Subroutine::TypeCaster.cast(inputs[field], config)
-        rescue ::Subroutine::TypeCaster::TypeCastError => e
-          raise ::Subroutine::TypeCaster::TypeCastError, "Error for field `#{field}`: #{e}"
+      _fields.each_pair do |field, config|
+
+        if config[:mass_assignable] == false && inputs.key?(field)
+          raise ArgumentError, "`#{field}` is not mass assignable"
+        end
+
+        if inputs.key?(field)
+          @fields_provided[field] = true
+          out[field] = attempt_cast(inputs[field], config) do |e|
+            "Error for field `#{field}`: #{e}"
+          end
+        elsif defaults.key?(field)
+          out[field] =  defaults[field]
+        else
+          next
         end
       end
 
       out
     end
 
-    def params_with_defaults
-      @defaults.merge(@params)
-    end
-
-    def sanitize_defaults
-      defaults = {}.with_indifferent_access
+    def build_defaults
+      @defaults = {}.with_indifferent_access
 
       _fields.each_pair do |field, config|
-        next if config[:default].nil?
+        next unless config.key?(:default)
 
         deflt = config[:default]
         if deflt.respond_to?(:call)
           deflt = deflt.call
-        elsif deflt.duplicable? # from active_support
+        elsif deflt.try(:duplicable?) # from active_support
           # Some classes of default values need to be duplicated, or the instance field value will end up referencing
           # the class global default value, and potentially modify it.
           deflt = deflt.deep_dup # from active_support
         end
-        defaults[field] = ::Subroutine::TypeCaster.cast(deflt, config)
+
+        @defaults[field.to_s] = attempt_cast(deflt, config) do |e|
+          "Error for default `#{field}`: #{e}"
+        end
       end
 
-      defaults
+      @defaults
+    end
+
+    def attempt_cast(value, config)
+      ::Subroutine::TypeCaster.cast(value, config)
+      rescue ::Subroutine::TypeCaster::TypeCastError => e
+      message = block_given? ? yield(e) : e.to_s
+      raise ::Subroutine::TypeCaster::TypeCastError, message, e.backtrace
     end
 
   end

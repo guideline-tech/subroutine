@@ -4,16 +4,15 @@ require "active_model"
 
 require "subroutine/fields"
 require "subroutine/failure"
-require "subroutine/filtered_errors"
 require "subroutine/output_not_set_error"
 require "subroutine/unknown_output_error"
 
 module Subroutine
   class Op
 
-    include ::Subroutine::Fields
-    include ::ActiveModel::Model
+    include ::ActiveModel::Validations
     include ::ActiveModel::Validations::Callbacks
+    include ::Subroutine::Fields
 
     DEFAULT_OUTPUT_OPTIONS = {
       required: true,
@@ -34,14 +33,8 @@ module Subroutine
         end
       end
 
-      def ignore_error(*field_names)
-        field_names.each do |f|
-          _ignore_errors(f)
-        end
-      end
-      alias ignore_errors ignore_error
-
       def submit!(*args)
+        raise ArgumentError, "Blocks cannot be provided to `submit!`" if block_given?
         op = new(*args)
         op.submit!
 
@@ -49,6 +42,7 @@ module Subroutine
       end
 
       def submit(*args)
+        raise ArgumentError, "Blocks cannot be provided to `submit`." if block_given?
         op = new(*args)
         op.submit
         op
@@ -65,13 +59,7 @@ module Subroutine
           end
         end
 
-        _ignore_errors(field_name) if options[:ignore_errors]
-
         result
-      end
-
-      def _ignore_errors(field_name)
-        self._error_ignores = _error_ignores.merge(field_name.to_sym => true)
       end
 
     end
@@ -82,16 +70,10 @@ module Subroutine
     class_attribute :_error_map
     self._error_map = {}
 
-    class_attribute :_error_ignores
-    self._error_ignores = {}
-
     def initialize(inputs = {})
       setup_fields(inputs)
       @outputs = {}
-    end
-
-    def errors
-      @filtered_errors ||= Subroutine::FilteredErrors.new(super)
+      yield self if block_given?
     end
 
     def output(name, value)
@@ -175,8 +157,6 @@ module Subroutine
       error_object = error_object.errors if error_object.respond_to?(:errors)
 
       error_object.each do |k, v|
-        next if _error_ignores[k.to_sym]
-
         if respond_to?(k)
           errors.add(k, v)
         elsif _error_map[k.to_sym]

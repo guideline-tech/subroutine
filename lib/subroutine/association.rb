@@ -2,18 +2,19 @@
 
 module Subroutine
   module Association
-    def self.included(base)
-      base.send :extend, ::Subroutine::Association::ClassMethods
-      class << base
+    extend ActiveSupport::Concern
+
+    included do
+      class << self
         alias_method :field_without_associations, :field
         alias_method :field, :field_with_associations
       end
 
-      base.send(:alias_method, :setup_fields_without_association, :setup_fields)
-      base.send(:alias_method, :setup_fields, :setup_fields_with_association)
+      alias_method :setup_fields_without_association, :setup_fields
+      alias_method :setup_fields, :setup_fields_with_association
     end
 
-    module ClassMethods
+    class_methods do
       def field_with_associations(*args)
         opts = args.extract_options!
         if opts[:association]
@@ -75,34 +76,28 @@ module Subroutine
 
         integer foreign_key_method
 
-        field_without_associations as, options.merge(association: true)
+        field_without_associations as, options.merge(association: true, field_writer: false, field_reader: false)
 
         class_eval <<-EV, __FILE__, __LINE__ + 1
-          def #{as}_with_association
+          silence_redefinition_of_method(:#{as})
+          def #{as}
             return @#{as} if defined?(@#{as})
-            @#{as} = begin
-              #{as}_without_association ||
-              polymorphic_instance(#{klass.nil? ? foreign_type_method : klass.to_s}, #{foreign_key_method}, #{unscoped.inspect})
-            end
+            @#{as} = polymorphic_instance(#{klass.nil? ? foreign_type_method : klass.to_s}, #{foreign_key_method}, #{unscoped.inspect})
           end
 
-          def #{as}_with_association=(r)
+          silence_redefinition_of_method(:#{as}=)
+          def #{as}=(r)
             @#{as} = r
-            #{poly || klass ? "params['#{foreign_type_method}'] = r.nil? ? nil : #{klass.nil? ? 'r.class.name' : klass.to_s.inspect}" : ''}
-            params['#{foreign_key_method}'] = r.nil? ? nil : r.id
+            #{poly || klass ? "send('#{foreign_type_method}=', r.nil? ? nil : #{klass.nil? ? 'r.class.name' : klass.to_s.inspect})" : ''}
+            send('#{foreign_key_method}=', r.nil? ? nil : r.id)
             r
           end
 
+          silence_redefinition_of_method(:#{as}_field_provided?)
           def #{as}_field_provided?
             field_provided?('#{foreign_key_method}')#{poly ? "&& field_provided?('#{foreign_type_method}')" : ""}
           end
         EV
-
-        alias_method :"#{as}_without_association", :"#{as}"
-        alias_method :"#{as}", :"#{as}_with_association"
-
-        alias_method :"#{as}_without_association=", :"#{as}="
-        alias_method :"#{as}=", :"#{as}_with_association="
       end
     end
 
@@ -111,6 +106,7 @@ module Subroutine
 
       _fields.each_pair do |field, config|
         next unless config[:association]
+        next if config[:mass_assignable] == false
         next unless @original_params.key?(field)
 
         send("#{field}=", @original_params[field]) # this gets the _id and _type into the params hash

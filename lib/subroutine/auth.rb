@@ -98,10 +98,10 @@ module Subroutine
       end
     end
 
-    def initialize(*args)
+    def initialize(*args, &block)
       raise Subroutine::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared
 
-      super(args.extract_options!)
+      super(args.extract_options!, &block)
       @skip_auth_checks = false
       @current_user = args.shift
 
