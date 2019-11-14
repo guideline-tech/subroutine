@@ -77,7 +77,7 @@ module Subroutine
 
         if field_writer
           class_eval <<-EV, __FILE__, __LINE__ + 1
-            silence_redefinition_of_method(:#{field_name}=)
+            try(:silence_redefinition_of_method, :#{field_name}=)
             def #{field_name}=(v)
               config = #{field_name}_config
               @fields_provided["#{field_name}"] = true
@@ -90,7 +90,7 @@ module Subroutine
 
         if field_reader
           class_eval <<-EV, __FILE__, __LINE__ + 1
-            silence_redefinition_of_method(:#{field_name})
+            try(:silence_redefinition_of_method, :#{field_name})
             def #{field_name}
               @params["#{field_name}"]
             end
@@ -98,7 +98,7 @@ module Subroutine
         end
 
         class_eval <<-EV, __FILE__, __LINE__ + 1
-          silence_redefinition_of_method(:#{field_name}_config)
+          try(:silence_redefinition_of_method, :#{field_name}_config)
           def #{field_name}_config
             _fields[:#{field_name}]
           end

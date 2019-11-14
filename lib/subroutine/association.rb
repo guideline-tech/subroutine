@@ -80,13 +80,13 @@ module Subroutine
         field_without_associations as, options.merge(association: true, field_writer: false, field_reader: false)
 
         class_eval <<-EV, __FILE__, __LINE__ + 1
-          silence_redefinition_of_method(:#{as})
+          try(:silence_redefinition_of_method, :#{as})
           def #{as}
             return @#{as} if defined?(@#{as})
             @#{as} = polymorphic_instance(#{klass.nil? ? foreign_type_method : klass.to_s}, #{foreign_key_method}, #{unscoped.inspect})
           end
 
-          silence_redefinition_of_method(:#{as}=)
+          try(:silence_redefinition_of_method, :#{as}=)
           def #{as}=(r)
             @#{as} = r
             #{poly || klass ? "send('#{foreign_type_method}=', r.nil? ? nil : #{klass.nil? ? 'r.class.name' : klass.to_s.inspect})" : ''}
@@ -94,7 +94,7 @@ module Subroutine
             r
           end
 
-          silence_redefinition_of_method(:#{as}_field_provided?)
+          try(:silence_redefinition_of_method, :#{as}_field_provided?)
           def #{as}_field_provided?
             field_provided?('#{foreign_key_method}')#{poly ? "&& field_provided?('#{foreign_type_method}')" : ""}
           end
