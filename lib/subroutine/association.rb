@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "active_support/concern"
 
 module Subroutine
   module Association
@@ -14,7 +15,7 @@ module Subroutine
       alias_method :setup_fields, :setup_fields_with_association
     end
 
-    class_methods do
+    module ClassMethods
       def field_with_associations(*args)
         opts = args.extract_options!
         if opts[:association]
