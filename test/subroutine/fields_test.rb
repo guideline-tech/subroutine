@@ -88,5 +88,18 @@ module Subroutine
       assert_equal true, instance.field_provided?(:protekted)
     end
 
+    def test_get_field
+      instance = Whatever.new
+
+      assert_equal "foo", instance.get_field(:foo)
+    end
+
+    def test_set_field
+      instance = Whatever.new
+      instance.set_field(:foo, "bar")
+
+      assert_equal "bar", instance.foo
+    end
+
   end
 end
