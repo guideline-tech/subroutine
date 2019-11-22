@@ -13,11 +13,12 @@ module Subroutine
 
     extend ActiveSupport::Concern
 
+    PROTECTED_FIELD_IDENTIFIERS = %i[defaults all].freeze
+
     included do
       class_attribute :_fields
       self._fields = {}
       attr_reader :original_params
-      attr_reader :params, :defaults
     end
 
     module ClassMethods
@@ -54,6 +55,13 @@ module Subroutine
       end
       alias_method :fields_from, :inputs_from
 
+      def fields_in_group(group_name)
+        group_name = group_name.to_s
+        _fields.each_with_object({}) do |(field_name, config), h|
+          h[field_name] = config if config[:group].include?(group_name)
+        end
+      end
+
       def respond_to_missing?(method_name, *args, &block)
         ::Subroutine::TypeCaster.casters.key?(method_name.to_sym) || super
       end
@@ -73,6 +81,17 @@ module Subroutine
       protected
 
       def _field(field_name, field_writer: true, field_reader: true, **options)
+
+        unless options[:group].nil?
+          options[:group] = Array(options[:group]).map(&:to_s)
+          options[:group].each do |group|
+            next unless PROTECTED_FIELD_IDENTIFIERS.include?(group.to_sym)
+            raise ArgumentError, "Cannot assign a field to protected group `#{group}`. Protected groups are: #{PROTECTED_FIELD_IDENTIFIERS.join(", ")}"
+            _group(group)
+          end
+        end
+
+
         self._fields = _fields.merge(field_name.to_sym => options)
 
         if field_writer
@@ -102,12 +121,33 @@ module Subroutine
       end
     end
 
+    def _group(group_name)
+      class_eval <<-EV, __FILE__, __LINE__ + 1
+        try(:silence_redefinition_of_method, :#{group_name}_params)
+        def #{group_name}_params
+          @param_groups[:#{group_name}]
+        end
+      EV
+    end
+
     def setup_fields(inputs = {})
       @original_params = inputs.with_indifferent_access
-      @defaults = build_defaults
       @fields_provided = {}.with_indifferent_access
-      @params = build_params(@original_params, @defaults)
+      @param_groups = Hash.new{|h, k| h[k] = {}.with_indifferent_access }
+      @param_groups[:defaults] = build_defaults
+      @param_groups[:all] = build_params(@original_params, @param_groups[:defaults])
     end
+
+    def params
+      @param_groups[:all]
+    end
+
+    alias_method :all_params, :params
+
+    def defaults
+      @param_groups[:defaults]
+    end
+    alias_method :default_params, :defaults
 
     # check if a specific field was provided
     def field_provided?(key)
@@ -173,14 +213,31 @@ module Subroutine
     end
 
     def get_field(name)
-      @params[name]
+      params[name]
     end
 
     def set_field(name, value)
       config = _fields[name]
       @fields_provided[name] = true
-      @params[name] = attempt_cast(value, config) do |e|
+      value = attempt_cast(value, config) do |e|
         "Error during assignment of field `#{name}`: \#{e}"
+      end
+      each_param_group_for_field(name) do |h|
+        h[name] = value
+      end
+      value
+    end
+
+    def each_param_group_for_field(name)
+      config = _fields[name]
+      yield params
+
+      Array(config[:groups]).each do |group_name|
+        yield @param_groups[group_name]
+      end
+
+      Array(config[:group]).each do |group_name|
+        yield @param_groups[group_name]
       end
     end
 
