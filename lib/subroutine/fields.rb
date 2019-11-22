@@ -79,11 +79,7 @@ module Subroutine
           class_eval <<-EV, __FILE__, __LINE__ + 1
             try(:silence_redefinition_of_method, :#{field_name}=)
             def #{field_name}=(v)
-              config = #{field_name}_config
-              @fields_provided["#{field_name}"] = true
-              @params["#{field_name}"] = attempt_cast(v, config) do |e|
-                "Error during assignment of field `#{field_name}`: \#{e}"
-              end
+              set_field(:#{field_name}, v)
             end
           EV
         end
@@ -92,7 +88,7 @@ module Subroutine
           class_eval <<-EV, __FILE__, __LINE__ + 1
             try(:silence_redefinition_of_method, :#{field_name})
             def #{field_name}
-              @params["#{field_name}"]
+              get_field(:#{field_name})
             end
           EV
         end
@@ -174,6 +170,18 @@ module Subroutine
       rescue ::Subroutine::TypeCaster::TypeCastError => e
       message = block_given? ? yield(e) : e.to_s
       raise ::Subroutine::TypeCaster::TypeCastError, message, e.backtrace
+    end
+
+    def get_field(name)
+      @params[name]
+    end
+
+    def set_field(name, value)
+      config = _fields[name]
+      @fields_provided[name] = true
+      @params[name] = attempt_cast(value, config) do |e|
+        "Error during assignment of field `#{name}`: \#{e}"
+      end
     end
 
   end
