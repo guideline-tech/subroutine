@@ -134,6 +134,16 @@ module Subroutine
       assert_equal "Password can't be blank", err.message
     end
 
+    def test_uses_failure_class_to_raise_error
+      op = ::CustomFailureClassOp.new
+
+      err = assert_raises ::CustomFailureClassOp::Failure do
+        op.submit!
+      end
+
+      assert_equal "Will never work", err.message
+    end
+
     def test_the_result_of_perform_doesnt_matter
       op = ::FalsePerformOp.new
       assert op.submit!

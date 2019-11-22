@@ -20,6 +20,10 @@ module Subroutine
 
     class << self
 
+      def failure_class(klass)
+        self._failure_class = klass
+      end
+
       def outputs(*names)
         options = names.extract_options!
         names.each do |name|
@@ -64,6 +68,9 @@ module Subroutine
 
     end
 
+    class_attribute :_failure_class
+    self._failure_class = Subroutine::Failure
+
     class_attribute :_outputs
     self._outputs = {}
 
@@ -92,7 +99,7 @@ module Subroutine
       rescue Exception => e
         if e.respond_to?(:record)
           inherit_errors(e.record) unless e.record == self
-          new_e = ::Subroutine::Failure.new(self)
+          new_e = _failure_class.new(self)
           raise new_e, new_e.message, e.backtrace
         else
           raise
@@ -108,7 +115,7 @@ module Subroutine
 
         true
       else
-        raise ::Subroutine::Failure, self
+        raise _failure_class, self
       end
     end
 

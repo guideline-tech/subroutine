@@ -292,3 +292,20 @@ class ErrorTraceOp < ::Subroutine::Op
     SubOp.submit!
   end
 end
+
+class CustomFailureClassOp < ::Subroutine::Op
+  class Failure < StandardError
+    attr_reader :record
+    def initialize(record)
+      @record = record
+      errors = @record.errors.full_messages.join(', ')
+      super(errors)
+    end
+  end
+
+  failure_class Failure
+
+  def perform
+    errors.add(:base, "Will never work")
+  end
+end
