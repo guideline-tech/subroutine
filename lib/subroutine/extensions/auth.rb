@@ -106,11 +106,10 @@ module Subroutine
         raise Subroutine::Extensions::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared
 
         super(args.extract_options!, &block)
-        @skip_auth_checks = false
         @current_user = args.shift
 
-        unless self.class.supported_user_class_names.include?(@current_user.class.name)
-          raise ArgumentError, "current_user must be one of the following types {#{self.class.supported_user_class_names.join(",")}} but was #{@current_user.class.name}"
+        unless self.class.supported_user_class_names.include?(current_user.class.name)
+          raise ArgumentError, "current_user must be one of the following types {#{self.class.supported_user_class_names.join(",")}} but was #{current_user.class.name}"
         end
       end
 
