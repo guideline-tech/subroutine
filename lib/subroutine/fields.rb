@@ -6,33 +6,49 @@ require "active_support/core_ext/hash/indifferent_access"
 require "active_support/core_ext/object/deep_dup"
 
 require "subroutine/type_caster"
-require "subroutine/association"
+require "subroutine/field"
 
 module Subroutine
   module Fields
 
     extend ActiveSupport::Concern
 
-    PROTECTED_FIELD_IDENTIFIERS = %i[defaults all].freeze
-
     included do
-      class_attribute :_fields
-      self._fields = {}
-      attr_reader :original_params
+      class_attribute :fields
+      self.fields = {}
     end
 
     module ClassMethods
-      # fields can be provided in the following way:
-      # field :field1, :field2
-      # field :field3, :field4, default: 'my default'
-      def field(*fields)
-        options = fields.extract_options!
 
-        fields.each do |f|
-          _field(f, options)
+      def field(field_name, options = {})
+        config = ::Subroutine::Field.from(field_name, options)
+        config.validate!
+
+        config.groups.each do |group_name|
+          _group(group_name)
+        end
+
+        self.fields = fields.merge(field_name.to_sym => config)
+
+        if config.field_writer?
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            try(:silence_redefinition_of_method, :#{field_name}=)
+            def #{field_name}=(v)
+              set_field(:#{field_name}, v)
+            end
+          EV
+        end
+
+        if config.field_reader?
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            try(:silence_redefinition_of_method, :#{field_name})
+            def #{field_name}
+              get_field(:#{field_name})
+            end
+          EV
         end
       end
-      alias_method :fields, :field
+      alias input field
 
       def inputs_from(*things)
         options = things.extract_options!
@@ -40,26 +56,30 @@ module Subroutine
         onlys = options.key?(:only) ? Array(options.delete(:only)) : nil
 
         things.each do |thing|
-          thing._fields.each_pair do |field_name, opts|
-            next if excepts && excepts.include?(field_name)
+          thing.fields.each_pair do |field_name, config|
+            next if excepts&.include?(field_name)
             next if onlys && !onlys.include?(field_name)
 
-            if opts[:association]
-              include ::Subroutine::Association unless included_modules.include?(::Subroutine::Association)
-              association(field_name, opts)
-            else
-              field(field_name, opts)
+            config.required_modules.each do |mod|
+              include mod unless included_modules.include?(mod)
             end
+
+            field(field_name, config)
           end
         end
       end
-      alias_method :fields_from, :inputs_from
+      alias fields_from inputs_from
 
       def fields_in_group(group_name)
-        group_name = group_name.to_s
-        _fields.each_with_object({}) do |(field_name, config), h|
-          h[field_name] = config if config[:group].include?(group_name)
+        fields.each_with_object({}) do |(field_name, config), h|
+          next unless config.in_group?(group_name)
+
+          h[field_name] = config
         end
+      end
+
+      def get_field_config(field_name)
+        fields[field_name.to_sym]
       end
 
       def respond_to_missing?(method_name, *args, &block)
@@ -69,10 +89,10 @@ module Subroutine
       def method_missing(method_name, *args, &block)
         caster = ::Subroutine::TypeCaster.casters[method_name.to_sym]
         if caster
-          options = args.extract_options!
+          field_name, options = args
+          options ||= {}
           options[:type] = method_name.to_sym
-          args.push(options)
-          field(*args, &block)
+          field(field_name, options)
         else
           super
         end
@@ -80,112 +100,74 @@ module Subroutine
 
       protected
 
-      def _field(field_name, field_writer: true, field_reader: true, **options)
-
-        unless options[:group].nil?
-          options[:group] = Array(options[:group]).map(&:to_s)
-          options[:group].each do |group|
-            next unless PROTECTED_FIELD_IDENTIFIERS.include?(group.to_sym)
-            raise ArgumentError, "Cannot assign a field to protected group `#{group}`. Protected groups are: #{PROTECTED_FIELD_IDENTIFIERS.join(", ")}"
-            _group(group)
-          end
-        end
-
-
-        self._fields = _fields.merge(field_name.to_sym => options)
-
-        if field_writer
-          class_eval <<-EV, __FILE__, __LINE__ + 1
-            try(:silence_redefinition_of_method, :#{field_name}=)
-            def #{field_name}=(v)
-              set_field(:#{field_name}, v)
-            end
-          EV
-        end
-
-        if field_reader
-          class_eval <<-EV, __FILE__, __LINE__ + 1
-            try(:silence_redefinition_of_method, :#{field_name})
-            def #{field_name}
-              get_field(:#{field_name})
-            end
-          EV
-        end
-
+      def _group(group_name)
         class_eval <<-EV, __FILE__, __LINE__ + 1
-          try(:silence_redefinition_of_method, :#{field_name}_config)
-          def #{field_name}_config
-            _fields[:#{field_name}]
+          try(:silence_redefinition_of_method, :#{group_name}_params)
+          def #{group_name}_params
+            param_groups[:#{group_name}]
+          end
+
+          try(:silence_redefinition_of_method, :without_#{group_name}_params)
+          def without_#{group_name}_params
+            all_params.except(*#{group_name}_params.keys)
           end
         EV
       end
-    end
 
-    def _group(group_name)
-      class_eval <<-EV, __FILE__, __LINE__ + 1
-        try(:silence_redefinition_of_method, :#{group_name}_params)
-        def #{group_name}_params
-          @param_groups[:#{group_name}]
-        end
-      EV
     end
 
     def setup_fields(inputs = {})
-      @original_params = inputs.with_indifferent_access
-      @fields_provided = {}.with_indifferent_access
-      @param_groups = Hash.new{|h, k| h[k] = {}.with_indifferent_access }
-      @param_groups[:defaults] = build_defaults
-      @param_groups[:all] = build_params(@original_params, @param_groups[:defaults])
+      @provided_fields = {}.with_indifferent_access
+      param_groups[:original] = inputs.with_indifferent_access
+      param_groups[:default] = build_defaults
+      build_all_params
+    end
+
+    def param_groups
+      @param_groups ||= Hash.new { |h, k| h[k] = {}.with_indifferent_access }
+    end
+
+    def original_params
+      param_groups[:original]
     end
 
     def params
-      @param_groups[:all]
+      param_groups[:all]
     end
-
-    alias_method :all_params, :params
+    alias all_params params
 
     def defaults
-      @param_groups[:defaults]
+      param_groups[:default]
     end
-    alias_method :default_params, :defaults
+    alias default_params defaults
+
+    def get_field_config(field_name)
+      self.class.get_field_config(field_name)
+    end
 
     # check if a specific field was provided
     def field_provided?(key)
-      return send(:"#{key}_field_provided?") if respond_to?(:"#{key}_field_provided?", true)
-
-      !!@fields_provided[key]
+      !!@provided_fields[key]
     end
 
-    # if you want to use strong parameters or something in your form object you can do so here.
-    # by default we just slice the inputs to the defined fields
-    def build_params(inputs, defaults)
-      out = {}.with_indifferent_access
-
-      _fields.each_pair do |field, config|
-
-        if config[:mass_assignable] == false && inputs.key?(field)
-          raise ArgumentError, "`#{field}` is not mass assignable"
+    def build_all_params
+      fields.each_pair do |field_name, config|
+        if !config.mass_assignable? && original_params.key?(field_name)
+          raise ArgumentError, "`#{field_name}` is not mass assignable"
         end
 
-        if inputs.key?(field)
-          @fields_provided[field] = true
-          out[field] = attempt_cast(inputs[field], config) do |e|
-            "Error for field `#{field}`: #{e}"
-          end
-        elsif defaults.key?(field)
-          out[field] =  defaults[field]
-        else
-          next
+        if original_params.key?(field_name)
+          set_field(field_name, original_params[field_name])
+        elsif defaults.key?(field_name)
+          set_field(field_name, defaults[field_name], track_provided: false)
         end
       end
-
-      out
     end
 
     def build_defaults
-      @defaults = {}.with_indifferent_access
+      out = {}.with_indifferent_access
 
-      _fields.each_pair do |field, config|
+      fields.each_pair do |field, config|
         next unless config.key?(:default)
 
         deflt = config[:default]
@@ -197,17 +179,17 @@ module Subroutine
           deflt = deflt.deep_dup # from active_support
         end
 
-        @defaults[field.to_s] = attempt_cast(deflt, config) do |e|
+        out[field.to_s] = attempt_cast(deflt, config) do |e|
           "Error for default `#{field}`: #{e}"
         end
       end
 
-      @defaults
+      out
     end
 
     def attempt_cast(value, config)
       ::Subroutine::TypeCaster.cast(value, config)
-      rescue ::Subroutine::TypeCaster::TypeCastError => e
+    rescue ::Subroutine::TypeCaster::TypeCastError => e
       message = block_given? ? yield(e) : e.to_s
       raise ::Subroutine::TypeCaster::TypeCastError, message, e.backtrace
     end
@@ -216,11 +198,11 @@ module Subroutine
       params[name]
     end
 
-    def set_field(name, value)
-      config = _fields[name]
-      @fields_provided[name] = true
+    def set_field(name, value, track_provided: true)
+      config = get_field_config(name)
+      @provided_fields[name] = true if track_provided
       value = attempt_cast(value, config) do |e|
-        "Error during assignment of field `#{name}`: \#{e}"
+        "Error during assignment of field `#{name}`: #{e}"
       end
       each_param_group_for_field(name) do |h|
         h[name] = value
@@ -228,16 +210,18 @@ module Subroutine
       value
     end
 
-    def each_param_group_for_field(name)
-      config = _fields[name]
-      yield params
-
-      Array(config[:groups]).each do |group_name|
-        yield @param_groups[group_name]
+    def clear_field(name)
+      each_param_group_for_field(name) do |h|
+        h.delete(name)
       end
+    end
 
-      Array(config[:group]).each do |group_name|
-        yield @param_groups[group_name]
+    def each_param_group_for_field(name)
+      config = get_field_config(name)
+      yield all_params
+
+      config.groups.each do |group_name|
+        yield param_groups[group_name]
       end
     end
 

@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-require 'subroutine/auth'
-require 'subroutine/association'
+require "subroutine/extensions/auth"
+require "subroutine/extensions/association"
 
 ## Models ##
 
 class User
+
   include ::ActiveModel::Model
 
   attr_accessor :id
@@ -17,15 +18,19 @@ class User
   def self.find(id)
     new(id: id)
   end
+
 end
 
 class AdminUser < ::User
-  validates :email_address, format: { with: /@admin\.com/, message: 'has gotta be @admin.com' }
+
+  validates :email_address, format: { with: /@admin\.com/, message: "has gotta be @admin.com" }
+
 end
 
 ## Ops ##
 
 class SignupOp < ::Subroutine::Op
+
   string :email, aka: :email_address
   string :password
 
@@ -63,43 +68,57 @@ class SignupOp < ::Subroutine::Op
   def user_class
     ::User
   end
+
 end
 
 class AdminSignupOp < ::SignupOp
-  field :privileges, default: 'min'
+
+  field :privileges, default: "min"
 
   protected
 
   def user_class
     ::AdminUser
   end
+
 end
 
 class BusinessSignupOp < ::Subroutine::Op
+
   string :business_name
 
   inputs_from ::SignupOp
+
 end
 
 class DefaultsOp < ::Subroutine::Op
-  field :foo, default: 'foo'
-  field :bar, default: 'bar'
+
+  field :foo, default: "foo"
+  field :bar, default: "bar"
   field :baz, default: false
+
 end
 
 class ExceptFooBarOp < ::Subroutine::Op
-  inputs_from ::DefaultsOp, except: [:foo, :bar]
+
+  inputs_from ::DefaultsOp, except: %i[foo bar]
+
 end
 
 class OnlyFooBarOp < ::Subroutine::Op
-  inputs_from ::DefaultsOp, only: [:foo, :bar]
+
+  inputs_from ::DefaultsOp, only: %i[foo bar]
+
 end
 
 class InheritedDefaultsOp < ::DefaultsOp
-  field :bar, default: 'barstool'
+
+  field :bar, default: "barstool"
+
 end
 
 class TypeCastOp < ::Subroutine::Op
+
   integer :integer_input
   number :number_input
   decimal :decimal_input
@@ -110,39 +129,51 @@ class TypeCastOp < ::Subroutine::Op
   iso_date :iso_date_input
   iso_time :iso_time_input
   object :object_input
-  array :array_input, default: 'foo'
+  array :array_input, default: "foo"
   array :type_array_input, of: :integer
   file :file_input
+
 end
 
 class OpWithAuth < ::Subroutine::Op
-  include ::Subroutine::Auth
+
+  include ::Subroutine::Extensions::Auth
   def perform
     true
   end
+
 end
 
 class MissingAuthOp < OpWithAuth
 end
 
 class RequireUserOp < OpWithAuth
+
   require_user!
+
 end
 
 class RequireNoUserOp < OpWithAuth
+
   require_no_user!
+
 end
 
 class NoUserRequirementsOp < OpWithAuth
+
   no_user_requirements!
+
 end
 
 class DifferentUserClassOp < OpWithAuth
+
   self.user_class_name = "AdminUser"
   require_user!
+
 end
 
 class CustomAuthorizeOp < OpWithAuth
+
   require_user!
   authorize :authorize_user_is_correct
 
@@ -151,13 +182,17 @@ class CustomAuthorizeOp < OpWithAuth
   def authorize_user_is_correct
     unauthorized! unless current_user.email_address.to_s =~ /example\.com$/
   end
+
 end
 
 class PolicyOp < OpWithAuth
+
   class FakePolicy
+
     def user_can_access?
       false
     end
+
   end
 
   require_user!
@@ -166,13 +201,17 @@ class PolicyOp < OpWithAuth
   def policy
     @policy ||= FakePolicy.new
   end
+
 end
 
 class IfConditionalPolicyOp < OpWithAuth
+
   class FakePolicy
+
     def user_can_access?
       false
     end
+
   end
 
   require_user!
@@ -183,13 +222,17 @@ class IfConditionalPolicyOp < OpWithAuth
   def policy
     @policy ||= FakePolicy.new
   end
+
 end
 
 class UnlessConditionalPolicyOp < OpWithAuth
+
   class FakePolicy
+
     def user_can_access?
       false
     end
+
   end
 
   require_user!
@@ -200,107 +243,143 @@ class UnlessConditionalPolicyOp < OpWithAuth
   def policy
     @policy ||= FakePolicy.new
   end
+
 end
 
 class OpWithAssociation < ::Subroutine::Op
-  include ::Subroutine::Association
+
+  include ::Subroutine::Extensions::Association
+
 end
 
 class SimpleAssociationOp < ::OpWithAssociation
+
   association :user
+
 end
 
 class UnscopedSimpleAssociationOp < ::OpWithAssociation
+
   association :user, unscoped: true
+
 end
 
 class PolymorphicAssociationOp < ::OpWithAssociation
+
   association :admin, polymorphic: true
+
 end
 
 class AssociationWithClassOp < ::OpWithAssociation
-  association :admin, class_name: 'AdminUser'
+
+  association :admin, class_name: "AdminUser"
+
 end
 
 class InheritedSimpleAssociation < ::Subroutine::Op
+
   inputs_from SimpleAssociationOp
+
 end
 
 class InheritedUnscopedAssociation < ::Subroutine::Op
+
   inputs_from UnscopedSimpleAssociationOp
+
 end
 
 class InheritedPolymorphicAssociationOp < ::Subroutine::Op
+
   inputs_from PolymorphicAssociationOp
+
 end
 
 class FalsePerformOp < ::Subroutine::Op
+
   def perform
     false
   end
+
 end
 
 class MissingOutputOp < ::Subroutine::Op
+
   def perform
-    output :foo, 'bar'
+    output :foo, "bar"
   end
+
 end
 
 class MissingOutputSetOp < ::Subroutine::Op
+
   outputs :foo
   def perform
     true
   end
+
 end
 
 class OutputNotRequiredOp < ::Subroutine::Op
+
   outputs :foo, required: false
   def perform
     true
   end
+
 end
 
 class NoOutputNoSuccessOp < ::Subroutine::Op
+
   outputs :foo
   def perform
-    errors.add(:foo, 'bar')
+    errors.add(:foo, "bar")
   end
+
 end
 
 class ErrorTraceOp < ::Subroutine::Op
+
   class SomeObject
+
     include ::ActiveModel::Model
     include ::ActiveModel::Validations::Callbacks
 
     def foo
-      errors.add(:base, 'Failure of things')
+      errors.add(:base, "Failure of things")
       raise Subroutine::Failure, self
     end
 
     def bar
       foo
     end
+
   end
 
   class SubOp < ::Subroutine::Op
+
     def perform
       SomeObject.new.bar
     end
+
   end
 
   def perform
     SubOp.submit!
   end
+
 end
 
 class CustomFailureClassOp < ::Subroutine::Op
+
   class Failure < StandardError
+
     attr_reader :record
     def initialize(record)
       @record = record
-      errors = @record.errors.full_messages.join(', ')
+      errors = @record.errors.full_messages.join(", ")
       super(errors)
     end
+
   end
 
   failure_class Failure
@@ -308,4 +387,5 @@ class CustomFailureClassOp < ::Subroutine::Op
   def perform
     errors.add(:base, "Will never work")
   end
+
 end

@@ -1,24 +1,25 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require "test_helper"
 
 module Subroutine
   class OpTest < TestCase
+
     def test_simple_fields_definition
       op = ::SignupOp.new
-      assert_equal [:email, :password], op._fields.keys.sort
+      assert_equal %i[email password], op.fields.keys.sort
     end
 
     def test_inherited_fields
       op = ::AdminSignupOp.new
-      assert_equal [:email, :password, :privileges], op._fields.keys.sort
+      assert_equal %i[email password privileges], op.fields.keys.sort
     end
 
     def test_class_attribute_usage
       assert ::AdminSignupOp < ::SignupOp
 
-      sid = ::SignupOp._fields.object_id
-      bid = ::AdminSignupOp._fields.object_id
+      sid = ::SignupOp.fields.object_id
+      bid = ::AdminSignupOp.fields.object_id
 
       refute_equal sid, bid
     end
@@ -26,8 +27,8 @@ module Subroutine
     def test_inputs_from_inherited_fields_without_inheriting_from_the_class
       refute ::BusinessSignupOp < ::SignupOp
 
-      user_fields = ::SignupOp._fields.keys
-      biz_fields = ::BusinessSignupOp._fields.keys
+      user_fields = ::SignupOp.fields.keys
+      biz_fields = ::BusinessSignupOp.fields.keys
 
       user_fields.each do |field|
         assert_includes biz_fields, field
@@ -36,28 +37,28 @@ module Subroutine
 
     def test_inputs_from_ignores_except_fields
       op = ::ExceptFooBarOp.new
-      refute op._fields.key?(:foo)
-      refute op._fields.key?(:bar)
-      assert_equal [:baz], op._fields.keys.sort
+      refute op.fields.key?(:foo)
+      refute op.fields.key?(:bar)
+      assert_equal [:baz], op.fields.keys.sort
     end
 
     def test_inputs_from_only_fields
       op = ::OnlyFooBarOp.new
-      assert op._fields.key?(:foo)
-      assert op._fields.key?(:bar)
-      refute_equal [:baz], op._fields.keys.sort
+      assert op.fields.key?(:foo)
+      assert op.fields.key?(:bar)
+      refute_equal [:baz], op.fields.keys.sort
     end
 
     def test_defaults_declaration_options
       op = ::DefaultsOp.new
-      assert_equal 'foo', op.foo
-      assert_equal 'bar', op.bar
+      assert_equal "foo", op.foo
+      assert_equal "bar", op.bar
       assert_equal false, op.baz
     end
 
     def test_inherited_defaults_override_correctly
       op = ::InheritedDefaultsOp.new
-      assert_equal 'barstool', op.bar
+      assert_equal "barstool", op.bar
     end
 
     def test_accessors_are_created
@@ -85,10 +86,10 @@ module Subroutine
 
       assert_nil op.email
       assert_nil op.password
-      assert_equal 'min', op.privileges
+      assert_equal "min", op.privileges
 
-      op.privileges = 'max'
-      assert_equal 'max', op.privileges
+      op.privileges = "max"
+      assert_equal "max", op.privileges
     end
 
     def test_validations_are_evaluated_before_perform_is_invoked
@@ -102,18 +103,18 @@ module Subroutine
     end
 
     def test_validation_errors_can_be_inherited_and_transformed
-      op = ::AdminSignupOp.new(email: 'foo@bar.com', password: 'password123')
+      op = ::AdminSignupOp.new(email: "foo@bar.com", password: "password123")
 
       refute op.submit
 
       assert op.perform_called
       refute op.perform_finished
 
-      assert_equal ['has gotta be @admin.com'], op.errors[:email]
+      assert_equal ["has gotta be @admin.com"], op.errors[:email]
     end
 
     def test_when_valid_perform_completes_it_returns_control
-      op = ::SignupOp.new(email: 'foo@bar.com', password: 'password123')
+      op = ::SignupOp.new(email: "foo@bar.com", password: "password123")
       op.submit!
 
       assert op.perform_called
@@ -121,11 +122,11 @@ module Subroutine
 
       u = op.created_user
 
-      assert_equal 'foo@bar.com', u.email_address
+      assert_equal "foo@bar.com", u.email_address
     end
 
     def test_it_raises_an_error_when_used_with_a_bang_and_performing_or_validation_fails
-      op = ::SignupOp.new(email: 'foo@bar.com')
+      op = ::SignupOp.new(email: "foo@bar.com")
 
       err = assert_raises ::Subroutine::Failure do
         op.submit!
@@ -157,70 +158,70 @@ module Subroutine
         SignupOp.submit!
       end
 
-      op = SignupOp.submit! email: 'foo@bar.com', password: 'password123'
-      assert_equal 'foo@bar.com', op.created_user.email_address
+      op = SignupOp.submit! email: "foo@bar.com", password: "password123"
+      assert_equal "foo@bar.com", op.created_user.email_address
     end
 
     def test_it_sets_the_params_and_defaults_immediately
-      op = ::AdminSignupOp.new(email: 'foo')
+      op = ::AdminSignupOp.new(email: "foo")
       assert_equal({
-                     'email' => 'foo',
-                     'privileges' => 'min',
-                   }, op.params)
+        "email" => "foo",
+        "privileges" => "min",
+      }, op.params)
 
       assert_equal({
-                     'privileges' => 'min'
-                   }, op.defaults)
+        "privileges" => "min",
+      }, op.defaults)
     end
 
     def test_it_allows_defaults_to_be_overridden
-      op = ::AdminSignupOp.new(email: 'foo', privileges: nil)
+      op = ::AdminSignupOp.new(email: "foo", privileges: nil)
 
       assert_equal({
-                     'email' => 'foo',
-                     'privileges' => nil
-                   }, op.params)
+        "email" => "foo",
+        "privileges" => nil,
+      }, op.params)
 
-      assert_equal({"privileges" => "min"}, op.defaults)
+      assert_equal({ "privileges" => "min" }, op.defaults)
     end
 
     def test_it_overriding_default_does_not_alter_default
-      op = ::AdminSignupOp.new(email: 'foo')
-      op.privileges << 'bangbang'
+      op = ::AdminSignupOp.new(email: "foo")
+      op.privileges << "bangbang"
 
-      op = ::AdminSignupOp.new(email: 'foo', privileges: nil)
-
-      assert_equal({
-                     'email' => 'foo',
-                     'privileges' => nil
-                   }, op.params)
+      op = ::AdminSignupOp.new(email: "foo", privileges: nil)
 
       assert_equal({
-                     'privileges' => 'min'
-                   }, op.defaults)
+        "email" => "foo",
+        "privileges" => nil,
+      }, op.params)
+
+      assert_equal({
+        "privileges" => "min",
+      }, op.defaults)
     end
 
     def test_it_overrides_defaults_with_nils
-      op = ::AdminSignupOp.new(email: 'foo', privileges: nil)
+      op = ::AdminSignupOp.new(email: "foo", privileges: nil)
       assert_equal({
-                     'privileges' => nil,
-                     'email' => 'foo'
-                   }, op.params)
+        "privileges" => nil,
+        "email" => "foo",
+      }, op.params)
     end
 
     def test_it_casts_params_on_the_way_in
-      op = ::TypeCastOp.new(integer_input: '25')
-      assert_equal(25, op.params['integer_input'])
+      op = ::TypeCastOp.new(integer_input: "25")
+      assert_equal(25, op.params["integer_input"])
 
-      op.decimal_input = '25.3'
-      assert_equal(BigDecimal('25.3'), op.params['decimal_input'])
+      op.decimal_input = "25.3"
+      assert_equal(BigDecimal("25.3"), op.params["decimal_input"])
     end
 
     def test_it_allow_retrival_of_outputs
-      op = ::SignupOp.submit!(email: 'foo@bar.com', password: 'password123')
+      op = ::SignupOp.submit!(email: "foo@bar.com", password: "password123")
       u = op.created_user
 
-      assert_equal 'foo@bar.com', u.email_address
+      assert_equal "foo@bar.com", u.email_address
     end
 
     def test_it_raises_an_error_if_an_output_is_not_defined_but_is_set
@@ -256,7 +257,7 @@ module Subroutine
           msg =~ %r{test/support/ops\.rb:[\d]+.+foo}
         end
 
-        refute_nil found, 'Expected backtrace to include original caller of foo'
+        refute_nil found, "Expected backtrace to include original caller of foo"
       end
     end
 
@@ -288,5 +289,6 @@ module Subroutine
         end
       end
     end
+
   end
 end

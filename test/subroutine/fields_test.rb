@@ -11,10 +11,11 @@ module Subroutine
       include Subroutine::Fields
 
       string :foo, default: "foo"
-      integer :bar, default: -> { 3 }
-      date :baz
+      integer :bar, default: -> { 3 }, group: :sekret
+      date :baz, group: :the_bazzes
 
       string :protekted, mass_assignable: false
+      string :protekted_group_input, group: :sekret
 
       def initialize(options = {})
         setup_fields(options)
@@ -23,11 +24,12 @@ module Subroutine
     end
 
     def test_fields_are_configured
-      assert_equal 4, Whatever._fields.size
-      assert_equal :string, Whatever._fields[:foo][:type]
-      assert_equal :integer, Whatever._fields[:bar][:type]
-      assert_equal :date, Whatever._fields[:baz][:type]
-      assert_equal :string, Whatever._fields[:protekted][:type]
+      assert_equal 5, Whatever.fields.size
+      assert_equal :string, Whatever.fields[:foo][:type]
+      assert_equal :integer, Whatever.fields[:bar][:type]
+      assert_equal :date, Whatever.fields[:baz][:type]
+      assert_equal :string, Whatever.fields[:protekted][:type]
+      assert_equal :string, Whatever.fields[:protekted_group_input][:type]
     end
 
     def test_field_defaults_are_handled
@@ -50,7 +52,7 @@ module Subroutine
       instance = DefaultsOp.new
       assert_equal false, instance.field_provided?(:foo)
 
-      instance = DefaultsOp.new(foo: 'foo')
+      instance = DefaultsOp.new(foo: "foo")
       assert_equal true, instance.field_provided?(:foo)
     end
 
@@ -99,6 +101,19 @@ module Subroutine
       instance.set_field(:foo, "bar")
 
       assert_equal "bar", instance.foo
+    end
+
+    def test_group_fields_are_accessible_at_the_class
+      results = Whatever.fields_in_group(:sekret)
+      assert_equal true, results.key?(:protekted_group_input)
+      assert_equal true, results.key?(:bar)
+      assert_equal false, results.key?(:protekted)
+    end
+
+    def test_groups_fields_are_accessible
+      op = Whatever.new(foo: "bar", protekted_group_input: "pgi", bar: 8)
+      assert_equal({ protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.sekret_params)
+      assert_equal({ foo: "bar", protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.params)
     end
 
   end

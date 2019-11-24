@@ -39,6 +39,7 @@ module Subroutine
 
       def submit!(*args)
         raise ArgumentError, "Blocks cannot be provided to `submit!`" if block_given?
+
         op = new(*args)
         op.submit!
 
@@ -47,6 +48,7 @@ module Subroutine
 
       def submit(*args)
         raise ArgumentError, "Blocks cannot be provided to `submit`." if block_given?
+
         op = new(*args)
         op.submit
         op
@@ -54,7 +56,7 @@ module Subroutine
 
       protected
 
-      def _field(field_name, options = {})
+      def field(field_name, options = {})
         result = super(field_name, options)
 
         if options[:aka]
