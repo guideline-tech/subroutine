@@ -6,7 +6,7 @@ module Subroutine
   class AuthTest < TestCase
 
     def user
-      @user ||= ::User.new(email_address: "doug@example.com")
+      @user ||= ::User.new(id: 4, email_address: "doug@example.com")
     end
 
     def test_it_throws_an_error_if_authorization_is_not_defined
@@ -23,6 +23,11 @@ module Subroutine
 
     def test_it_does_not_throw_an_error_if_require_user_but_none_is_provided
       RequireUserOp.submit! user
+    end
+
+    def test_it_allows_an_id_to_be_passed
+      ::User.expects(:find).with(user.id).returns(user)
+      RequireUserOp.submit! user.id
     end
 
     def test_it_throws_an_error_if_require_no_user_but_one_is_present
