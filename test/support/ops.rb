@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "subroutine/extensions/auth"
-require "subroutine/extensions/association"
+require "subroutine/auth"
+require "subroutine/association_fields"
 
 ## Models ##
 
@@ -137,7 +137,7 @@ end
 
 class OpWithAuth < ::Subroutine::Op
 
-  include ::Subroutine::Extensions::Auth
+  include ::Subroutine::Auth
   def perform
     true
   end
@@ -248,7 +248,7 @@ end
 
 class OpWithAssociation < ::Subroutine::Op
 
-  include ::Subroutine::Extensions::Association
+  include ::Subroutine::AssociationFields
 
 end
 

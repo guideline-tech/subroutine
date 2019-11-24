@@ -2,10 +2,9 @@
 
 require "active_model"
 
-require "subroutine/fields"
 require "subroutine/failure"
-require "subroutine/output_not_set_error"
-require "subroutine/unknown_output_error"
+require "subroutine/fields"
+require "subroutine/outputs"
 
 module Subroutine
   class Op
@@ -13,28 +12,12 @@ module Subroutine
     include ::ActiveModel::Validations
     include ::ActiveModel::Validations::Callbacks
     include ::Subroutine::Fields
-
-    DEFAULT_OUTPUT_OPTIONS = {
-      required: true,
-    }.freeze
+    include ::Subroutine::Outputs
 
     class << self
 
       def failure_class(klass)
         self._failure_class = klass
-      end
-
-      def outputs(*names)
-        options = names.extract_options!
-        names.each do |name|
-          self._outputs = _outputs.merge(name.to_sym => DEFAULT_OUTPUT_OPTIONS.merge(options))
-
-          class_eval <<-EV, __FILE__, __LINE__ + 1
-            def #{name}
-              @outputs[:#{name}]
-            end
-          EV
-        end
       end
 
       def submit!(*args)
@@ -73,24 +56,13 @@ module Subroutine
     class_attribute :_failure_class
     self._failure_class = Subroutine::Failure
 
-    class_attribute :_outputs
-    self._outputs = {}
-
     class_attribute :_error_map
     self._error_map = {}
 
     def initialize(inputs = {})
       setup_fields(inputs)
-      @outputs = {}
+      setup_outputs
       yield self if block_given?
-    end
-
-    def output(name, value)
-      unless _outputs.key?(name.to_sym)
-        raise ::Subroutine::UnknownOutputError, name
-      end
-
-      @outputs[name.to_sym] = value
     end
 
     def submit!
@@ -109,12 +81,7 @@ module Subroutine
       end
 
       if errors.empty?
-        _outputs.each_pair do |name, config|
-          if config[:required] && !@outputs.key?(name)
-            raise ::Subroutine::OutputNotSetError, name
-          end
-        end
-
+        validate_outputs!
         true
       else
         raise _failure_class, self

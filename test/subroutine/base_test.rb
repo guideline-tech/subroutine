@@ -7,19 +7,19 @@ module Subroutine
 
     def test_simple_fields_definition
       op = ::SignupOp.new
-      assert_equal %i[email password], op.fields.keys.sort
+      assert_equal %i[email password], op.field_configurations.keys.sort
     end
 
     def test_inherited_fields
       op = ::AdminSignupOp.new
-      assert_equal %i[email password privileges], op.fields.keys.sort
+      assert_equal %i[email password privileges], op.field_configurations.keys.sort
     end
 
     def test_class_attribute_usage
       assert ::AdminSignupOp < ::SignupOp
 
-      sid = ::SignupOp.fields.object_id
-      bid = ::AdminSignupOp.fields.object_id
+      sid = ::SignupOp.field_configurations.object_id
+      bid = ::AdminSignupOp.field_configurations.object_id
 
       refute_equal sid, bid
     end
@@ -27,8 +27,8 @@ module Subroutine
     def test_inputs_from_inherited_fields_without_inheriting_from_the_class
       refute ::BusinessSignupOp < ::SignupOp
 
-      user_fields = ::SignupOp.fields.keys
-      biz_fields = ::BusinessSignupOp.fields.keys
+      user_fields = ::SignupOp.field_configurations.keys
+      biz_fields = ::BusinessSignupOp.field_configurations.keys
 
       user_fields.each do |field|
         assert_includes biz_fields, field
@@ -37,16 +37,16 @@ module Subroutine
 
     def test_inputs_from_ignores_except_fields
       op = ::ExceptFooBarOp.new
-      refute op.fields.key?(:foo)
-      refute op.fields.key?(:bar)
-      assert_equal [:baz], op.fields.keys.sort
+      refute op.field_configurations.key?(:foo)
+      refute op.field_configurations.key?(:bar)
+      assert_equal [:baz], op.field_configurations.keys.sort
     end
 
     def test_inputs_from_only_fields
       op = ::OnlyFooBarOp.new
-      assert op.fields.key?(:foo)
-      assert op.fields.key?(:bar)
-      refute_equal [:baz], op.fields.keys.sort
+      assert op.field_configurations.key?(:foo)
+      assert op.field_configurations.key?(:bar)
+      refute_equal [:baz], op.field_configurations.keys.sort
     end
 
     def test_defaults_declaration_options
@@ -226,14 +226,14 @@ module Subroutine
 
     def test_it_raises_an_error_if_an_output_is_not_defined_but_is_set
       op = ::MissingOutputOp.new
-      assert_raises ::Subroutine::UnknownOutputError do
+      assert_raises ::Subroutine::Outputs::UnknownOutputError do
         op.submit
       end
     end
 
     def test_it_raises_an_error_if_not_all_outputs_were_set
       op = ::MissingOutputSetOp.new
-      assert_raises ::Subroutine::OutputNotSetError do
+      assert_raises ::Subroutine::Outputs::OutputNotSetError do
         op.submit
       end
     end

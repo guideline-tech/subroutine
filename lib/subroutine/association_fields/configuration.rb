@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require "subroutine/field"
-require "subroutine/extensions/association_component_field"
+require "subroutine/fields/configuration"
+require "subroutine/association_fields/component_configuration"
 
 module Subroutine
-  module Extensions
-    class AssociationField < ::Subroutine::Field
+  module AssociationFields
+    class Configuration < ::Subroutine::Fields::Configuration
 
       def validate!
         super
@@ -16,7 +16,7 @@ module Subroutine
       end
 
       def required_modules
-        super + [::Subroutine::Extensions::Association]
+        super + [::Subroutine::AssociationFields]
       end
 
       def polymorphic?
@@ -66,7 +66,7 @@ module Subroutine
       protected
 
       def build_child_field(name)
-        AssociationComponentField.new(name, inheritable_options.merge(association_name: as))
+        ComponentConfiguration.new(name, inheritable_options.merge(association_name: as))
       end
 
     end

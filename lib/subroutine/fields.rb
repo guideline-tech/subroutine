@@ -6,7 +6,7 @@ require "active_support/core_ext/hash/indifferent_access"
 require "active_support/core_ext/object/deep_dup"
 
 require "subroutine/type_caster"
-require "subroutine/field"
+require "subroutine/fields/configuration"
 
 module Subroutine
   module Fields
@@ -14,21 +14,21 @@ module Subroutine
     extend ActiveSupport::Concern
 
     included do
-      class_attribute :fields
-      self.fields = {}
+      class_attribute :field_configurations
+      self.field_configurations = {}
     end
 
     module ClassMethods
 
       def field(field_name, options = {})
-        config = ::Subroutine::Field.from(field_name, options)
+        config = ::Subroutine::Fields::Configuration.from(field_name, options)
         config.validate!
 
         config.groups.each do |group_name|
           _group(group_name)
         end
 
-        self.fields = fields.merge(field_name.to_sym => config)
+        self.field_configurations = field_configurations.merge(field_name.to_sym => config)
 
         if config.field_writer?
           class_eval <<-EV, __FILE__, __LINE__ + 1
@@ -56,7 +56,7 @@ module Subroutine
         onlys = options.key?(:only) ? Array(options.delete(:only)) : nil
 
         things.each do |thing|
-          thing.fields.each_pair do |field_name, config|
+          thing.field_configurations.each_pair do |field_name, config|
             next if excepts&.include?(field_name)
             next if onlys && !onlys.include?(field_name)
 
@@ -71,7 +71,7 @@ module Subroutine
       alias fields_from inputs_from
 
       def fields_in_group(group_name)
-        fields.each_with_object({}) do |(field_name, config), h|
+        field_configurations.each_with_object({}) do |(field_name, config), h|
           next unless config.in_group?(group_name)
 
           h[field_name] = config
@@ -79,7 +79,7 @@ module Subroutine
       end
 
       def get_field_config(field_name)
-        fields[field_name.to_sym]
+        field_configurations[field_name.to_sym]
       end
 
       def respond_to_missing?(method_name, *args, &block)
@@ -151,7 +151,7 @@ module Subroutine
     end
 
     def build_all_params
-      fields.each_pair do |field_name, config|
+      field_configurations.each_pair do |field_name, config|
         if !config.mass_assignable? && original_params.key?(field_name)
           raise ArgumentError, "`#{field_name}` is not mass assignable"
         end
@@ -167,7 +167,7 @@ module Subroutine
     def build_defaults
       out = {}.with_indifferent_access
 
-      fields.each_pair do |field, config|
+      field_configurations.each_pair do |field, config|
         next unless config.key?(:default)
 
         deflt = config[:default]

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "subroutine/field"
+require "subroutine/fields/configuration"
 
 module Subroutine
-  module Extensions
-    class AssociationComponentField < ::Subroutine::Field
+  module AssociationFields
+    class ComponentConfiguration < ::Subroutine::Fields::Configuration
 
       def behavior
         :association_component

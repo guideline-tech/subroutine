@@ -24,12 +24,12 @@ module Subroutine
     end
 
     def test_fields_are_configured
-      assert_equal 5, Whatever.fields.size
-      assert_equal :string, Whatever.fields[:foo][:type]
-      assert_equal :integer, Whatever.fields[:bar][:type]
-      assert_equal :date, Whatever.fields[:baz][:type]
-      assert_equal :string, Whatever.fields[:protekted][:type]
-      assert_equal :string, Whatever.fields[:protekted_group_input][:type]
+      assert_equal 5, Whatever.field_configurations.size
+      assert_equal :string, Whatever.field_configurations[:foo][:type]
+      assert_equal :integer, Whatever.field_configurations[:bar][:type]
+      assert_equal :date, Whatever.field_configurations[:baz][:type]
+      assert_equal :string, Whatever.field_configurations[:protekted][:type]
+      assert_equal :string, Whatever.field_configurations[:protekted_group_input][:type]
     end
 
     def test_field_defaults_are_handled
