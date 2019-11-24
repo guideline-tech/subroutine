@@ -11,6 +11,8 @@ module Subroutine
       include Subroutine::Fields
 
       string :foo, default: "foo"
+      string :qux, default: "qux"
+
       integer :bar, default: -> { 3 }, group: :sekret
       date :baz, group: :the_bazzes
 
@@ -24,8 +26,9 @@ module Subroutine
     end
 
     def test_fields_are_configured
-      assert_equal 5, Whatever.field_configurations.size
+      assert_equal 6, Whatever.field_configurations.size
       assert_equal :string, Whatever.field_configurations[:foo][:type]
+      assert_equal :string, Whatever.field_configurations[:qux][:type]
       assert_equal :integer, Whatever.field_configurations[:bar][:type]
       assert_equal :date, Whatever.field_configurations[:baz][:type]
       assert_equal :string, Whatever.field_configurations[:protekted][:type]
@@ -72,12 +75,18 @@ module Subroutine
 
     def test_params_include_defaults
       instance = Whatever.new(foo: "abc")
-      assert_equal({ "foo" => "abc", "bar" => 3 }, instance.params)
-      assert_equal({ "foo" => "foo", "bar" => 3 }, instance.defaults)
+      assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
+      assert_equal({ "foo" => "abc", "qux" => "qux" }, instance.params)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.all_params)
+    end
+
+    def test_named_params_include_defaults
+      instance = Whatever.new(foo: "abc")
+      assert_equal({ "bar" => 3 }, instance.sekret_params)
     end
 
     def test_fields_can_opt_out_of_mass_assignment
-      assert_raises "`protekted` is not mass assignable" do
+      assert_raises Subroutine::Fields::MassAssignmentError do
         Whatever.new(foo: "abc", protekted: "foo")
       end
     end
@@ -113,7 +122,7 @@ module Subroutine
     def test_groups_fields_are_accessible
       op = Whatever.new(foo: "bar", protekted_group_input: "pgi", bar: 8)
       assert_equal({ protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.sekret_params)
-      assert_equal({ foo: "bar", protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.params)
+      assert_equal({ foo: "bar", qux: "qux" }.with_indifferent_access, op.params)
     end
 
   end

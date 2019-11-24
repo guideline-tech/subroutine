@@ -7,6 +7,7 @@ require "active_support/core_ext/object/deep_dup"
 
 require "subroutine/type_caster"
 require "subroutine/fields/configuration"
+require "subroutine/fields/mass_assignment_error"
 
 module Subroutine
   module Fields
@@ -120,24 +121,32 @@ module Subroutine
       @provided_fields = {}.with_indifferent_access
       param_groups[:original] = inputs.with_indifferent_access
       param_groups[:default] = build_defaults
-      build_all_params
+      mass_assign_initial_params
     end
 
     def param_groups
       @param_groups ||= Hash.new { |h, k| h[k] = {}.with_indifferent_access }
     end
 
-    def original_params
-      param_groups[:original]
+    def get_param_group(name)
+      param_groups[name.to_sym]
     end
 
-    def params
-      param_groups[:all]
+    def original_params
+      get_param_group(:original)
     end
-    alias all_params params
+
+    def ungrouped_params
+      get_param_group(:ungrouped)
+    end
+    alias params ungrouped_params
+
+    def all_params
+      get_param_group(:all)
+    end
 
     def defaults
-      param_groups[:default]
+      get_param_group(:default)
     end
     alias default_params defaults
 
@@ -150,10 +159,34 @@ module Subroutine
       !!@provided_fields[key]
     end
 
-    def build_all_params
+    def get_field(name)
+      all_params[name]
+    end
+
+    def set_field(name, value, track_provided: true)
+      config = get_field_config(name)
+      @provided_fields[name] = true if track_provided
+      value = attempt_cast(value, config) do |e|
+        "Error during assignment of field `#{name}`: #{e}"
+      end
+      each_param_group_for_field(name) do |h|
+        h[name] = value
+      end
+      value
+    end
+
+    def clear_field(name)
+      each_param_group_for_field(name) do |h|
+        h.delete(name)
+      end
+    end
+
+    protected
+
+    def mass_assign_initial_params
       field_configurations.each_pair do |field_name, config|
         if !config.mass_assignable? && original_params.key?(field_name)
-          raise ArgumentError, "`#{field_name}` is not mass assignable"
+          raise ::Subroutine::Fields::MassAssignmentError, field_name
         end
 
         if original_params.key?(field_name)
@@ -194,34 +227,16 @@ module Subroutine
       raise ::Subroutine::TypeCaster::TypeCastError, message, e.backtrace
     end
 
-    def get_field(name)
-      params[name]
-    end
-
-    def set_field(name, value, track_provided: true)
-      config = get_field_config(name)
-      @provided_fields[name] = true if track_provided
-      value = attempt_cast(value, config) do |e|
-        "Error during assignment of field `#{name}`: #{e}"
-      end
-      each_param_group_for_field(name) do |h|
-        h[name] = value
-      end
-      value
-    end
-
-    def clear_field(name)
-      each_param_group_for_field(name) do |h|
-        h.delete(name)
-      end
-    end
-
     def each_param_group_for_field(name)
       config = get_field_config(name)
       yield all_params
 
-      config.groups.each do |group_name|
-        yield param_groups[group_name]
+      if config.groups.empty?
+        yield ungrouped_params
+      else
+        config.groups.each do |group_name|
+          yield param_groups[group_name]
+        end
       end
     end
 
