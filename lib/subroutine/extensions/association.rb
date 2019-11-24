@@ -86,10 +86,10 @@ module Subroutine
       def set_field_with_association(field_name, value, opts = {})
         config = get_field_config(field_name)
 
-        if config.try(:association?)
+        if config&.behavior == :association
           set_field(config.foreign_type_method, value&.class&.name, opts) if config.polymorphic?
           set_field(config.foreign_key_method, value&.id, opts)
-        elsif config.try(:association_component?)
+        elsif config&.behavior == :association_component
           clear_field_without_association(config.association_name)
         end
 
@@ -99,7 +99,7 @@ module Subroutine
       def get_field_with_association(field_name)
         config = get_field_config(field_name)
 
-        if config.try(:association?)
+        if config&.behavior == :association
           stored_result = get_field_without_association(field_name)
           return stored_result unless stored_result.nil?
 
@@ -117,7 +117,7 @@ module Subroutine
       def clear_field_with_association(field_name)
         config = get_field_config(field_name)
 
-        if config.try(:association?)
+        if config&.behavior == :association
           clear_field(config.foreign_type_method) if config.polymorphic?
           clear_field(config.foreign_key_method)
         end
@@ -128,12 +128,12 @@ module Subroutine
       def field_provided_with_association?(field_name)
         config = get_field_config(field_name)
 
-        if config.try(:association?)
+        if config&.behavior == :association
           provided = true
           provided &&= field_provided?(config.foreign_type_method) if config.polymorphic?
           provided &&= field_provided?(config.foreign_key_method)
           provided
-        elsif config.try(:association_component?)
+        elsif config&.behavior == :association_component
           field_provided_without_association?(field_name) ||
             field_provided_without_association?(config.association_name)
         else

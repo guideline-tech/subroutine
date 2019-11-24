@@ -59,8 +59,8 @@ module Subroutine
         !!config[:unscoped]
       end
 
-      def association?
-        true
+      def behavior
+        :association
       end
 
       protected

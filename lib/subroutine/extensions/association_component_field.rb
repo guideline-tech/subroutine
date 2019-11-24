@@ -6,8 +6,8 @@ module Subroutine
   module Extensions
     class AssociationComponentField < ::Subroutine::Field
 
-      def association_component?
-        true
+      def behavior
+        :association_component
       end
 
       def association_name

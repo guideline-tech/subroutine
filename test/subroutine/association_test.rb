@@ -35,7 +35,7 @@ module Subroutine
       ::User.expects(:all).returns(all_mock)
       all_mock.expects(:find).with(1).returns(doug)
 
-      op = SimpleAssociationOp.new user_type: "users", user_id: doug.id
+      op = SimpleAssociationOp.new user_id: doug.id
       assert_equal doug, op.user
     end
 

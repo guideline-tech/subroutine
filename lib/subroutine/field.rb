@@ -32,6 +32,10 @@ module Subroutine
       []
     end
 
+    def behavior
+      nil
+    end
+
     def inheritable_options
       config.slice(*INHERITABLE_OPTIONS)
     end
