@@ -12,12 +12,12 @@ module Subroutine
 
       string :foo, default: "foo"
       string :qux, default: "qux"
+      string :protekted, mass_assignable: false
 
       integer :bar, default: -> { 3 }, group: :sekret
-      date :baz, group: :the_bazzes
-
-      string :protekted, mass_assignable: false
       string :protekted_group_input, group: :sekret
+
+      date :baz, group: :the_bazzes
 
       def initialize(options = {})
         setup_fields(options)

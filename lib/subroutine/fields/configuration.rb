@@ -81,6 +81,10 @@ module Subroutine
         opts
       end
 
+      def inspect
+        "#<#{self.class}:#{object_id} name=#{field_name} config=#{config.inspect}>"
+      end
+
     end
   end
 end

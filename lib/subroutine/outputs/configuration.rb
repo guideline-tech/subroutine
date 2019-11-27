@@ -30,6 +30,10 @@ module Subroutine
         !!config[:required]
       end
 
+      def inspect
+        "#<#{self.class}:#{object_id} name=#{output_name} config=#{config.inspect}>"
+      end
+
     end
   end
 end

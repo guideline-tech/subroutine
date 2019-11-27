@@ -113,7 +113,7 @@ end
 
 class InheritedDefaultsOp < ::DefaultsOp
 
-  field :bar, default: "barstool"
+  field :bar, default: "barstool", allow_overwrite: true
 
 end
 
@@ -260,7 +260,7 @@ end
 
 class UnscopedSimpleAssociationOp < ::OpWithAssociation
 
-  association :user, unscoped: true
+  association :user, unscoped: true, allow_overwrite: true
 
 end
 
