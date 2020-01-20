@@ -108,7 +108,7 @@ module Subroutine
         type = send(config.foreign_type_method)
 
         result = fetch_association_instance(type, fk, config.unscoped?)
-        set_field_without_association(field_name, result)
+        set_field_without_association(field_name, result, track_provided: false) unless result.nil?
         result
       else
         get_field_without_association(field_name)

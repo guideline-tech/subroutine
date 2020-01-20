@@ -154,5 +154,28 @@ module Subroutine
       end
     end
 
+    def test_params_does_not_contain_association_key_if_not_provided
+      op = SimpleAssociationOp.new
+      assert_equal [], op.params.keys
+    end
+
+    def test_getting_does_not_set_provided
+      op = SimpleAssociationOp.new
+      op.user
+      assert_equal false, op.field_provided?(:user)
+      assert_equal false, op.field_provided?(:user_id)
+      assert_equal false, op.field_provided?(:user_type)
+
+      op.user_id
+      assert_equal false, op.field_provided?(:user)
+      assert_equal false, op.field_provided?(:user_id)
+      assert_equal false, op.field_provided?(:user_type)
+
+      op.user_type
+      assert_equal false, op.field_provided?(:user)
+      assert_equal false, op.field_provided?(:user_id)
+      assert_equal false, op.field_provided?(:user_type)
+    end
+
   end
 end
