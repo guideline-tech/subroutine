@@ -73,16 +73,17 @@ module Subroutine
       end
     end
 
-    def test_params_include_defaults
+    def test_params_does_not_include_defaults
       instance = Whatever.new(foo: "abc")
       assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
-      assert_equal({ "foo" => "abc", "qux" => "qux" }, instance.params)
-      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.all_params)
+      assert_equal({ "foo" => "abc" }, instance.params)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
     end
 
-    def test_named_params_include_defaults
+    def test_named_params_do_not_include_defaults_unlesss_asked_for
       instance = Whatever.new(foo: "abc")
-      assert_equal({ "bar" => 3 }, instance.sekret_params)
+      assert_equal({}, instance.sekret_params)
+      assert_equal({ "bar" => 3 }, instance.sekret_params_with_defaults)
     end
 
     def test_fields_can_opt_out_of_mass_assignment
@@ -122,7 +123,8 @@ module Subroutine
     def test_groups_fields_are_accessible
       op = Whatever.new(foo: "bar", protekted_group_input: "pgi", bar: 8)
       assert_equal({ protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.sekret_params)
-      assert_equal({ foo: "bar", qux: "qux" }.with_indifferent_access, op.params)
+      assert_equal({ protekted_group_input: "pgi", foo: "bar", bar: 8 }.with_indifferent_access, op.params)
+      assert_equal({ foo: "bar" }.with_indifferent_access, op.ungrouped_params)
     end
 
   end

@@ -48,6 +48,8 @@ module Subroutine
             end
           EV
         end
+
+        config
       end
       alias input field
 
@@ -108,6 +110,17 @@ module Subroutine
             param_groups[:#{group_name}]
           end
 
+          try(:silence_redefinition_of_method, :#{group_name}_default_params)
+          def #{group_name}_default_params
+            group_field_names = fields_in_group(:#{group_name}).keys
+            all_default_params.slice(*group_field_names)
+          end
+
+          try(:silence_redefinition_of_method, :#{group_name}_params_with_defaults)
+          def #{group_name}_params_with_defaults
+            #{group_name}_default_params.merge(param_groups[:#{group_name}])
+          end
+
           try(:silence_redefinition_of_method, :without_#{group_name}_params)
           def without_#{group_name}_params
             all_params.except(*#{group_name}_params.keys)
@@ -120,7 +133,6 @@ module Subroutine
     def setup_fields(inputs = {})
       @provided_fields = {}.with_indifferent_access
       param_groups[:original] = inputs.with_indifferent_access
-      param_groups[:default] = build_defaults
       mass_assign_initial_params
     end
 
@@ -139,16 +151,29 @@ module Subroutine
     def ungrouped_params
       get_param_group(:ungrouped)
     end
-    alias params ungrouped_params
 
     def all_params
       get_param_group(:all)
     end
+    alias params all_params
 
-    def defaults
+    def all_default_params
       get_param_group(:default)
     end
-    alias default_params defaults
+    alias defaults all_default_params
+
+    def all_params_with_defaults
+      all_default_params.merge(all_params)
+    end
+    alias params_with_defaults all_params_with_defaults
+
+    def ungrouped_defaults
+      default_params.slice(*ungrouped_fields.keys)
+    end
+
+    def ungrouped_params_with_defaults
+      ungrouped_defaults.merge(ungrouped_params)
+    end
 
     def get_field_config(field_name)
       self.class.get_field_config(field_name)
@@ -160,7 +185,7 @@ module Subroutine
     end
 
     def get_field(name)
-      all_params[name]
+      field_provided?(name) ? all_params[name] : all_default_params[name]
     end
 
     def set_field(name, value, track_provided: true)
@@ -181,6 +206,16 @@ module Subroutine
       end
     end
 
+    def fields_in_group(group_name)
+      self.class.fields_in_group(group_name)
+    end
+
+    def ungrouped_fields
+      fields.select { |f| f.groups.empty? }.each_with_object({}) do |f, h|
+        h[f.name] = f
+      end
+    end
+
     protected
 
     def mass_assign_initial_params
@@ -191,33 +226,16 @@ module Subroutine
 
         if original_params.key?(field_name)
           set_field(field_name, original_params[field_name])
-        elsif defaults.key?(field_name)
-          set_field(field_name, defaults[field_name], track_provided: false)
-        end
-      end
-    end
-
-    def build_defaults
-      out = {}.with_indifferent_access
-
-      field_configurations.each_pair do |field, config|
-        next unless config.key?(:default)
-
-        deflt = config[:default]
-        if deflt.respond_to?(:call)
-          deflt = deflt.call
-        elsif deflt.try(:duplicable?) # from active_support
-          # Some classes of default values need to be duplicated, or the instance field value will end up referencing
-          # the class global default value, and potentially modify it.
-          deflt = deflt.deep_dup # from active_support
         end
 
-        out[field.to_s] = attempt_cast(deflt, config) do |e|
+        next unless config.has_default?
+
+        value = attempt_cast(config.get_default, config) do |e|
           "Error for default `#{field}`: #{e}"
         end
-      end
 
-      out
+        param_groups[:default][field_name] = value
+      end
     end
 
     def attempt_cast(value, config)

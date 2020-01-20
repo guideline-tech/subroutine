@@ -37,6 +37,22 @@ module Subroutine
         nil
       end
 
+      def has_default?
+        config.key?(:default)
+      end
+
+      def get_default
+        value = config[:default]
+        if value.respond_to?(:call)
+          value = value.call
+        elsif value.try(:duplicable?) # from active_support
+          # Some classes of default values need to be duplicated, or the instance field value will end up referencing
+          # the class global default value, and potentially modify it.
+          value = value.deep_dup # from active_support
+        end
+        value
+      end
+
       def inheritable_options
         config.slice(*INHERITABLE_OPTIONS)
       end

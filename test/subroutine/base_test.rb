@@ -166,12 +166,16 @@ module Subroutine
       op = ::AdminSignupOp.new(email: "foo")
       assert_equal({
         "email" => "foo",
-        "privileges" => "min",
       }, op.params)
 
       assert_equal({
         "privileges" => "min",
       }, op.defaults)
+
+      assert_equal({
+        "email" => "foo",
+        "privileges" => "min",
+      }, op.params_with_defaults)
     end
 
     def test_it_allows_defaults_to_be_overridden
