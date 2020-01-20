@@ -13,6 +13,10 @@ module Subroutine
       @fred ||= ::User.new(id: 2, email_address: "fred@example.com")
     end
 
+    def account
+      @account ||= ::Account.new(id: 1)
+    end
+
     def test_it_sets_accessors_on_init
       op = SimpleAssociationOp.new user: doug
       assert_equal "User", op.user_type
@@ -141,6 +145,13 @@ module Subroutine
       assert_equal false, op.field_provided?(:admin)
       assert_equal false, op.field_provided?(:admin_id)
       assert_equal false, op.field_provided?(:admin_type)
+    end
+
+    def test_it_ensures_the_correct_type_of_resource_is_provded_to_an_association
+      op = SimpleAssociationOp.new
+      assert_raises ::Subroutine::AssociationFields::AssociationTypeMismatchError do
+        op.user = account
+      end
     end
 
   end

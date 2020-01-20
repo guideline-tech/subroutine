@@ -1,31 +1,12 @@
 # frozen_string_literal: true
 
+require "subroutine/auth/authorization_not_declared_error"
+require "subroutine/auth/not_authorized_error"
+
 module Subroutine
   module Auth
 
     extend ActiveSupport::Concern
-
-    class NotAuthorizedError < ::StandardError
-
-      def initialize(msg = nil)
-        msg = I18n.t("errors.#{msg}", default: "Sorry, you are not authorized to perform this action.") if msg.is_a?(Symbol)
-        msg ||= I18n.t("errors.unauthorized", default: "Sorry, you are not authorized to perform this action.")
-        super msg
-      end
-
-      def status
-        401
-      end
-
-    end
-
-    class AuthorizationNotDeclaredError < ::StandardError
-
-      def initialize(msg = nil)
-        super(msg || "Authorization management has not been declared on this class")
-      end
-
-    end
 
     included do
       class_attribute :authorization_declared, instance_writer: false

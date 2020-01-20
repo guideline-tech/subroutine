@@ -27,6 +27,18 @@ class AdminUser < ::User
 
 end
 
+class Account
+
+  include ::ActiveModel::Model
+
+  attr_accessor :id
+
+  def self.find(id)
+    new(id: id)
+  end
+
+end
+
 ## Ops ##
 
 class SignupOp < ::Subroutine::Op

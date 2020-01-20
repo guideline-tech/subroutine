@@ -3,6 +3,7 @@
 require "delegate"
 require "active_support/concern"
 require "subroutine/association_fields/configuration"
+require "subroutine/association_fields/association_type_mismatch_error"
 
 module Subroutine
   module AssociationFields
@@ -86,6 +87,7 @@ module Subroutine
       config = get_field_config(field_name)
 
       if config&.behavior == :association
+        maybe_raise_on_type_mismatch!(config, value)
         set_field(config.foreign_type_method, value&.class&.name, opts) if config.polymorphic?
         set_field(config.foreign_key_method, value&.id, opts)
       elsif config&.behavior == :association_component
@@ -152,6 +154,20 @@ module Subroutine
       scope = scope.unscoped if _unscoped
 
       scope.find(_fk)
+    end
+
+    def maybe_raise_on_type_mismatch!(config, record)
+      return if config.polymorphic?
+      return if record.nil?
+
+      klass = config.inferred_class_name.constantize
+
+      return if record.class <= klass || record.class >= klass
+
+      message = "#{klass}(##{klass.object_id}) expected, got #{record.class}(##{record.class.object_id})"
+
+      errors.add(:base, message)
+      raise Subroutine::AssociationFields::AssociationTypeMismatchError, self
     end
 
   end
