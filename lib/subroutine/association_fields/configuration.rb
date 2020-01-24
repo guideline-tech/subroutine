@@ -28,7 +28,7 @@ module Subroutine
       end
 
       def class_name
-        config[:class_name]
+        config[:class_name]&.to_s
       end
 
       def inferred_class_name

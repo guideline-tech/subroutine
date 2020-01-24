@@ -177,5 +177,15 @@ module Subroutine
       assert_equal false, op.field_provided?(:user_type)
     end
 
+    def test_association_class_names_can_be_declared_as_classes
+      klass = Class.new(OpWithAssociation) do
+        association :user, class_name: Account
+      end
+
+      account = ::Account.new(id: 1)
+      op = klass.new(user: account)
+      assert_equal account, op.user
+    end
+
   end
 end

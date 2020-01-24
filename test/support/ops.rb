@@ -15,6 +15,10 @@ class User
 
   validates :email_address, presence: true
 
+  def self.all
+    self
+  end
+
   def self.find(id)
     new(id: id)
   end
@@ -32,6 +36,10 @@ class Account
   include ::ActiveModel::Model
 
   attr_accessor :id
+
+  def self.all
+    self
+  end
 
   def self.find(id)
     new(id: id)
