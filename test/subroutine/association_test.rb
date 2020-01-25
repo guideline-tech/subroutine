@@ -187,5 +187,16 @@ module Subroutine
       assert_equal account, op.user
     end
 
+    def test_params_only_contain_the_id_and_type_of_associations
+      user = ::User.new(id: 1)
+      op = SimpleAssociationOp.new(user: user)
+      op.user
+      assert_equal({ "user_id" => 1 }, op.params)
+
+      op = PolymorphicAssociationOp.new(admin: user)
+      op.admin
+      assert_equal({ "admin_id" => 1, "admin_type" => "User" }, op.params)
+    end
+
   end
 end

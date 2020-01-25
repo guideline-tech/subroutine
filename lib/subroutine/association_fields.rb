@@ -18,6 +18,11 @@ module Subroutine
 
       end
 
+      attr_reader :association_cache
+
+      alias_method :setup_fields_without_association, :setup_fields
+      alias_method :setup_fields, :setup_fields_with_association
+
       alias_method :set_field_without_association, :set_field
       alias_method :set_field, :set_field_with_association
 
@@ -83,33 +88,40 @@ module Subroutine
 
     end
 
+    def setup_fields_with_association(*args)
+      @association_cache = {}
+      setup_fields_without_association(*args)
+    end
+
     def set_field_with_association(field_name, value, opts = {})
       config = get_field_config(field_name)
 
       if config&.behavior == :association
-        maybe_raise_on_type_mismatch!(config, value)
+        maybe_raise_on_association_type_mismatch!(config, value)
         set_field(config.foreign_type_method, value&.class&.name, opts) if config.polymorphic?
         set_field(config.foreign_key_method, value&.id, opts)
-      elsif config&.behavior == :association_component
-        clear_field_without_association(config.association_name)
-      end
+        association_cache[config.field_name] = value
+      else
+        if config&.behavior == :association_component
+          clear_field_without_association(config.association_name)
+        end
 
-      set_field_without_association(field_name, value, opts)
+        set_field_without_association(field_name, value, opts)
+      end
     end
 
     def get_field_with_association(field_name)
       config = get_field_config(field_name)
 
       if config&.behavior == :association
-        stored_result = get_field_without_association(field_name)
+        stored_result = association_cache[config.field_name]
         return stored_result unless stored_result.nil?
 
         fk = send(config.foreign_key_method)
         type = send(config.foreign_type_method)
 
         result = fetch_association_instance(type, fk, config.unscoped?)
-        set_field_without_association(field_name, result, track_provided: false) unless result.nil?
-        result
+        association_cache[config.field_name] = result
       else
         get_field_without_association(field_name)
       end
@@ -121,9 +133,10 @@ module Subroutine
       if config&.behavior == :association
         clear_field(config.foreign_type_method) if config.polymorphic?
         clear_field(config.foreign_key_method)
+        association_cache.delete(config.field_name)
+      else
+        clear_field_without_association(field_name)
       end
-
-      clear_field_without_association(field_name)
     end
 
     def field_provided_with_association?(field_name)
@@ -156,7 +169,7 @@ module Subroutine
       scope.find(_fk)
     end
 
-    def maybe_raise_on_type_mismatch!(config, record)
+    def maybe_raise_on_association_type_mismatch!(config, record)
       return if config.polymorphic?
       return if record.nil?
 
