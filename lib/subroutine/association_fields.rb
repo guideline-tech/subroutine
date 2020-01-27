@@ -93,6 +93,24 @@ module Subroutine
       setup_fields_without_association(*args)
     end
 
+    def params_with_associations
+      association_fields = field_configurations.select { |_name, config| config.behavior == :association }
+      return params if association_fields.empty?
+
+      excepts = []
+      association_fields.each_pair do |_name, config|
+        excepts << config.foreign_key_method
+        excepts << config.foreign_type_method if config.polymorphic?
+      end
+
+      out = params.except(*excepts)
+      association_fields.each_pair do |field_name, _config|
+        out[field_name] = send(field_name) if field_provided?(field_name)
+      end
+
+      out
+    end
+
     def set_field_with_association(field_name, value, opts = {})
       config = get_field_config(field_name)
 

@@ -198,5 +198,17 @@ module Subroutine
       assert_equal({ "admin_id" => 1, "admin_type" => "User" }, op.params)
     end
 
+    def test_params_can_be_accessed_with_associations_loaded
+      user = User.new(id: 1)
+      op = SimpleAssociationOp.new(user: user)
+
+      assert_equal({ "user_id" => 1 }, op.params)
+      assert_equal({ "user" => user }, op.params_with_associations)
+
+      op = PolymorphicAssociationOp.new(admin: user)
+      assert_equal({ "admin_id" => 1, "admin_type" => "User" }, op.params)
+      assert_equal({ "admin" => user }, op.params_with_associations)
+    end
+
   end
 end
