@@ -228,6 +228,16 @@ module Subroutine
       assert_equal "foo@bar.com", u.email_address
     end
 
+    # Hash#with_indifferent_access was changing output objects
+    def test_outputs_are_not_mutated
+      out = { "foo" => "bar" }
+      op = ::SignupOp.new
+      op.send :output, :perform_called, out
+      value = op.perform_called
+      assert_equal out, value
+      assert_equal Hash, value.class
+    end
+
     def test_it_raises_an_error_if_an_output_is_not_defined_but_is_set
       op = ::MissingOutputOp.new
       assert_raises ::Subroutine::Outputs::UnknownOutputError do

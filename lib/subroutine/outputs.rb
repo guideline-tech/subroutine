@@ -36,15 +36,26 @@ module Subroutine
     end
 
     def setup_outputs
-      @outputs = {}.with_indifferent_access
+      @outputs = {} # don't do with_indifferent_access because it will turn provided objects into with_indifferent_access objects, which may not be the desired behavior
     end
 
-    def output(name, value)
-      unless output_configurations.key?(name.to_sym)
+    def output_provided?(name)
+      name = name.to_sym
+
+      unless output_configurations.key?(name)
         raise ::Subroutine::Outputs::UnknownOutputError, name
       end
 
-      outputs[name.to_sym] = value
+      outputs.key?(name)
+    end
+
+    def output(name, value)
+      name = name.to_sym
+      unless output_configurations.key?(name)
+        raise ::Subroutine::Outputs::UnknownOutputError, name
+      end
+
+      outputs[name] = value
     end
 
     def get_output(name)
@@ -56,7 +67,7 @@ module Subroutine
 
     def validate_outputs!
       output_configurations.each_pair do |name, config|
-        if config.required? && !outputs.key?(name)
+        if config.required? && !output_provided?(name)
           raise ::Subroutine::Outputs::OutputNotSetError, name
         end
       end
