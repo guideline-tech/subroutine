@@ -113,5 +113,10 @@ module Subroutine
       end
     end
 
+    def test_current_user_is_not_called_by_constructor
+      ::User.expects(:find).never
+      RequireUserOp.new(user.id)
+    end
+
   end
 end
