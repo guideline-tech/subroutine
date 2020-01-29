@@ -69,10 +69,6 @@ module Subroutine
         config[:field_reader] != false
       end
 
-      def parent_field
-        config[:parent_field]
-      end
-
       def groups
         config[:groups]
       end
