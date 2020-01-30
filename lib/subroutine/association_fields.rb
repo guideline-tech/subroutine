@@ -69,16 +69,17 @@ module Subroutine
           config = ::Subroutine::AssociationFields::Configuration.new(field_name, options)
 
           if config.polymorphic?
-            string config.foreign_type_method, config.build_foreign_type_field
+            field config.foreign_type_method, config.build_foreign_type_field
           else
             class_eval <<-EV, __FILE__, __LINE__ + 1
+              try(:silence_redefinition_of_method, :#{config.foreign_type_method})
               def #{config.foreign_type_method}
                 #{config.inferred_class_name.inspect}
               end
             EV
           end
 
-          integer config.foreign_key_method, config.build_foreign_key_field
+          field config.foreign_key_method, config.build_foreign_key_field
 
           field_without_association(config.as, config)
         else

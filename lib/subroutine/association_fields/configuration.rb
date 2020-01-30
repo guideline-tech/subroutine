@@ -48,11 +48,11 @@ module Subroutine
       end
 
       def build_foreign_key_field
-        build_child_field(foreign_key_method)
+        build_child_field(foreign_key_method, type: :integer)
       end
 
       def build_foreign_type_field
-        build_child_field(foreign_type_method)
+        build_child_field(foreign_type_method, type: :string)
       end
 
       def unscoped?
@@ -65,8 +65,8 @@ module Subroutine
 
       protected
 
-      def build_child_field(name)
-        ComponentConfiguration.new(name, inheritable_options.merge(association_name: as))
+      def build_child_field(name, opts = {})
+        ComponentConfiguration.new(name, inheritable_options.merge(opts).merge(association_name: as))
       end
 
     end

@@ -119,16 +119,18 @@ module Subroutine
       end
 
       def ensure_field_accessors(config)
-        if config.field_writer? && !instance_methods.include?(:"#{config.field_name}=")
+        if config.field_writer?
           class_eval <<-EV, __FILE__, __LINE__ + 1
+            try(:silence_redefinition_of_method, :#{config.field_name}=)
             def #{config.field_name}=(v)
               set_field(:#{config.field_name}, v)
             end
           EV
         end
 
-        if config.field_reader? && !instance_methods.include?(:"#{config.field_name}")
+        if config.field_reader?
           class_eval <<-EV, __FILE__, __LINE__ + 1
+            try(:silence_redefinition_of_method, :#{config.field_name})
             def #{config.field_name}
               get_field(:#{config.field_name})
             end
