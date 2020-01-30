@@ -136,7 +136,5 @@ module Subroutine
       assert_equal({}.with_indifferent_access, op.without_inherited_params)
     end
 
-    def test_groups_can_be_removed_via_fields_from; end
-
   end
 end

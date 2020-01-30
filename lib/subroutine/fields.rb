@@ -105,10 +105,12 @@ module Subroutine
             group_field_names = fields_in_group(:#{group_name}).keys
             all_default_params.slice(*group_field_names)
           end
+          alias #{group_name}_defaults #{group_name}_default_params
 
-          def #{group_name}_params_with_defaults
+          def #{group_name}_params_with_default_params
             #{group_name}_default_params.merge(param_groups[:#{group_name}])
           end
+          alias #{group_name}_params_with_defaults #{group_name}_params_with_default_params
 
           def without_#{group_name}_params
             all_params.except(*#{group_name}_params.keys)
