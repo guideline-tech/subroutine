@@ -127,5 +127,16 @@ module Subroutine
       assert_equal({ foo: "bar" }.with_indifferent_access, op.ungrouped_params)
     end
 
+    def test_fields_from_allows_merging_of_config
+      op = GroupedDefaultsOp.new(foo: "foo")
+      assert_equal({ foo: "foo" }.with_indifferent_access, op.params)
+      assert_equal({ foo: "foo" }.with_indifferent_access, op.inherited_params)
+      assert_equal({ foo: "foo", bar: "bar", baz: false }.with_indifferent_access, op.params_with_defaults)
+      assert_equal({ foo: "foo", bar: "bar", baz: false }.with_indifferent_access, op.inherited_params_with_defaults)
+      assert_equal({}.with_indifferent_access, op.without_inherited_params)
+    end
+
+    def test_groups_can_be_removed_via_fields_from; end
+
   end
 end

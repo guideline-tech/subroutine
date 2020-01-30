@@ -70,7 +70,7 @@ module Subroutine
       assert_equal "AdminUser", op.admin_type
     end
 
-    def test_it_inherits_associations_via_inputs_from
+    def test_it_inherits_associations_via_fields_from
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
@@ -82,7 +82,7 @@ module Subroutine
       assert_equal doug.id, op.user_id
     end
 
-    def test_it_inherits_associations_via_inputs_from_and_preserves_options
+    def test_it_inherits_associations_via_fields_from_and_preserves_options
       all_mock = mock
       unscoped_mock = mock
 
@@ -96,7 +96,7 @@ module Subroutine
       assert_equal doug.id, op.user_id
     end
 
-    def test_it_inherits_polymorphic_associations_via_inputs_from
+    def test_it_inherits_polymorphic_associations_via_fields_from
       all_mock = mock
       ::User.expects(:all).never
       ::AdminUser.expects(:all).returns(all_mock)
@@ -208,6 +208,19 @@ module Subroutine
       op = PolymorphicAssociationOp.new(admin: user)
       assert_equal({ "admin_id" => 1, "admin_type" => "User" }, op.params)
       assert_equal({ "admin" => user }, op.params_with_associations)
+    end
+
+    def test_groups_are_preserved_to_association_components
+      user = ::User.new(id: 1)
+      op = GroupedParamAssociationOp.new(user: user)
+      assert_equal({ "user_id" => 1 }, op.params)
+      assert_equal({ "user_id" => 1 }, op.info_params)
+      assert_equal({}, op.without_info_params)
+
+      op = GroupedPolymorphicParamAssociationOp.new(user: user)
+      assert_equal({ "user_id" => 1, "user_type" => "User" }, op.params)
+      assert_equal({ "user_id" => 1, "user_type" => "User" }, op.info_params)
+      assert_equal({}, op.without_info_params)
     end
 
   end

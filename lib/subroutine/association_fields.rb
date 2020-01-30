@@ -105,7 +105,7 @@ module Subroutine
 
       out = params.except(*excepts)
       association_fields.each_pair do |field_name, _config|
-        out[field_name] = send(field_name) if field_provided?(field_name)
+        out[field_name] = get_field(field_name) if field_provided?(field_name)
       end
 
       out
@@ -135,8 +135,8 @@ module Subroutine
         stored_result = association_cache[config.field_name]
         return stored_result unless stored_result.nil?
 
-        fk = send(config.foreign_key_method)
-        type = send(config.foreign_type_method)
+        fk = get_field(config.foreign_key_method)
+        type = config.polymorphic? ? get_field(config.foreign_type_method) : send(config.foreign_type_method)
 
         result = fetch_association_instance(type, fk, config.unscoped?)
         association_cache[config.field_name] = result

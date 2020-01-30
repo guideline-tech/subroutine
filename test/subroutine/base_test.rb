@@ -24,7 +24,7 @@ module Subroutine
       refute_equal sid, bid
     end
 
-    def test_inputs_from_inherited_fields_without_inheriting_from_the_class
+    def test_fields_from_inherited_fields_without_inheriting_from_the_class
       refute ::BusinessSignupOp < ::SignupOp
 
       user_fields = ::SignupOp.field_configurations.keys
@@ -35,14 +35,14 @@ module Subroutine
       end
     end
 
-    def test_inputs_from_ignores_except_fields
+    def test_fields_from_ignores_except_fields
       op = ::ExceptFooBarOp.new
       refute op.field_configurations.key?(:foo)
       refute op.field_configurations.key?(:bar)
       assert_equal [:baz], op.field_configurations.keys.sort
     end
 
-    def test_inputs_from_only_fields
+    def test_fields_from_only_fields
       op = ::OnlyFooBarOp.new
       assert op.field_configurations.key?(:foo)
       assert op.field_configurations.key?(:bar)

@@ -17,6 +17,9 @@ module Subroutine
     included do
       class_attribute :field_configurations
       self.field_configurations = {}
+
+      class_attribute :field_groups
+      self.field_groups = Set.new
     end
 
     module ClassMethods
@@ -25,35 +28,19 @@ module Subroutine
         config = ::Subroutine::Fields::Configuration.from(field_name, options)
         config.validate!
 
-        config.groups.each do |group_name|
-          _group(group_name)
-        end
-
         self.field_configurations = field_configurations.merge(field_name.to_sym => config)
 
-        if config.field_writer?
-          class_eval <<-EV, __FILE__, __LINE__ + 1
-            try(:silence_redefinition_of_method, :#{field_name}=)
-            def #{field_name}=(v)
-              set_field(:#{field_name}, v)
-            end
-          EV
-        end
+        ensure_field_accessors(config)
 
-        if config.field_reader?
-          class_eval <<-EV, __FILE__, __LINE__ + 1
-            try(:silence_redefinition_of_method, :#{field_name})
-            def #{field_name}
-              get_field(:#{field_name})
-            end
-          EV
+        config.groups.each do |group_name|
+          ensure_group_accessors(group_name)
         end
 
         config
       end
       alias input field
 
-      def inputs_from(*things)
+      def fields_from(*things)
         options = things.extract_options!
         excepts = options.key?(:except) ? Array(options.delete(:except)) : nil
         onlys = options.key?(:only) ? Array(options.delete(:only)) : nil
@@ -67,11 +54,11 @@ module Subroutine
               include mod unless included_modules.include?(mod)
             end
 
-            field(field_name, config)
+            field(field_name, config.merge(options))
           end
         end
       end
-      alias fields_from inputs_from
+      alias inputs_from fields_from
 
       def fields_in_group(group_name)
         field_configurations.each_with_object({}) do |(field_name, config), h|
@@ -103,29 +90,48 @@ module Subroutine
 
       protected
 
-      def _group(group_name)
+      def ensure_group_accessors(group_name)
+        group_name = group_name.to_sym
+        return if field_groups.include?(group_name)
+
+        self.field_groups |= [group_name]
+
         class_eval <<-EV, __FILE__, __LINE__ + 1
-          try(:silence_redefinition_of_method, :#{group_name}_params)
           def #{group_name}_params
             param_groups[:#{group_name}]
           end
 
-          try(:silence_redefinition_of_method, :#{group_name}_default_params)
           def #{group_name}_default_params
             group_field_names = fields_in_group(:#{group_name}).keys
             all_default_params.slice(*group_field_names)
           end
 
-          try(:silence_redefinition_of_method, :#{group_name}_params_with_defaults)
           def #{group_name}_params_with_defaults
             #{group_name}_default_params.merge(param_groups[:#{group_name}])
           end
 
-          try(:silence_redefinition_of_method, :without_#{group_name}_params)
           def without_#{group_name}_params
             all_params.except(*#{group_name}_params.keys)
           end
         EV
+      end
+
+      def ensure_field_accessors(config)
+        if config.field_writer? && !instance_methods.include?(:"#{config.field_name}=")
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            def #{config.field_name}=(v)
+              set_field(:#{config.field_name}, v)
+            end
+          EV
+        end
+
+        if config.field_reader? && !instance_methods.include?(:"#{config.field_name}")
+          class_eval <<-EV, __FILE__, __LINE__ + 1
+            def #{config.field_name}
+              get_field(:#{config.field_name})
+            end
+          EV
+        end
       end
 
     end

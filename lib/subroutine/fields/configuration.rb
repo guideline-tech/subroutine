@@ -7,7 +7,8 @@ module Subroutine
     class Configuration < ::SimpleDelegator
 
       PROTECTED_GROUP_IDENTIFIERS = %i[all original default].freeze
-      INHERITABLE_OPTIONS = %i[mass_assignable field_reader field_writer].freeze
+      INHERITABLE_OPTIONS = %i[mass_assignable field_reader field_writer groups].freeze
+      NO_GROUPS = [].freeze
 
       def self.from(field_name, options)
         case options
@@ -28,6 +29,10 @@ module Subroutine
       end
 
       alias config __getobj__
+
+      def merge(options = {})
+        self.class.new(field_name, config.merge(options))
+      end
 
       def required_modules
         []
@@ -70,7 +75,7 @@ module Subroutine
       end
 
       def groups
-        config[:groups]
+        config[:groups] || NO_GROUPS
       end
 
       def in_group?(group_name)
@@ -88,7 +93,8 @@ module Subroutine
       def sanitize_options(options)
         opts = (options || {}).to_h.dup
         groups = opts[:group] || opts[:groups]
-        opts[:groups] = Array(groups).map(&:to_sym)
+        groups = nil if groups == false
+        opts[:groups] = Array(groups).map(&:to_sym).presence
         opts.delete(:group)
         opts
       end

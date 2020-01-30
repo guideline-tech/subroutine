@@ -107,7 +107,7 @@ class BusinessSignupOp < ::Subroutine::Op
 
   string :business_name
 
-  inputs_from ::SignupOp
+  fields_from ::SignupOp
 
 end
 
@@ -121,19 +121,25 @@ end
 
 class ExceptFooBarOp < ::Subroutine::Op
 
-  inputs_from ::DefaultsOp, except: %i[foo bar]
+  fields_from ::DefaultsOp, except: %i[foo bar]
 
 end
 
 class OnlyFooBarOp < ::Subroutine::Op
 
-  inputs_from ::DefaultsOp, only: %i[foo bar]
+  fields_from ::DefaultsOp, only: %i[foo bar]
 
 end
 
 class InheritedDefaultsOp < ::DefaultsOp
 
   field :bar, default: "barstool", allow_overwrite: true
+
+end
+
+class GroupedDefaultsOp < ::Subroutine::Op
+
+  fields_from ::DefaultsOp, group: "inherited"
 
 end
 
@@ -298,19 +304,37 @@ end
 
 class InheritedSimpleAssociation < ::Subroutine::Op
 
-  inputs_from SimpleAssociationOp
+  fields_from SimpleAssociationOp
 
 end
 
 class InheritedUnscopedAssociation < ::Subroutine::Op
 
-  inputs_from UnscopedSimpleAssociationOp
+  fields_from UnscopedSimpleAssociationOp
 
 end
 
 class InheritedPolymorphicAssociationOp < ::Subroutine::Op
 
-  inputs_from PolymorphicAssociationOp
+  fields_from PolymorphicAssociationOp
+
+end
+
+class GroupedParamAssociationOp < ::OpWithAssociation
+
+  association :user, group: :info
+
+end
+
+class GroupedPolymorphicParamAssociationOp < ::OpWithAssociation
+
+  association :user, polymorphic: true, group: :info
+
+end
+
+class GroupedInputsFromOp < ::Subroutine::Op
+
+  fields_from GroupedParamAssociationOp, group: :inherited
 
 end
 
