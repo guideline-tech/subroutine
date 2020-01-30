@@ -1,35 +1,19 @@
 # frozen_string_literal: true
 
+require "subroutine/auth/authorization_not_declared_error"
+require "subroutine/auth/not_authorized_error"
+
 module Subroutine
   module Auth
-    class NotAuthorizedError < ::StandardError
-      def initialize(msg = nil)
-        msg = I18n.t("errors.#{msg}", default: 'Sorry, you are not authorized to perform this action.') if msg.is_a?(Symbol)
-        msg ||= I18n.t('errors.unauthorized', default: 'Sorry, you are not authorized to perform this action.')
-        super msg
-      end
 
-      def status
-        401
-      end
-    end
+    extend ActiveSupport::Concern
 
-    class AuthorizationNotDeclaredError < ::StandardError
-      def initialize(msg = nil)
-        super(msg || 'Authorization management has not been declared on this class')
-      end
-    end
+    included do
+      class_attribute :authorization_declared, instance_writer: false
+      self.authorization_declared = false
 
-    def self.included(base)
-      base.instance_eval do
-        extend ::Subroutine::Auth::ClassMethods
-
-        class_attribute :authorization_declared, instance_writer: false
-        self.authorization_declared = false
-
-        class_attribute :user_class_name, instance_writer: false
-        self.user_class_name = "User"
-      end
+      class_attribute :user_class_name, instance_writer: false
+      self.user_class_name = "User"
     end
 
     module ClassMethods
@@ -37,7 +21,6 @@ module Subroutine
       def supported_user_class_names
         [user_class_name, "Integer", "NilClass"].compact
       end
-
 
       def authorize(validation_name)
         validate validation_name, unless: :skip_auth_checks?
@@ -96,17 +79,22 @@ module Subroutine
           end
         end
       end
+
     end
 
     def initialize(*args, &block)
       raise Subroutine::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared
 
       super(args.extract_options!, &block)
-      @skip_auth_checks = false
-      @current_user = args.shift
 
-      unless self.class.supported_user_class_names.include?(@current_user.class.name)
-        raise ArgumentError, "current_user must be one of the following types {#{self.class.supported_user_class_names.join(",")}} but was #{@current_user.class.name}"
+      @skip_auth_checks = false
+
+      user = args.shift
+
+      if self.class.supported_user_class_names.include?(user.class.name)
+        @current_user = user
+      else
+        raise ArgumentError, "current_user must be one of the following types {#{self.class.supported_user_class_names.join(",")}} but was #{user.class.name}"
       end
     end
 
@@ -120,7 +108,7 @@ module Subroutine
     end
 
     def current_user
-      @current_user = self.user_class_name.constantize.find(@current_user) if ::Integer === @current_user
+      @current_user = user_class_name.constantize.find(@current_user) if ::Integer === @current_user
       @current_user
     end
 
@@ -128,5 +116,6 @@ module Subroutine
       reason ||= :unauthorized
       raise ::Subroutine::Auth::NotAuthorizedError, reason
     end
+
   end
 end

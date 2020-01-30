@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require "test_helper"
 
 module Subroutine
   class AuthTest < TestCase
 
     def user
-      @user ||= ::User.new(email_address: 'doug@example.com')
+      @user ||= ::User.new(id: 4, email_address: "doug@example.com")
     end
 
     def test_it_throws_an_error_if_authorization_is_not_defined
@@ -23,6 +23,12 @@ module Subroutine
 
     def test_it_does_not_throw_an_error_if_require_user_but_none_is_provided
       RequireUserOp.submit! user
+    end
+
+    def test_it_allows_an_id_to_be_passed
+      ::User.expects(:find).with(user.id).returns(user)
+      op = RequireUserOp.submit! user.id
+      assert_equal op.current_user, user
     end
 
     def test_it_throws_an_error_if_require_no_user_but_one_is_present
@@ -47,7 +53,7 @@ module Subroutine
       CustomAuthorizeOp.submit! user
 
       assert_raises ::Subroutine::Auth::NotAuthorizedError do
-        CustomAuthorizeOp.submit! User.new(email_address: 'foo@bar.com')
+        CustomAuthorizeOp.submit! User.new(email_address: "foo@bar.com")
       end
     end
 
@@ -71,7 +77,7 @@ module Subroutine
     end
 
     def test_it_does_not_run_authorizations_if_explicitly_bypassed
-      op = CustomAuthorizeOp.new User.new(email_address: 'foo@bar.com')
+      op = CustomAuthorizeOp.new User.new(email_address: "foo@bar.com")
       op.skip_auth_checks!
       op.submit!
     end
@@ -106,5 +112,11 @@ module Subroutine
         op.submit!
       end
     end
+
+    def test_current_user_is_not_called_by_constructor
+      ::User.expects(:find).never
+      RequireUserOp.new(user.id)
+    end
+
   end
 end
