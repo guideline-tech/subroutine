@@ -12,27 +12,38 @@ class SignupOp < ::Subroutine::Op
   string :name
   string :email
   string :password
+  
+  string :company_name
 
   validates :name, presence: true
   validates :email, presence: true
   validates :password, presence: true
+  validates :company_name, presence: true
 
-  outputs :signed_up_user
+  outputs :user
+  outputs :business
 
   protected
 
   def perform
     u = create_user!
-    deliver_welcome_email!(u)
+    b = create_business!(u)
+    
+    deliver_welcome_email(u)
 
-    output :signed_up_user, u
+    output :user, u
+    output :business, b
   end
 
   def create_user!
     User.create!(params)
   end
+  
+  def create_business!(owner)
+    Business.create!(company_name: company_name, owner: owner)
+   end
 
-  def deliver_welcome_email!(u)
+  def deliver_welcome_email(u)
     UserMailer.welcome(u.id).deliver_later
   end
 end
