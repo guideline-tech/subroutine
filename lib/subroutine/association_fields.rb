@@ -105,8 +105,10 @@ module Subroutine
       end
 
       out = params.except(*excepts)
-      association_fields.each_pair do |field_name, _config|
-        out[field_name] = get_field(field_name) if field_provided?(field_name)
+      association_fields.each_pair do |field_name, config|
+        next unless field_provided?(field_name)
+
+        out[field_name] = config.field_reader? ? send(field_name) : get_field(field_name)
       end
 
       out
@@ -136,8 +138,8 @@ module Subroutine
         stored_result = association_cache[config.field_name]
         return stored_result unless stored_result.nil?
 
-        fk = get_field(config.foreign_key_method)
-        type = config.polymorphic? ? get_field(config.foreign_type_method) : send(config.foreign_type_method)
+        fk = config.field_reader? ? send(config.foreign_key_method) : get_field(config.foreign_id_method)
+        type = config.field_reader? || !config.polymorphic? ? send(config.foreign_type_method) : get_field(config.foreign_type_method)
 
         result = fetch_association_instance(type, fk, config.unscoped?)
         association_cache[config.field_name] = result
