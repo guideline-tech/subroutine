@@ -36,7 +36,7 @@ class SignupOp < ::Subroutine::Op
   end
 
   def create_user!
-    User.create!(params)
+    User.create!(name: name, email: email, password: password)
   end
   
   def create_business!(owner)
