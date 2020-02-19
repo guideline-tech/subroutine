@@ -304,5 +304,17 @@ module Subroutine
       end
     end
 
+    def test_actioncontroller_parameters_can_be_provided
+      raw_params = { email: "foo@bar.com", password: "password123!" }.with_indifferent_access
+      params = ::ActionController::Parameters.new(raw_params)
+      op = SignupOp.new(params)
+      op.submit!
+
+      assert_equal "foo@bar.com", op.email
+      assert_equal "password123!", op.password
+
+      assert_equal raw_params, op.params
+    end
+
   end
 end

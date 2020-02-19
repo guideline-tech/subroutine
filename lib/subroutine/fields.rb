@@ -14,6 +14,18 @@ module Subroutine
 
     extend ActiveSupport::Concern
 
+    def self.allowed_input_classes
+      @allowed_input_classes ||= begin
+        out = [Hash]
+        out << ActionController::Parameters if action_controller_params_loaded?
+        out
+      end
+    end
+
+    def self.action_controller_params_loaded?
+      defined?(::ActionController::Parameters)
+    end
+
     included do
       class_attribute :field_configurations
       self.field_configurations = {}
@@ -141,6 +153,9 @@ module Subroutine
     end
 
     def setup_fields(inputs = {})
+      if ::Subroutine::Fields.action_controller_params_loaded? && inputs.is_a?(::ActionController::Parameters)
+        inputs = inputs.to_unsafe_h if inputs.respond_to?(:to_unsafe_h)
+      end
       @provided_fields = {}.with_indifferent_access
       param_groups[:original] = inputs.with_indifferent_access
       mass_assign_initial_params

@@ -177,6 +177,8 @@ class RequireUserOp < OpWithAuth
 
   require_user!
 
+  string :some_input
+
 end
 
 class RequireNoUserOp < OpWithAuth

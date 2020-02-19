@@ -118,5 +118,17 @@ module Subroutine
       RequireUserOp.new(user.id)
     end
 
+    def test_actioncontroller_parameters_can_be_provided
+      raw_params = { some_input: "foobarbaz" }.with_indifferent_access
+      params = ::ActionController::Parameters.new(raw_params)
+      op = RequireUserOp.new(user, params)
+      op.submit!
+
+      assert_equal "foobarbaz", op.some_input
+
+      assert_equal raw_params, op.params
+      assert_equal user, op.current_user
+    end
+
   end
 end
