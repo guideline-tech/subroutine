@@ -2,5 +2,6 @@ source 'https://rubygems.org'
 
 gemspec :path => '../'
 
-gem 'activemodel', '~> 4.2'
-gem 'actionpack', '~> 4.2'
+gem 'rack'
+gem 'activemodel', '~> 4.2.0'
+gem 'actionpack', '~> 4.2.0'

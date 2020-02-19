@@ -154,7 +154,7 @@ module Subroutine
 
     def setup_fields(inputs = {})
       if ::Subroutine::Fields.action_controller_params_loaded? && inputs.is_a?(::ActionController::Parameters)
-        inputs = inputs.to_unsafe_h
+        inputs = inputs.to_unsafe_h if inputs.respond_to?(:to_unsafe_h)
       end
       @provided_fields = {}.with_indifferent_access
       param_groups[:original] = inputs.with_indifferent_access
