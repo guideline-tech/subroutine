@@ -12,7 +12,7 @@ class SignupOp < ::Subroutine::Op
   string :name
   string :email
   string :password
-  
+
   string :company_name
 
   validates :name, presence: true
@@ -28,7 +28,7 @@ class SignupOp < ::Subroutine::Op
   def perform
     u = create_user!
     b = create_business!(u)
-    
+
     deliver_welcome_email(u)
 
     output :user, u
@@ -38,7 +38,7 @@ class SignupOp < ::Subroutine::Op
   def create_user!
     User.create!(name: name, email: email, password: password)
   end
-  
+
   def create_business!(owner)
     Business.create!(company_name: company_name, owner: owner)
    end
@@ -56,7 +56,7 @@ end
 - Clear and concise intention in a single file
 - Multi-model operations become simple
 
-[Implementing an Op](https://github.com/guideline-tech/subroutine/wiki/Implementing-an-Op)
-[Using an Op](https://github.com/guideline-tech/subroutine/wiki/Using-an-Op)
-[Errors](https://github.com/guideline-tech/subroutine/wiki/Errors)
-[Basic Usage in Rails](https://github.com/guideline-tech/subroutine/wiki/Rails-Usage)
+- [Implementing an Op](https://github.com/guideline-tech/subroutine/wiki/Implementing-an-Op)
+- [Using an Op](https://github.com/guideline-tech/subroutine/wiki/Using-an-Op)
+- [Errors](https://github.com/guideline-tech/subroutine/wiki/Errors)
+- [Basic Usage in Rails](https://github.com/guideline-tech/subroutine/wiki/Rails-Usage)
