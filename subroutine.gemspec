@@ -1,15 +1,16 @@
-# coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
+# frozen_string_literal: true
+
+lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'subroutine/version'
+require "subroutine/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "subroutine"
   spec.version       = Subroutine::VERSION
   spec.authors       = ["Mike Nelson"]
   spec.email         = ["mike@mnelson.io"]
-  spec.summary       = %q{Feature-driven operation objects.}
-  spec.description   = %q{An interface for creating feature-driven operations.}
+  spec.summary       = "Feature-driven operation objects."
+  spec.description   = "An interface for creating feature-driven operations."
   spec.homepage      = "https://github.com/mnelson/subroutine"
   spec.license       = "MIT"
 
@@ -19,12 +20,14 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activemodel", ">= 4.0.0"
+  spec.add_dependency "activesupport", ">= 4.0.0"
 
+  spec.add_development_dependency "actionpack", ">= 5.0"
   spec.add_development_dependency "bundler"
-  spec.add_development_dependency "rake"
+  spec.add_development_dependency "byebug"
   spec.add_development_dependency "m"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "minitest-reporters"
   spec.add_development_dependency "mocha"
-  spec.add_development_dependency "byebug"
+  spec.add_development_dependency "rake"
 end

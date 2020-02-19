@@ -85,17 +85,24 @@ module Subroutine
     def initialize(*args, &block)
       raise Subroutine::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared
 
-      super(args.extract_options!, &block)
-
       @skip_auth_checks = false
+
+      inputs = case args.last
+      when *::Subroutine::Fields.allowed_input_classes
+        args.pop
+      else
+        {}
+      end
+
+      super(inputs, &block)
 
       user = args.shift
 
-      if self.class.supported_user_class_names.include?(user.class.name)
-        @current_user = user
-      else
+      unless self.class.supported_user_class_names.include?(user.class.name)
         raise ArgumentError, "current_user must be one of the following types {#{self.class.supported_user_class_names.join(",")}} but was #{user.class.name}"
       end
+
+      @current_user = user
     end
 
     def skip_auth_checks!

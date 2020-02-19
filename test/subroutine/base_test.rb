@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "action_controller/metal/strong_parameters"
 
 module Subroutine
   class OpTest < TestCase
@@ -302,6 +303,18 @@ module Subroutine
           o.password = "password123!"
         end
       end
+    end
+
+    def test_actioncontroller_parameters_can_be_provided
+      raw_params = { email: "foo@bar.com", password: "password123!" }.with_indifferent_access
+      params = ::ActionController::Parameters.new(raw_params)
+      op = SignupOp.new(params)
+      op.submit!
+
+      assert_equal "foo@bar.com", op.email
+      assert_equal "password123!", op.password
+
+      assert_equal raw_params, op.params
     end
 
   end

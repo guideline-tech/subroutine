@@ -5,4 +5,5 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in subroutine.gemspec
 gemspec
 
-gem "activemodel", "~> 4.2.11"
+gem "actionpack", "~> 5.0.7.2"
+gem "activemodel", "~> 5.0.7.2"
