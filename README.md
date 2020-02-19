@@ -56,6 +56,8 @@ end
 - Clear and concise intention in a single file
 - Multi-model operations become simple
 
+## Continue Reading
+
 - [Implementing an Op](https://github.com/guideline-tech/subroutine/wiki/Implementing-an-Op)
 - [Using an Op](https://github.com/guideline-tech/subroutine/wiki/Using-an-Op)
 - [Errors](https://github.com/guideline-tech/subroutine/wiki/Errors)
