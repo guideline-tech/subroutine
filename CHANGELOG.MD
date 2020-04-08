@@ -32,7 +32,7 @@ class SomeOp < ::Subroutine::Op
   end
 end
 
-SomeOp.submit!(foo: "Hello World!") # prints nothing
+SomeOp.submit!(foo: "Hello World!") # raises ::Subroutine::Fields::MassAssignmentError
 SomeOp.new{|op| op.foo = "Hello World!" }.submit! # prints "Hello World!"
 ```
 
