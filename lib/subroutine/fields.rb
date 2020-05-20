@@ -58,9 +58,12 @@ module Subroutine
         onlys = options.key?(:only) ? Array(options.delete(:only)) : nil
 
         things.each do |thing|
+          local_excepts = excepts.map { |field| thing.get_field_config(field)&.related_field_names }.flatten.compact.uniq if excepts
+          local_onlys = onlys.map { |field| thing.get_field_config(field)&.related_field_names }.flatten.compact.uniq if onlys
+
           thing.field_configurations.each_pair do |field_name, config|
-            next if excepts&.include?(field_name)
-            next if onlys && !onlys.include?(field_name)
+            next if local_excepts&.include?(field_name)
+            next if local_onlys && !local_onlys.include?(field_name)
 
             config.required_modules.each do |mod|
               include mod unless included_modules.include?(mod)

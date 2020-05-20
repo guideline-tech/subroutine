@@ -100,8 +100,7 @@ module Subroutine
 
       excepts = []
       association_fields.each_pair do |_name, config|
-        excepts << config.foreign_key_method
-        excepts << config.foreign_type_method if config.polymorphic?
+        excepts |= config.related_field_names
       end
 
       out = params.except(*excepts)
