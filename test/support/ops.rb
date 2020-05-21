@@ -208,7 +208,7 @@ class CustomAuthorizeOp < OpWithAuth
   protected
 
   def authorize_user_is_correct
-    unauthorized! unless current_user.email_address.to_s =~ /example\.com$/
+    unauthorized! unless current_user.email_address.to_s =~ /example\.com$/ # rubocop:disable Performance/RegexpMatch
   end
 
 end
@@ -301,6 +301,18 @@ end
 class AssociationWithClassOp < ::OpWithAssociation
 
   association :admin, class_name: "AdminUser"
+
+end
+
+class ExceptAssociationOp < ::Subroutine::Op
+
+  fields_from ::PolymorphicAssociationOp, except: %i[admin]
+
+end
+
+class OnlyAssociationOp < ::Subroutine::Op
+
+  fields_from ::PolymorphicAssociationOp, only: %i[admin]
 
 end
 

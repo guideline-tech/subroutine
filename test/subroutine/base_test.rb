@@ -42,11 +42,25 @@ module Subroutine
       assert_equal [:baz], op.field_configurations.keys.sort
     end
 
+    def test_fields_from_ignores_except_association_fields
+      op = ::ExceptAssociationOp.new
+      refute op.field_configurations.key?(:admin)
+      refute op.field_configurations.key?(:admin_id)
+      refute op.field_configurations.key?(:admin_type)
+    end
+
     def test_fields_from_only_fields
       op = ::OnlyFooBarOp.new
       assert op.field_configurations.key?(:foo)
       assert op.field_configurations.key?(:bar)
       refute_equal [:baz], op.field_configurations.keys.sort
+    end
+
+    def test_fields_from_only_association_fields
+      op = ::OnlyAssociationOp.new
+      assert op.field_configurations.key?(:admin)
+      assert op.field_configurations.key?(:admin_type)
+      assert op.field_configurations.key?(:admin_id)
     end
 
     def test_defaults_declaration_options

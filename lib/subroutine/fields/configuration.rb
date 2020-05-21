@@ -22,7 +22,7 @@ module Subroutine
       attr_reader :field_name
 
       def initialize(field_name, options)
-        @field_name = field_name
+        @field_name = field_name.to_sym
         config = sanitize_options(options)
         super(config)
         validate!
@@ -36,6 +36,10 @@ module Subroutine
 
       def required_modules
         []
+      end
+
+      def related_field_names
+        [field_name]
       end
 
       def behavior

@@ -19,6 +19,13 @@ module Subroutine
         super + [::Subroutine::AssociationFields]
       end
 
+      def related_field_names
+        out = super
+        out << foreign_key_method
+        out << foreign_type_method if polymorphic?
+        out
+      end
+
       def polymorphic?
         !!config[:polymorphic]
       end
@@ -40,11 +47,11 @@ module Subroutine
       end
 
       def foreign_key_method
-        foreign_key || "#{field_name}_id"
+        (foreign_key || "#{field_name}_id").to_sym
       end
 
       def foreign_type_method
-        foreign_key_method.gsub(/_id$/, "_type")
+        foreign_key_method.to_s.gsub(/_id$/, "_type").to_sym
       end
 
       def build_foreign_key_field
