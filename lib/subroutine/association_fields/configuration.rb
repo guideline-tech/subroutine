@@ -55,7 +55,7 @@ module Subroutine
       end
 
       def build_foreign_key_field
-        build_child_field(foreign_key_method, type: :integer)
+        build_child_field(foreign_key_method)
       end
 
       def build_foreign_type_field

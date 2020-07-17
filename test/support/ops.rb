@@ -23,6 +23,14 @@ class User
     new(id: id)
   end
 
+  def self.find_by(params)
+    new(params)
+  end
+
+  def self.find_by!(params)
+    find_by(params) || raise
+  end
+
 end
 
 class AdminUser < ::User
@@ -306,7 +314,7 @@ end
 
 class AssociationWithForeignKeyOp < ::OpWithAssociation
 
-  association :admin, class_name: "AdminUser", foreign_key: "user_id"
+  association :user, foreign_key: "email_address"
 
 end
 
