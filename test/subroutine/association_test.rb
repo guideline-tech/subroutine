@@ -70,6 +70,12 @@ module Subroutine
       assert_equal "AdminUser", op.admin_type
     end
 
+    def test_it_allows_foreign_keys_to_be_set
+      op = ::AssociationWithForeignKeyOp.new(admin: doug)
+      assert_equal doug.id, op.user_id
+      assert_equal "user_id", op.field_configurations[:admin][:foreign_key]
+    end
+
     def test_it_inherits_associations_via_fields_from
       all_mock = mock
 

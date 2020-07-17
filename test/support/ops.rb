@@ -304,6 +304,12 @@ class AssociationWithClassOp < ::OpWithAssociation
 
 end
 
+class AssociationWithForeignKeyOp < ::OpWithAssociation
+
+  association :admin, class_name: "AdminUser", foreign_key: "user_id"
+
+end
+
 class ExceptAssociationOp < ::Subroutine::Op
 
   fields_from ::PolymorphicAssociationOp, except: %i[admin]

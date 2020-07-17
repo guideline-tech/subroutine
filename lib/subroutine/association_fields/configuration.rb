@@ -10,7 +10,7 @@ module Subroutine
       def validate!
         super
 
-        if as && foreign_key
+        if config[:as] && foreign_key
           raise ArgumentError, ":as and :foreign_key options should not be provided together to an association invocation"
         end
       end
