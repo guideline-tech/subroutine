@@ -82,7 +82,7 @@ module Subroutine
 
       if errors.empty?
         validate_outputs!
-        true
+        self
       else
         raise _failure_class, self
       end
@@ -91,6 +91,7 @@ module Subroutine
     # the action which should be invoked upon form submission (from the controller)
     def submit
       submit!
+      true
     rescue Exception => e
       if e.respond_to?(:record)
         inherit_errors(e.record) unless e.record == self
