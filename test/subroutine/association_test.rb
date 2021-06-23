@@ -27,7 +27,7 @@ module Subroutine
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find).with(1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = SimpleAssociationOp.new user_type: "User", user_id: doug.id
       assert_equal doug, op.user
@@ -37,7 +37,7 @@ module Subroutine
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find).with(1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = SimpleAssociationOp.new user_id: doug.id
       assert_equal doug, op.user
@@ -49,7 +49,7 @@ module Subroutine
 
       ::User.expects(:all).returns(all_mock)
       all_mock.expects(:unscoped).returns(unscoped_mock)
-      unscoped_mock.expects(:find).with(1).returns(doug)
+      unscoped_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = UnscopedSimpleAssociationOp.new user_id: doug.id
       assert_equal doug, op.user
@@ -59,7 +59,7 @@ module Subroutine
       all_mock = mock
       ::User.expects(:all).never
       ::AdminUser.expects(:all).returns(all_mock)
-      all_mock.expects(:find).with(1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = PolymorphicAssociationOp.new(admin_type: "AdminUser", admin_id: doug.id)
       assert_equal doug, op.admin
@@ -70,11 +70,21 @@ module Subroutine
       assert_equal "AdminUser", op.admin_type
     end
 
+    def test_it_allows_foreign_keys_to_be_set
+      all_mock = mock
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by!).with("email_address" => doug.email_address).returns(doug)
+
+      op = ::AssociationWithForeignKeyOp.new(email_address: doug.email_address)
+      assert_equal doug, op.user
+      assert_equal "email_address", op.field_configurations[:user][:foreign_key]
+    end
+
     def test_it_inherits_associations_via_fields_from
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find).with(1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = ::InheritedSimpleAssociation.new(user_type: "User", user_id: doug.id)
       assert_equal doug, op.user
@@ -88,7 +98,7 @@ module Subroutine
 
       ::User.expects(:all).returns(all_mock)
       all_mock.expects(:unscoped).returns(unscoped_mock)
-      unscoped_mock.expects(:find).with(1).returns(doug)
+      unscoped_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = ::InheritedUnscopedAssociation.new(user_type: "User", user_id: doug.id)
       assert_equal doug, op.user
@@ -100,7 +110,7 @@ module Subroutine
       all_mock = mock
       ::User.expects(:all).never
       ::AdminUser.expects(:all).returns(all_mock)
-      all_mock.expects(:find).with(1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = ::InheritedPolymorphicAssociationOp.new(admin_type: "AdminUser", admin_id: doug.id)
       assert_equal doug, op.admin

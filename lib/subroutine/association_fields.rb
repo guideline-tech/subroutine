@@ -137,10 +137,7 @@ module Subroutine
         stored_result = association_cache[config.field_name]
         return stored_result unless stored_result.nil?
 
-        fk = config.field_reader? ? send(config.foreign_key_method) : get_field(config.foreign_id_method)
-        type = config.field_reader? || !config.polymorphic? ? send(config.foreign_type_method) : get_field(config.foreign_type_method)
-
-        result = fetch_association_instance(type, fk, config.unscoped?)
+        result = fetch_association_instance(config)
         association_cache[config.field_name] = result
       else
         get_field_without_association(field_name)
@@ -175,18 +172,25 @@ module Subroutine
       end
     end
 
-    def fetch_association_instance(_type, _fk, _unscoped = false)
-      return nil unless _type && _fk
+    def fetch_association_instance(config)
+      klass =
+        if config.field_reader?
+          config.polymorphic? ? send(config.foreign_type_method) : config.inferred_class_name
+        else
+          get_field(config.foreign_type_method)
+        end
+      foreign_key = config.foreign_key_method
+      return nil unless klass && foreign_key
 
-      klass = _type
       klass = klass.classify.constantize if klass.is_a?(String)
-
       return nil unless klass
 
       scope = klass.all
-      scope = scope.unscoped if _unscoped
+      scope = scope.unscoped if config.unscoped?
+      value = send(foreign_key)
+      column = config.foreign_key || :id
 
-      scope.find(_fk)
+      scope.find_by!(column => value)
     end
 
     def maybe_raise_on_association_type_mismatch!(config, record)

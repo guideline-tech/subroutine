@@ -10,7 +10,7 @@ module Subroutine
       def validate!
         super
 
-        if as && foreign_key
+        if config[:as] && foreign_key
           raise ArgumentError, ":as and :foreign_key options should not be provided together to an association invocation"
         end
       end
@@ -55,7 +55,7 @@ module Subroutine
       end
 
       def build_foreign_key_field
-        build_child_field(foreign_key_method, type: :integer)
+        build_child_field(foreign_key_method)
       end
 
       def build_foreign_type_field
