@@ -139,6 +139,11 @@ module Subroutine
       assert_equal "foo@bar.com", u.email_address
     end
 
+    def test_instance_and_class_submit_bang_return_instance
+      assert ::SignupOp.new(email: "foo@bar.com", password: "password123").submit!.is_a?(::SignupOp)
+      assert ::SignupOp.submit!(email: "foo@bar.com", password: "password123").is_a?(::SignupOp)
+    end
+
     def test_it_raises_an_error_when_used_with_a_bang_and_performing_or_validation_fails
       op = ::SignupOp.new(email: "foo@bar.com")
 
