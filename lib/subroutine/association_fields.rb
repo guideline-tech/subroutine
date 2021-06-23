@@ -74,7 +74,7 @@ module Subroutine
             class_eval <<-EV, __FILE__, __LINE__ + 1
               try(:silence_redefinition_of_method, :#{config.foreign_type_method})
               def #{config.foreign_type_method}
-                #{config.inferred_class_name.inspect}
+                #{config.inferred_foreign_type.inspect}
               end
             EV
           end
@@ -119,7 +119,7 @@ module Subroutine
       if config&.behavior == :association
         maybe_raise_on_association_type_mismatch!(config, value)
         set_field(config.foreign_type_method, value&.class&.name, opts) if config.polymorphic?
-        set_field(config.foreign_key_method, value&.id, opts)
+        set_field(config.foreign_key_method, value&.send(config.find_by), opts)
         association_cache[config.field_name] = value
       else
         if config&.behavior == :association_component
@@ -175,29 +175,29 @@ module Subroutine
     def fetch_association_instance(config)
       klass =
         if config.field_reader?
-          config.polymorphic? ? send(config.foreign_type_method) : config.inferred_class_name
+          config.polymorphic? ? send(config.foreign_type_method) : config.inferred_foreign_type
         else
           get_field(config.foreign_type_method)
         end
-      foreign_key = config.foreign_key_method
-      return nil unless klass && foreign_key
 
       klass = klass.classify.constantize if klass.is_a?(String)
       return nil unless klass
 
+      foreign_key = config.foreign_key_method
+      value = send(foreign_key)
+      return nil unless value
+
       scope = klass.all
       scope = scope.unscoped if config.unscoped?
-      value = send(foreign_key)
-      column = config.foreign_key || :id
 
-      scope.find_by!(column => value)
+      scope.find_by!(config.find_by => value)
     end
 
     def maybe_raise_on_association_type_mismatch!(config, record)
       return if config.polymorphic?
       return if record.nil?
 
-      klass = config.inferred_class_name.constantize
+      klass = config.inferred_foreign_type.constantize
 
       return if record.class <= klass || record.class >= klass
 

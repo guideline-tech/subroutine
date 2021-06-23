@@ -23,6 +23,16 @@ module Subroutine
       assert_equal doug.id, op.user_id
     end
 
+    def test_it_can_be_nil
+      op = SimpleAssociationOp.new user: nil
+      assert_nil op.user
+      assert_nil op.user_id
+
+      op = SimpleAssociationOp.new
+      assert_nil op.user
+      assert_nil op.user_id
+    end
+
     def test_it_looks_up_an_association
       all_mock = mock
 
@@ -70,14 +80,53 @@ module Subroutine
       assert_equal "AdminUser", op.admin_type
     end
 
-    def test_it_allows_foreign_keys_to_be_set
+    def test_it_allows_foreign_key_to_be_set
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by!).with("email_address" => doug.email_address).returns(doug)
+      all_mock.expects(:find_by!).with(id: "foobarbaz").returns(doug)
 
-      op = ::AssociationWithForeignKeyOp.new(email_address: doug.email_address)
+      op = ::AssociationWithForeignKeyOp.new(user_identifier: "foobarbaz")
       assert_equal doug, op.user
-      assert_equal "email_address", op.field_configurations[:user][:foreign_key]
+      assert_equal "user_identifier", op.field_configurations[:user][:foreign_key]
+    end
+
+    def test_it_allows_a_foreign_key_and_find_by_to_be_set
+      all_mock = mock
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
+
+      op = ::AssociationWithFindByAndForeignKeyOp.new(email_address: doug.email_address)
+      assert_equal doug, op.user
+      assert_equal "email_address", op.field_configurations[:user][:find_by]
+    end
+
+    def test_it_allows_a_find_by_to_be_set
+      all_mock = mock
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
+
+      op = ::AssociationWithFindByKeyOp.new(user_id: doug.email_address)
+      assert_equal doug, op.user
+      assert_equal "email_address", op.field_configurations[:user][:find_by]
+    end
+
+    def test_values_are_correct_for_find_by_usage
+      op = ::AssociationWithFindByKeyOp.new(user: doug)
+      assert_equal doug, op.user
+      assert_equal doug.email_address, op.user_id
+    end
+
+    def test_values_are_correct_for_foreign_key_usage
+      op = ::AssociationWithForeignKeyOp.new(user: doug)
+      assert_equal doug, op.user
+      assert_equal doug.id, op.user_identifier
+    end
+
+    def test_values_are_correct_for_both_foreign_key_and_find_by_usage
+      op = ::AssociationWithFindByAndForeignKeyOp.new(user: doug)
+      assert_equal doug, op.user
+      assert_equal doug.email_address, op.email_address
+      assert_equal false, op.respond_to?(:user_id)
     end
 
     def test_it_inherits_associations_via_fields_from

@@ -314,7 +314,19 @@ end
 
 class AssociationWithForeignKeyOp < ::OpWithAssociation
 
-  association :user, foreign_key: "email_address"
+  association :user, foreign_key: "user_identifier"
+
+end
+
+class AssociationWithFindByKeyOp < ::OpWithAssociation
+
+  association :user, find_by: "email_address"
+
+end
+
+class AssociationWithFindByAndForeignKeyOp < ::OpWithAssociation
+
+  association :user, foreign_key: "email_address", find_by: "email_address"
 
 end
 

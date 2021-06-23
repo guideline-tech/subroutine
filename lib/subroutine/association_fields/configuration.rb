@@ -34,12 +34,13 @@ module Subroutine
         config[:as] || field_name
       end
 
-      def class_name
-        config[:class_name]&.to_s
+      def foreign_type
+        (config[:foreign_type] || config[:class_name])&.to_s
       end
+      alias class_name foreign_type
 
-      def inferred_class_name
-        class_name || as.to_s.camelize
+      def inferred_foreign_type
+        foreign_type || as.to_s.camelize
       end
 
       def foreign_key
@@ -52,6 +53,10 @@ module Subroutine
 
       def foreign_type_method
         foreign_key_method.to_s.gsub(/_id$/, "_type").to_sym
+      end
+
+      def find_by
+        (config[:find_by] || :id).to_sym
       end
 
       def build_foreign_key_field
