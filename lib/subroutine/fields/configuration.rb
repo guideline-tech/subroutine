@@ -7,7 +7,7 @@ module Subroutine
     class Configuration < ::SimpleDelegator
 
       PROTECTED_GROUP_IDENTIFIERS = %i[all original default].freeze
-      INHERITABLE_OPTIONS = %i[mass_assignable field_reader field_writer groups].freeze
+      INHERITABLE_OPTIONS = %i[mass_assignable field_reader field_writer groups aka].freeze
       NO_GROUPS = [].freeze
 
       def self.from(field_name, options)
@@ -100,6 +100,7 @@ module Subroutine
         groups = nil if groups == false
         opts[:groups] = Array(groups).map(&:to_sym).presence
         opts.delete(:group)
+        opts[:aka] = opts[:aka].to_sym if opts[:aka]
         opts
       end
 

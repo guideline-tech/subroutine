@@ -461,3 +461,15 @@ class CustomFailureClassOp < ::Subroutine::Op
   end
 
 end
+
+class PrefixedInputsOp < ::Subroutine::Op
+
+  string :user_email_address
+
+  def perform
+    u = AdminUser.new(email_address: user_email_address)
+    u.valid?
+    inherit_errors(u, prefix: :user_)
+  end
+
+end

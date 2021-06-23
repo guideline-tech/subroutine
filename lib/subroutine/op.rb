@@ -37,27 +37,10 @@ module Subroutine
         op
       end
 
-      protected
-
-      def field(field_name, options = {})
-        result = super(field_name, options)
-
-        if options[:aka]
-          Array(options[:aka]).each do |as|
-            self._error_map = _error_map.merge(as.to_sym => field_name.to_sym)
-          end
-        end
-
-        result
-      end
-
     end
 
     class_attribute :_failure_class
     self._failure_class = Subroutine::Failure
-
-    class_attribute :_error_map
-    self._error_map = {}
 
     def initialize(inputs = {})
       setup_fields(inputs)
@@ -128,18 +111,23 @@ module Subroutine
       raise NotImplementedError
     end
 
-    # applies the errors in error_object to self
-    # returns false so failure cases can end with this invocation
-    def inherit_errors(error_object)
+    def inherit_errors(error_object, prefix: nil)
       error_object = error_object.errors if error_object.respond_to?(:errors)
 
-      error_object.each do |k, v|
-        if respond_to?(k)
-          errors.add(k, v)
-        elsif _error_map[k.to_sym]
-          errors.add(_error_map[k.to_sym], v)
+      error_object.each do |field_name, error|
+        field_name = "#{prefix}#{field_name}" if prefix
+        field_name = field_name.to_sym
+
+        field_config = get_field_config(field_name)
+        field_config ||= begin
+          kv = field_configurations.find { |_k, config| config[:aka] == field_name }
+          kv ? kv.last : nil
+        end
+
+        if field_config
+          errors.add(field_config.field_name, error)
         else
-          errors.add(:base, error_object.full_message(k, v))
+          errors.add(:base, error_object.full_message(field_name, error))
         end
       end
 

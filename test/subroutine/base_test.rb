@@ -127,6 +127,13 @@ module Subroutine
       assert_equal ["has gotta be @admin.com"], op.errors[:email]
     end
 
+    def test_validation_errors_can_be_inherited_and_prefixed
+      op = PrefixedInputsOp.new(user_email_address: "foo@bar.com")
+      refute op.submit
+
+      assert_equal ["has gotta be @admin.com"], op.errors[:user_email_address]
+    end
+
     def test_when_valid_perform_completes_it_returns_control
       op = ::SignupOp.new(email: "foo@bar.com", password: "password123")
       op.submit!
