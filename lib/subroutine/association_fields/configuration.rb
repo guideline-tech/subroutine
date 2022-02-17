@@ -60,7 +60,7 @@ module Subroutine
       end
 
       def build_foreign_key_field
-        build_child_field(foreign_key_method)
+        build_child_field(foreign_key_method, type: :foreign_key, foreign_key_type: config[:foreign_key_type])
       end
 
       def build_foreign_type_field
@@ -78,7 +78,10 @@ module Subroutine
       protected
 
       def build_child_field(name, opts = {})
-        ComponentConfiguration.new(name, inheritable_options.merge(opts).merge(association_name: as))
+        child_opts = inheritable_options
+        child_opts.merge!(opts)
+        child_opts[:association_name] = as
+        ComponentConfiguration.new(name, child_opts)
       end
 
     end

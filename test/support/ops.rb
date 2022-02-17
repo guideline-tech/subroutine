@@ -166,6 +166,8 @@ class TypeCastOp < ::Subroutine::Op
   array :array_input, default: "foo"
   array :type_array_input, of: :integer
   file :file_input
+  foreign_key :fk_input_owner_id
+  foreign_key :fk_input_email_address, foreign_key_type: :string
 
 end
 
@@ -314,13 +316,13 @@ end
 
 class AssociationWithForeignKeyOp < ::OpWithAssociation
 
-  association :user, foreign_key: "user_identifier"
+  association :user, foreign_key: "owner_id"
 
 end
 
 class AssociationWithFindByKeyOp < ::OpWithAssociation
 
-  association :user, find_by: "email_address"
+  association :user, find_by: "email_address", foreign_key_type: :string
 
 end
 
