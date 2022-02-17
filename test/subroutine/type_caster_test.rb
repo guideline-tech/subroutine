@@ -261,5 +261,28 @@ module Subroutine
         op.date_input = "2015-13-01"
       end
     end
+
+    def test_foreign_key_inputs
+      op.fk_input_owner_id = nil
+      assert_nil op.fk_input_owner_id
+
+      op.fk_input_owner_id = ""
+      assert_nil op.fk_input_owner_id
+
+      op.fk_input_owner_id = "19402"
+      assert_equal 19402, op.fk_input_owner_id
+
+      op.fk_input_owner_id = "19402.0"
+      assert_equal 19402, op.fk_input_owner_id
+
+      op.fk_input_email_address = nil
+      assert_nil op.fk_input_email_address
+
+      op.fk_input_email_address = ""
+      assert_nil op.fk_input_email_address
+
+      op.fk_input_email_address = "foo@bar.com"
+      assert_equal "foo@bar.com", op.fk_input_email_address
+    end
   end
 end

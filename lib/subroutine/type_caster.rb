@@ -63,6 +63,15 @@ end
   String(value)
 end
 
+::Subroutine::TypeCaster.register :foreign_key do |value, options = {}|
+  next nil if value.blank?
+
+  next ::Subroutine::TypeCaster.cast(value, type: options[:foreign_key_type]) if options[:foreign_key_type]
+  next ::Subroutine::TypeCaster.cast(value, type: :integer) if options[:name] && options[:name].to_s.end_with?("_id")
+
+  value
+end
+
 ::Subroutine::TypeCaster.register :boolean, :bool do |value, _options = {}|
   !!(String(value) =~ /^(yes|true|1|ok)$/)
 end

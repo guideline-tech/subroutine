@@ -83,20 +83,32 @@ module Subroutine
     def test_it_allows_foreign_key_to_be_set
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by!).with(id: "foobarbaz").returns(doug)
+      all_mock.expects(:find_by!).with(id: 10).returns(doug)
 
-      op = ::AssociationWithForeignKeyOp.new(user_identifier: "foobarbaz")
+      op = ::AssociationWithForeignKeyOp.new(owner_id: 10)
       assert_equal doug, op.user
-      assert_equal "user_identifier", op.field_configurations[:user][:foreign_key]
+      assert_equal "owner_id", op.field_configurations[:user][:foreign_key]
+    end
+
+    def test_the_foreign_key_is_cast
+      all_mock = mock
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by!).with(id: 10).returns(doug)
+
+      op = ::AssociationWithForeignKeyOp.new(owner_id: "10")
+      assert_equal doug, op.user
+      assert_equal 10, op.owner_id
+      assert_equal "owner_id", op.field_configurations[:user][:foreign_key]
     end
 
     def test_it_allows_a_foreign_key_and_find_by_to_be_set
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
+      all_mock.expects(:find_by!).with(email_address: "foo@bar.com").returns(doug)
 
-      op = ::AssociationWithFindByAndForeignKeyOp.new(email_address: doug.email_address)
+      op = ::AssociationWithFindByAndForeignKeyOp.new(email_address: "foo@bar.com")
       assert_equal doug, op.user
+      assert_equal "foo@bar.com", op.email_address
       assert_equal "email_address", op.field_configurations[:user][:find_by]
     end
 
@@ -119,7 +131,7 @@ module Subroutine
     def test_values_are_correct_for_foreign_key_usage
       op = ::AssociationWithForeignKeyOp.new(user: doug)
       assert_equal doug, op.user
-      assert_equal doug.id, op.user_identifier
+      assert_equal doug.id, op.owner_id
     end
 
     def test_values_are_correct_for_both_foreign_key_and_find_by_usage

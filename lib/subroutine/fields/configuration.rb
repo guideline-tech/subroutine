@@ -101,6 +101,7 @@ module Subroutine
         opts[:groups] = Array(groups).map(&:to_sym).presence
         opts.delete(:group)
         opts[:aka] = opts[:aka].to_sym if opts[:aka]
+        opts[:name] = field_name
         opts
       end
 

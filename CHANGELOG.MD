@@ -81,7 +81,7 @@ class AccountUpdateOp < ::Op
 end
 ```
 
-ActionController::Parameters from Rails 5+ are now transformed to as hash in `Subroutine::Fields` by default. This means strong parameters are essentially unused when passing `Subroutine::Fields`.
+ActionController::Parameters from Rails 5+ are now transformed to a hash in `Subroutine::Fields` by default. This means strong parameters are essentially unused when passing `Subroutine::Fields`.
 
 Read more about field management and access in https://github.com/guideline-tech/subroutine/wiki/Param-Usage
 
