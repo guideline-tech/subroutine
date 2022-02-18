@@ -1,3 +1,9 @@
+## Subroutine 2.0
+
+The updates between 1.0 and 2.0 are relatively minor and are focused more on cleaning up the codebase and extending the use of the 0.9->1.0 refactor. There are, however, breaking changes to how associations are loaded. The association is no longer loaded via `find()` but rather `find_by!(id:)`. Given this, a major version was released.
+
+**Note:** 2.0.0 was released with a bug and subsequently yanked. 2.0.1 is the first available 2.x version.
+
 ## Subroutine 1.0
 
 A massive refactor took place between 0.9 and 1.0, including breaking changes. The goal was to reduce complexity, simplify backtraces, and increase the overall safety and reliability of the library.
