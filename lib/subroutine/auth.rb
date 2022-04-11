@@ -9,11 +9,13 @@ module Subroutine
     extend ActiveSupport::Concern
 
     included do
-      class_attribute :authorization_declared, instance_writer: false
-      self.authorization_declared = false
+      class_attribute :authorization_checks
+      self.authorization_checks = []
 
       class_attribute :user_class_name, instance_writer: false
       self.user_class_name = "User"
+
+      validate :validate_authorization_checks
     end
 
     module ClassMethods
@@ -22,28 +24,24 @@ module Subroutine
         [user_class_name, "Integer", "NilClass"].compact
       end
 
-      def authorize(validation_name)
-        validate validation_name, unless: :skip_auth_checks?
+      def authorization_declared?
+        authorization_checks.any?
+      end
+
+      def authorize(check_name)
+        self.authorization_checks += [check_name.to_sym]
       end
 
       def no_user_requirements!
-        self.authorization_declared = true
+        authorize :authorize_user_not_required
       end
 
       def require_user!
-        self.authorization_declared = true
-
-        validate unless: :skip_auth_checks? do
-          unauthorized! unless current_user.present?
-        end
+        authorize :authorize_user_required
       end
 
       def require_no_user!
-        self.authorization_declared = true
-
-        validate unless: :skip_auth_checks? do
-          unauthorized! :empty_unauthorized if current_user.present?
-        end
+        authorize :authorize_no_user_required
       end
 
       # policy :can_update_user
@@ -57,33 +55,45 @@ module Subroutine
         if_conditionals = Array(opts[:if])
         unless_conditionals = Array(opts[:unless])
 
-        validate unless: :skip_auth_checks? do
-          run_it = true
-          # http://guides.rubyonrails.org/active_record_validations.html#combining-validation-conditions
+        meths.each do |meth|
+          normalized_meth = meth[0...-1] if meth.end_with?("?")
+          auth_method_name = :"authorize_#{policy_name}_#{normalized_meth}"
 
-          # The validation only runs when all the :if conditions
-          if if_conditionals.present?
-            run_it &&= if_conditionals.all? { |i| send(i) }
+          define_method auth_method_name do
+            run_it = true
+            # http://guides.rubyonrails.org/active_record_validations.html#combining-validation-conditions
+
+            # The validation only runs when all the :if conditions evaluate to true
+            if if_conditionals.present?
+              run_it &&= if_conditionals.all? { |i| send(i) }
+            end
+
+            # and none of the :unless conditions are evaluated to true.
+            if unless_conditionals.present?
+              run_it &&= unless_conditionals.none? { |u| send(u) }
+            end
+
+            return unless run_it
+
+            p = send(policy_name)
+            unauthorized! unless p
+
+            result = if p.respond_to?("#{normalized_meth}?")
+                       p.send("#{normalized_meth}?")
+                     else
+                       p.send(normalized_meth)
+                     end
+
+            unauthorized! opts[:error] unless result
           end
 
-          # and none of the :unless conditions are evaluated to true.
-          if unless_conditionals.present?
-            run_it &&= unless_conditionals.none? { |u| send(u) }
-          end
-
-          next unless run_it
-
-          p = send(policy_name)
-          if !p || meths.any? { |m| !(p.respond_to?("#{m}?") ? p.send("#{m}?") : p.send(m)) }
-            unauthorized! opts[:error]
-          end
+          authorize auth_method_name
         end
       end
-
     end
 
     def initialize(*args, &block)
-      raise Subroutine::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared
+      raise Subroutine::Auth::AuthorizationNotDeclaredError unless self.class.authorization_declared?
 
       @skip_auth_checks = false
 
@@ -122,6 +132,27 @@ module Subroutine
     def unauthorized!(reason = nil)
       reason ||= :unauthorized
       raise ::Subroutine::Auth::NotAuthorizedError, reason
+    end
+
+    def validate_authorization_checks
+      return if skip_auth_checks?
+      return unless authorization_checks.any?
+
+      authorization_checks.each do |check|
+        send(check)
+      end
+    end
+
+    def authorize_user_not_required
+      true
+    end
+
+    def authorize_user_required
+      unauthorized! unless current_user.present?
+    end
+
+    def authorize_no_user_required
+      unauthorized! :empty_unauthorized if current_user.present?
     end
 
   end
