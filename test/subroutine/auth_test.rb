@@ -57,6 +57,16 @@ module Subroutine
       end
     end
 
+    def test_authorization_checks_are_registered_on_the_class
+      assert_equal false, MissingAuthOp.authorization_declared?
+
+      assert_equal true, CustomAuthorizeOp.authorization_declared?
+      assert_equal [:authorize_user_required, :authorize_user_is_correct], CustomAuthorizeOp.authorization_checks
+
+      assert_equal true, NoUserRequirementsOp.authorization_declared?
+      assert_equal [:authorize_user_not_required], NoUserRequirementsOp.authorization_checks
+    end
+
     def test_the_current_user_can_be_defined_by_an_id
       user = CustomAuthorizeOp.new(1).current_user
       assert_equal 1, user.id
@@ -90,6 +100,10 @@ module Subroutine
       op = PolicyOp.new
       op.skip_auth_checks!
       op.submit!
+    end
+
+    def policy_invocations_are_registered_as_authorization_methods
+      assert PolicyOp.authorization_checks.include?(:authorize_policy_user_can_access)
     end
 
     def test_it_runs_policies_with_conditionals
