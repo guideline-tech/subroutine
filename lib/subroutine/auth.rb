@@ -56,7 +56,7 @@ module Subroutine
         unless_conditionals = Array(opts[:unless])
 
         meths.each do |meth|
-          normalized_meth = meth[0...-1] if meth.end_with?("?")
+          normalized_meth = meth.to_s[0...-1] if meth.to_s.end_with?("?")
           auth_method_name = :"authorize_#{policy_name}_#{normalized_meth}"
 
           define_method auth_method_name do
