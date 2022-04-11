@@ -15,7 +15,7 @@ module Subroutine
       class_attribute :user_class_name, instance_writer: false
       self.user_class_name = "User"
 
-      validate :validate_authorization_checks
+      validate :validate_authorization_checks, unless: :skip_auth_checks?
     end
 
     module ClassMethods
@@ -135,9 +135,6 @@ module Subroutine
     end
 
     def validate_authorization_checks
-      return if skip_auth_checks?
-      return unless authorization_checks.any?
-
       authorization_checks.each do |check|
         send(check)
       end
