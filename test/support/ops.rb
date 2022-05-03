@@ -284,9 +284,32 @@ class UnlessConditionalPolicyOp < OpWithAuth
 
 end
 
+class ParentInheritanceOp < ::Subroutine::Op
+  class EarlyInheritanceOp < ParentInheritanceOp
+    integer :debit_cents
+  end
+
+  integer :amount_cents
+
+  class LateInheritanceOp < ParentInheritanceOp
+    integer :debit_cents
+  end
+
+end
+
+class OuterInheritanceOp < ParentInheritanceOp
+
+  integer :credit_cents
+
+end
+
 class OpWithAssociation < ::Subroutine::Op
 
   include ::Subroutine::AssociationFields
+
+  def perform
+    false
+  end
 
 end
 

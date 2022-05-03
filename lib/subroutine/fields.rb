@@ -216,9 +216,9 @@ module Subroutine
       field_provided?(name) ? all_params[name] : all_default_params[name]
     end
 
-    def set_field(name, value, track_provided: true)
+    def set_field(name, value, opts = {})
       config = get_field_config(name)
-      @provided_fields[name] = true if track_provided
+      @provided_fields[name] = true unless opts[:track_provided] == false
       value = attempt_cast(value, config) do |e|
         "Error during assignment of field `#{name}`: #{e}"
       end
