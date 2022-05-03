@@ -136,5 +136,12 @@ module Subroutine
       assert_equal({}.with_indifferent_access, op.without_inherited_params)
     end
 
+    def test_fields_are_inherited_to_subclasses
+      assert_equal(%i[amount_cents], ParentInheritanceOp.field_configurations.keys.sort)
+      assert_equal(%i[debit_cents], ParentInheritanceOp::EarlyInheritanceOp.field_configurations.keys.sort)
+      assert_equal(%i[amount_cents debit_cents], ParentInheritanceOp::LateInheritanceOp.field_configurations.keys.sort)
+      assert_equal(%i[amount_cents credit_cents], OuterInheritanceOp.field_configurations.keys.sort)
+    end
+
   end
 end
