@@ -228,13 +228,19 @@ class PolicyOp < OpWithAuth
   class FakePolicy
 
     def user_can_access?
+      true
+    end
+
+    def user_can_do_it
       false
     end
 
   end
 
   require_user!
+
   policy :user_can_access?
+  policy :user_can_do_it
 
   def policy
     @policy ||= FakePolicy.new
