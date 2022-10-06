@@ -27,7 +27,12 @@ module Subroutine
       alias config __getobj__
 
       def required?
-        !!config[:required]
+        case config[:required]
+        when Proc
+          config[:required].call
+        else
+          !!config[:required]
+        end
       end
 
       def inspect

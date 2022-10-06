@@ -32,6 +32,18 @@ module Subroutine
       end
     end
 
+    class DynamicRequireCheck < ::Subroutine::Op
+      outputs :foo, required: -> { the_check }
+
+      class << self
+        def the_check
+          nil
+        end
+      end
+
+      def perform; end
+    end
+
     class OutputWithTypeValidationNotRequired < ::Subroutine::Op
       outputs :value, type: String, required: false
 
@@ -68,6 +80,19 @@ module Subroutine
       refute op.submit
     end
 
+    def test_it_allows_dynamic_requirement_checks
+      op = DynamicRequireCheck.new
+      DynamicRequireCheck.stubs(:the_check).returns(true)
+
+      assert_raises ::Subroutine::Outputs::OutputNotSetError do
+        op.submit
+      end
+
+      DynamicRequireCheck.stubs(:the_check).returns(false)
+
+      assert op.submit
+    end
+
     ###################
     # type validation #
     ###################
@@ -99,5 +124,6 @@ module Subroutine
         op.submit
       end
     end
+
   end
 end
