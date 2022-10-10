@@ -21,7 +21,7 @@ class SignupOp < ::Subroutine::Op
   validates :company_name, presence: true
 
   outputs :user
-  outputs :business
+  outputs :business, type: Business # validate that output type is an instance of Business
 
   protected
 

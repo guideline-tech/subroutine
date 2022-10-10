@@ -417,41 +417,6 @@ class FalsePerformOp < ::Subroutine::Op
 
 end
 
-class MissingOutputOp < ::Subroutine::Op
-
-  def perform
-    output :foo, "bar"
-  end
-
-end
-
-class MissingOutputSetOp < ::Subroutine::Op
-
-  outputs :foo
-  def perform
-    true
-  end
-
-end
-
-class OutputNotRequiredOp < ::Subroutine::Op
-
-  outputs :foo, required: false
-  def perform
-    true
-  end
-
-end
-
-class NoOutputNoSuccessOp < ::Subroutine::Op
-
-  outputs :foo
-  def perform
-    errors.add(:foo, "bar")
-  end
-
-end
-
 class ErrorTraceOp < ::Subroutine::Op
 
   class SomeObject

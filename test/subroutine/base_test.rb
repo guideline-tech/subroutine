@@ -264,30 +264,6 @@ module Subroutine
       assert_equal Hash, value.class
     end
 
-    def test_it_raises_an_error_if_an_output_is_not_defined_but_is_set
-      op = ::MissingOutputOp.new
-      assert_raises ::Subroutine::Outputs::UnknownOutputError do
-        op.submit
-      end
-    end
-
-    def test_it_raises_an_error_if_not_all_outputs_were_set
-      op = ::MissingOutputSetOp.new
-      assert_raises ::Subroutine::Outputs::OutputNotSetError do
-        op.submit
-      end
-    end
-
-    def test_it_does_not_raise_an_error_if_output_is_not_set_and_is_not_required
-      op = ::OutputNotRequiredOp.new
-      op.submit
-    end
-
-    def test_it_does_not_raise_an_error_if_the_perform_is_not_a_success
-      op = ::NoOutputNoSuccessOp.new
-      refute op.submit
-    end
-
     def test_it_does_not_omit_the_backtrace_from_the_original_error
       op = ::ErrorTraceOp.new
       begin
