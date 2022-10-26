@@ -1,3 +1,7 @@
+## Subroutine 2.2
+
+Add `type` validation for Output.
+
 ## Subroutine 2.0
 
 The updates between 1.0 and 2.0 are relatively minor and are focused more on cleaning up the codebase and extending the use of the 0.9->1.0 refactor. There are, however, breaking changes to how associations are loaded. The association is no longer loaded via `find()` but rather `find_by!(id:)`. Given this, a major version was released.
