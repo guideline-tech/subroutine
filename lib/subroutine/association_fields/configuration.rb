@@ -60,7 +60,7 @@ module Subroutine
       end
 
       def build_foreign_key_field
-        build_child_field(foreign_key_method, type: :foreign_key, foreign_key_type: config[:foreign_key_type])
+        build_child_field(foreign_key_method, type: :foreign_key, foreign_key_type: determine_foreign_key_type)
       end
 
       def build_foreign_type_field
@@ -82,6 +82,23 @@ module Subroutine
         child_opts.merge!(opts)
         child_opts[:association_name] = as
         ComponentConfiguration.new(name, child_opts)
+      end
+
+      def determine_foreign_key_type
+        return config[:foreign_key_type] if config[:foreign_key_type]
+
+        # TODO: Make this logic work for polymorphic associations.
+        return if polymorphic?
+
+        klass = inferred_foreign_type&.constantize
+        if klass && klass.respond_to?(:type_for_attribute)
+          case klass.type_for_attribute(find_by)&.type&.to_sym
+          when :string
+            :string
+          else
+            :integer
+          end
+        end
       end
 
     end
