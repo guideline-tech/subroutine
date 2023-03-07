@@ -31,6 +31,23 @@ class User
     find_by(params) || raise
   end
 
+  def self.type_for_attribute(attribute)
+    case attribute
+    when :id
+      Struct.new(:type).new(:integer)
+    else
+      Struct.new(:type).new(:string)
+    end
+  end
+
+end
+
+class StringIdUser < ::User
+
+  def self.type_for_attribute(attribute)
+    Struct.new(:type).new(:string)
+  end
+
 end
 
 class AdminUser < ::User
@@ -325,6 +342,12 @@ class SimpleAssociationOp < ::OpWithAssociation
 
 end
 
+class SimpleAssociationWithStringIdOp < ::OpWithAssociation
+
+  association :string_id_user
+
+end
+
 class UnscopedSimpleAssociationOp < ::OpWithAssociation
 
   association :user, unscoped: true, allow_overwrite: true
@@ -352,6 +375,12 @@ end
 class AssociationWithFindByKeyOp < ::OpWithAssociation
 
   association :user, find_by: "email_address", foreign_key_type: :string
+
+end
+
+class AssociationWithImplicitStringFindByOp < ::OpWithAssociation
+
+  association :user, find_by: "email_address"
 
 end
 

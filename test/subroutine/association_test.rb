@@ -13,6 +13,10 @@ module Subroutine
       @fred ||= ::User.new(id: 2, email_address: "fred@example.com")
     end
 
+    def murphy
+      @murphy ||= ::StringIdUser.new(id: "ABACABADABACABA", email_address: "murphy@example.com")
+    end
+
     def account
       @account ||= ::Account.new(id: 1)
     end
@@ -41,6 +45,16 @@ module Subroutine
 
       op = SimpleAssociationOp.new user_type: "User", user_id: doug.id
       assert_equal doug, op.user
+    end
+
+    def test_it_looks_up_an_association_with_string_ids
+      all_mock = mock
+
+      ::StringIdUser.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by!).with(id: "ABACABADABACABA").returns(murphy)
+
+      op = ::SimpleAssociationWithStringIdOp.new(string_id_user_id: murphy.id)
+      assert_equal murphy, op.string_id_user
     end
 
     def test_it_sanitizes_types
@@ -118,6 +132,16 @@ module Subroutine
       all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
 
       op = ::AssociationWithFindByKeyOp.new(user_id: doug.email_address)
+      assert_equal doug, op.user
+      assert_equal "email_address", op.field_configurations[:user][:find_by]
+    end
+
+    def test_it_allows_a_find_by_to_be_set_with_implicit_string
+      all_mock = mock
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
+
+      op = ::AssociationWithImplicitStringFindByOp.new(user_id: doug.email_address)
       assert_equal doug, op.user
       assert_equal "email_address", op.field_configurations[:user][:find_by]
     end
