@@ -92,6 +92,8 @@ module Subroutine
 
         klass = inferred_foreign_type&.constantize
         if klass && klass.respond_to?(:type_for_attribute)
+          return unless klass.table_exists?
+          
           case klass.type_for_attribute(find_by)&.type&.to_sym
           when :string
             :string
