@@ -60,7 +60,7 @@ module Subroutine
       end
 
       def build_foreign_key_field
-        build_child_field(foreign_key_method, type: :foreign_key, foreign_key_type: determine_foreign_key_type)
+        build_child_field(foreign_key_method, type: :foreign_key, foreign_key_type: -> { determine_foreign_key_type })
       end
 
       def build_foreign_type_field
@@ -92,8 +92,6 @@ module Subroutine
 
         klass = inferred_foreign_type&.constantize
         if klass && klass.respond_to?(:type_for_attribute)
-          return unless klass.table_exists?
-          
           case klass.type_for_attribute(find_by)&.type&.to_sym
           when :string
             :string
