@@ -90,15 +90,17 @@ module Subroutine
         # TODO: Make this logic work for polymorphic associations.
         return if polymorphic?
 
-        klass = inferred_foreign_type&.constantize
-        if klass && klass.respond_to?(:type_for_attribute)
-          case klass.type_for_attribute(find_by)&.type&.to_sym
-          when :string
-            :string
-          else
-            :integer
+        @determined_foreign_type ||= begin
+          klass = inferred_foreign_type&.constantize
+          if klass && klass.respond_to?(:type_for_attribute)
+            case klass.type_for_attribute(find_by)&.type&.to_sym
+            when :string
+              :string
+            else
+              :integer
+            end
           end
-        end
+        end 
       end
 
     end
