@@ -231,6 +231,11 @@ module Subroutine
       assert_equal true, op.field_provided?(:admin_id)
       assert_equal true, op.field_provided?(:admin_type)
 
+      op = PolymorphicAssociationOp.new admin_type: doug.class.name, admin_id: doug.id.to_s
+      assert_equal true, op.field_provided?(:admin)
+      assert_equal true, op.field_provided?(:admin_id)
+      assert_equal true, op.field_provided?(:admin_type)
+
       op = PolymorphicAssociationOp.new admin_id: doug.id
       assert_equal false, op.field_provided?(:admin)
       assert_equal true, op.field_provided?(:admin_id)
@@ -291,6 +296,18 @@ module Subroutine
       op = PolymorphicAssociationOp.new(admin: user)
       op.admin
       assert_equal({ "admin_id" => 1, "admin_type" => "User" }, op.params)
+    end
+
+    def test_params_id_type_as_integer_for_polymorphic_associations
+      user = ::User.new(id: 1)
+
+      op = PolymorphicAssociationOp.new(admin_id: user.id)
+      op.admin
+      assert_equal({ "admin_id" => 1 }, op.params)
+
+      op = PolymorphicAssociationOp.new(admin_id: user.id.to_s)
+      op.admin
+      assert_equal({ "admin_id" => 1 }, op.params)
     end
 
     def test_params_can_be_accessed_with_associations_loaded

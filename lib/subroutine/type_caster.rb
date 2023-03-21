@@ -65,9 +65,11 @@ end
 
 ::Subroutine::TypeCaster.register :foreign_key do |value, options = {}|
   next nil if value.blank?
-
-  next ::Subroutine::TypeCaster.cast(value, type: options[:foreign_key_type].call) if options[:foreign_key_type].respond_to?(:call)
-  next ::Subroutine::TypeCaster.cast(value, type: options[:foreign_key_type]) if options[:foreign_key_type]
+  
+  calculated_type = options[:foreign_key_type].respond_to?(:call)
+  calculated_value = calculated_type ? options[:foreign_key_type].call : options[:foreign_key_type]
+  
+  next ::Subroutine::TypeCaster.cast(value, type: calculated_value) if calculated_value
   next ::Subroutine::TypeCaster.cast(value, type: :integer) if options[:name] && options[:name].to_s.end_with?("_id")
 
   value
