@@ -19,10 +19,10 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(gemfiles|test)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activemodel", ">= 4.0.0"
-  spec.add_dependency "activesupport", ">= 4.0.0"
+  spec.add_dependency "activemodel", ">= 6.1"
+  spec.add_dependency "activesupport", ">= 6.1"
 
-  spec.add_development_dependency "actionpack", ">= 4.0"
+  spec.add_development_dependency "actionpack", ">= 6.1"
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "m"

@@ -1,3 +1,7 @@
+## Subroutine 3.0
+
+Add support for Rails 6.1. Drop support for Rails 6.0 and lower.
+
 ## Subroutine 2.2
 
 Add `type` validation for Output.

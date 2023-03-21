@@ -112,9 +112,10 @@ module Subroutine
     end
 
     def inherit_errors(error_object, prefix: nil)
-      error_object = error_object.errors if error_object.respond_to?(:errors)
+      error_object = error_object.errors if error_object.respond_to?(:errors) && !error_object.is_a?(ActiveModel::Errors)
 
-      error_object.each do |field_name, error|
+      error_object.each do |error|
+        field_name = error.attribute
         field_name = "#{prefix}#{field_name}" if prefix
         field_name = field_name.to_sym
 
@@ -125,9 +126,9 @@ module Subroutine
         end
 
         if field_config
-          errors.add(field_config.field_name, error)
+          errors.add(field_config.field_name, error.message)
         else
-          errors.add(:base, error_object.full_message(field_name, error))
+          errors.add(:base, error_object.full_message(field_name, error.message))
         end
       end
 
