@@ -9,6 +9,10 @@ require 'active_support/core_ext/object/try'
 require 'active_support/core_ext/array/wrap'
 
 module Subroutine
+  # Registers named types for explicitly casting Op inputs to known types.
+  #
+  # It is important to note that TypeCaster does not implicitlyvalidate types
+  # and Op validations are run against the cast values, not the original inputs.
   module TypeCaster
 
     class TypeCastError < StandardError
