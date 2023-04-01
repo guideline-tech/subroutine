@@ -157,6 +157,10 @@ end
   ::Time.parse(String(value))
 end
 
+# Casts input to a Hash. If the input reponds to #to_hash, its internal implentation will
+# be used. ActionController::Parameters objects will be recursively cast hash values of that type.
+#
+# @return [Date]
 ::Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _options = {}|
   if value.class.name == 'ActionController::Parameters'
     value = value.to_hash
