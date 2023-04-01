@@ -62,6 +62,9 @@ end
   meth ? value.send(meth) : value.to_f
 end
 
+# Cast inputs to an Integer
+#
+# @ return [Integer] - The cast value
 ::Subroutine::TypeCaster.register :integer, :int, :epoch do |value, _options = {}|
   ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_i])
 end
