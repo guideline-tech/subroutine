@@ -182,7 +182,7 @@ end
 # Casts input to an array. If the `of` option is provided, it will attempt to
 # cast each element of the array to the specified type.
 #
-# @ returns [Array]
+# @returns [Array]
 ::Subroutine::TypeCaster.register :array do |value, options = {}|
   next [] if value.blank?
 
@@ -191,6 +191,12 @@ end
   out
 end
 
+# Casts input to a Tempfile or File object. If the input is not already
+# a Tempfile or File, it is written to a new tempfile and the contents written
+# to said Tempfile. If the `base64` option is provided with a truthy value, the
+# input will be base64 decoded before being written.
+#
+# @returns [Tempfile, File]
 ::Subroutine::TypeCaster.register :file do |value, options = {}|
   next nil if value.blank?
 
