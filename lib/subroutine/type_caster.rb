@@ -137,6 +137,10 @@ end
   t.utc.iso8601
 end
 
+# Casts input to a Date object. The input must be able to be Stringified into a parseable
+# date string.
+#
+# @return [Date]
 ::Subroutine::TypeCaster.register :date do |value, _options = {}|
   next nil unless value.present?
 
