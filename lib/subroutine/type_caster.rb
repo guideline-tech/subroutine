@@ -147,6 +147,10 @@ end
   ::Date.parse(String(value))
 end
 
+# Casts input to a Time object. The input must be able to be Stringified into a parseable
+# time string.
+#
+# @return [Date]
 ::Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, _options = {}|
   next nil unless value.present?
 
