@@ -179,6 +179,10 @@ end
   {}
 end
 
+# Casts input to an array. If the `of` option is provided, it will attempt to
+# cast each element of the array to the specified type.
+#
+# @ returns [Array]
 ::Subroutine::TypeCaster.register :array do |value, options = {}|
   next [] if value.blank?
 
