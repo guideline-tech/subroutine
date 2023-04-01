@@ -45,9 +45,16 @@ module Subroutine
     rescue StandardError => e
       raise ::Subroutine::TypeCaster::TypeCastError, e.to_s, e.backtrace
     end
+
   end
 end
 
+# Cast inputs to a number. By default, it will be cast to a float using #to_f.
+# If a `methods` option is passed, the specified methods will be iterated over
+# until the first method that the input responds to, and the number will be cast
+# using that method.
+#
+# @return [Number] - The cast value
 ::Subroutine::TypeCaster.register :number, :float do |value, options = {}|
   next nil if value.blank?
 
