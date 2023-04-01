@@ -109,6 +109,10 @@ end
   !!(String(value) =~ /^(yes|true|1|ok)$/)
 end
 
+# Casts input to an ISO-8601 String representation of the date. The input can be a Date,
+# Date-like, or a String representation of a date.
+#
+# @return [String] - ISO-8601 representation of the input.
 ::Subroutine::TypeCaster.register :iso_date do |value, _options = {}|
   next nil unless value.present?
 
