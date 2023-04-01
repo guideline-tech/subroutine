@@ -123,6 +123,10 @@ end
   d.iso8601
 end
 
+# Casts input to a UTC, ISO-8601 String representation of the time. The input can be a Time,
+# Time-like, or a String representation of the time.
+#
+# @return [String] - ISO-8601 representation of the input
 ::Subroutine::TypeCaster.register :iso_time do |value, _options = {}|
   next nil unless value.present?
 
