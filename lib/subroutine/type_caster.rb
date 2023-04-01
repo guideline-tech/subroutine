@@ -96,6 +96,15 @@ end
   value
 end
 
+# Casts inputs to a String and then compares them with a set of true values. If
+# the String-cast version does not match an input, a false value is returned.
+# The set of truthy strings is:
+#   - true
+#   - yes
+#   - 1
+#   - ok
+#
+# @return [Boolean]
 ::Subroutine::TypeCaster.register :boolean, :bool do |value, _options = {}|
   !!(String(value) =~ /^(yes|true|1|ok)$/)
 end
