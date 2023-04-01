@@ -77,6 +77,9 @@ end
   ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_d, :to_f])
 end
 
+# Cast input to a string.
+#
+# @ return [String]
 ::Subroutine::TypeCaster.register :string, :text do |value, _options = {}|
   String(value)
 end
