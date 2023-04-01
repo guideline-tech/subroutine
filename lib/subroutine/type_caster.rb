@@ -69,6 +69,10 @@ end
   ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_i])
 end
 
+# Attempt to cast input to a BigDecimal value. If #to_d is not defined on the receiver,
+# casts to a float instead.
+#
+# @ return [BigDecimal, Float]
 ::Subroutine::TypeCaster.register :decimal, :big_decimal do |value, _options = {}|
   ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_d, :to_f])
 end
