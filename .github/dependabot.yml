@@ -18,5 +18,7 @@ updates:
     versioning-strategy: increase
     open-pull-requests-limit: 20
     insecure-external-code-execution: deny
+    allow:
+      - dependency-type: "all"    
     commit-message:
       prefix: "[bundler] "      
