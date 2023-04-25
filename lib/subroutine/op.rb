@@ -48,6 +48,18 @@ module Subroutine
       yield self if block_given?
     end
 
+    def inspect
+      values = provided_params.to_a
+      values.map! do |(key, value)|
+        "#{key}: #{value.inspect}"
+      end
+      values.sort!
+      values = values.join(", ")
+
+      oid = format('%x', (object_id << 1))
+      "#<#{self.class}:0x#{oid} #{values}>"
+    end
+
     def submit!
       begin
         observe_submission do
