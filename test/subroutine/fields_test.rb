@@ -134,6 +134,19 @@ module Subroutine
       assert_equal "bar", instance.foo
     end
 
+    def test_set_field_adds_to_provided_params
+      instance = Whatever.new
+      instance.set_field(:foo, "bar")
+      assert_equal true, instance.provided_params.key?(:foo)
+    end
+
+    def test_set_field_can_add_to_the_default_params
+      instance = Whatever.new
+      instance.set_field(:foo, "bar", provided: false)
+      assert_equal false, instance.provided_params.key?(:foo)
+      assert_equal "bar", instance.default_params[:foo]
+    end
+
     def test_group_fields_are_accessible_at_the_class
       results = Whatever.fields_in_group(:sekret)
       assert_equal true, results.key?(:protekted_group_input)
