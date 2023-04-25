@@ -27,6 +27,9 @@ module Subroutine
     end
 
     included do
+      class_attribute :include_defaults_in_params
+      self.include_defaults_in_params = false
+
       class_attribute :field_configurations
       self.field_configurations = {}
 
@@ -113,7 +116,14 @@ module Subroutine
 
         class_eval <<-EV, __FILE__, __LINE__ + 1
           def #{group_name}_params
-            param_groups[:#{group_name}]
+            include_defaults_in_params ?
+              #{group_name}_params_with_default_params :
+              #{group_name}_provided_params
+          end
+
+          def #{group_name}_provided_params
+            group_field_names = fields_in_group(:#{group_name}).keys
+            provided_params.slice(*group_field_names)
           end
 
           def #{group_name}_default_params
@@ -123,7 +133,7 @@ module Subroutine
           alias #{group_name}_defaults #{group_name}_default_params
 
           def #{group_name}_params_with_default_params
-            #{group_name}_default_params.merge(param_groups[:#{group_name}])
+            #{group_name}_default_params.merge(#{group_name}_provided_params)
           end
           alias #{group_name}_params_with_defaults #{group_name}_params_with_default_params
 
@@ -159,7 +169,6 @@ module Subroutine
       if ::Subroutine::Fields.action_controller_params_loaded? && inputs.is_a?(::ActionController::Parameters)
         inputs = inputs.to_unsafe_h if inputs.respond_to?(:to_unsafe_h)
       end
-      @provided_fields = {}.with_indifferent_access
       param_groups[:original] = inputs.with_indifferent_access
       mass_assign_initial_params
     end
@@ -174,6 +183,10 @@ module Subroutine
 
     def original_params
       get_param_group(:original)
+    end
+
+    def provided_params
+      get_param_group(:provided)
     end
 
     def ungrouped_params
@@ -207,9 +220,8 @@ module Subroutine
       self.class.get_field_config(field_name)
     end
 
-    # check if a specific field was provided
     def field_provided?(key)
-      !!@provided_fields[key]
+      provided_params.key?(key)
     end
 
     def get_field(name)
@@ -218,10 +230,10 @@ module Subroutine
 
     def set_field(name, value, opts = {})
       config = get_field_config(name)
-      @provided_fields[name] = true unless opts[:track_provided] == false
       value = attempt_cast(value, config) do |e|
         "Error during assignment of field `#{name}`: #{e}"
       end
+      param_groups[:provided][name] = value unless opts[:track_provided] == false
       each_param_group_for_field(name) do |h|
         h[name] = value
       end
@@ -263,6 +275,10 @@ module Subroutine
         end
 
         param_groups[:default][field_name] = value
+
+        if include_defaults_in_params && !original_params.key?(field_name)
+          set_field(field_name, value, track_provided: false)
+        end
       end
     end
 

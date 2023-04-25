@@ -1,6 +1,14 @@
+## Subroutine 3.1
+
+The `Subroutine::Fields` module now contains a class_attribute that allows the altering of param accessor behaviors. `include_defaults_in_params` is now available to opt into including the default values in usage of the `all_params (alias params)` method. Backwards compatibility is preserved by defaulting the value to `false`. If switched to true, when an input is omitted and the field is configured with a default value, it will be included in the `all_params` object.
+
 ## Subroutine 3.0
 
 Add support for Rails 6.1. Drop support for Rails 6.0 and lower.
+
+## Subroutine 2.3
+
+Support dynamic types for foreign keys on association fields. The class type is used at runtime to determine the casting behavior of the foreign key field.
 
 ## Subroutine 2.2
 
