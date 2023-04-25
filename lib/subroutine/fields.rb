@@ -122,23 +122,27 @@ module Subroutine
           end
 
           def #{group_name}_provided_params
-            group_field_names = fields_in_group(:#{group_name}).keys
-            provided_params.slice(*group_field_names)
+            param_cache[:#{group_name}_provided] ||= begin
+              group_field_names = fields_in_group(:#{group_name}).keys
+              provided_params.slice(*group_field_names)
+            end
           end
 
           def #{group_name}_default_params
-            group_field_names = fields_in_group(:#{group_name}).keys
-            all_default_params.slice(*group_field_names)
+            param_cache[:#{group_name}_default] ||= begin
+              group_field_names = fields_in_group(:#{group_name}).keys
+              all_default_params.slice(*group_field_names)
+            end
           end
           alias #{group_name}_defaults #{group_name}_default_params
 
           def #{group_name}_params_with_default_params
-            #{group_name}_default_params.merge(#{group_name}_provided_params)
+            param_cache[:#{group_name}_provided_and_default] ||= #{group_name}_default_params.merge(#{group_name}_provided_params)
           end
           alias #{group_name}_params_with_defaults #{group_name}_params_with_default_params
 
           def without_#{group_name}_params
-            all_params.except(*#{group_name}_params.keys)
+            param_cache[:without_#{group_name}] ||= all_params.except(*#{group_name}_params.keys)
           end
         EV
       end
@@ -148,7 +152,7 @@ module Subroutine
           class_eval <<-EV, __FILE__, __LINE__ + 1
             try(:silence_redefinition_of_method, :#{config.field_name}=)
             def #{config.field_name}=(v)
-              set_field(:#{config.field_name}, v)
+              set_field(:#{config.field_name}, v, provided: true)
             end
           EV
         end
@@ -169,12 +173,16 @@ module Subroutine
       if ::Subroutine::Fields.action_controller_params_loaded? && inputs.is_a?(::ActionController::Parameters)
         inputs = inputs.to_unsafe_h if inputs.respond_to?(:to_unsafe_h)
       end
-      param_groups[:original] = inputs.with_indifferent_access
+      param_groups[:original].merge!(inputs)
       mass_assign_initial_params
     end
 
     def param_groups
       @param_groups ||= Hash.new { |h, k| h[k] = {}.with_indifferent_access }
+    end
+
+    def param_cache
+      @param_cache ||= Hash.new
     end
 
     def get_param_group(name)
@@ -185,75 +193,61 @@ module Subroutine
       get_param_group(:original)
     end
 
-    def provided_params
+    def all_provided_params
       get_param_group(:provided)
     end
-
-    def ungrouped_params
-      get_param_group(:ungrouped)
-    end
-
-    def all_params
-      get_param_group(:all)
-    end
-    alias params all_params
+    alias provided_params all_provided_params
 
     def all_default_params
       get_param_group(:default)
     end
     alias defaults all_default_params
 
+    def all_params
+      if include_defaults_in_params
+        all_params_with_defaults
+      else
+        provided_params
+      end
+    end
+    alias params all_params
+
     def all_params_with_defaults
-      all_default_params.merge(all_params)
+      param_cache[:provided_and_default] ||= all_default_params.merge(all_provided_params)
     end
     alias params_with_defaults all_params_with_defaults
 
-    def ungrouped_defaults
-      default_params.slice(*ungrouped_fields.keys)
-    end
-
-    def ungrouped_params_with_defaults
-      ungrouped_defaults.merge(ungrouped_params)
-    end
 
     def get_field_config(field_name)
       self.class.get_field_config(field_name)
     end
 
     def field_provided?(key)
-      provided_params.key?(key)
+      all_provided_params.key?(key)
     end
 
     def get_field(name)
-      field_provided?(name) ? all_params[name] : all_default_params[name]
+      field_provided?(name) ? provided_params[name] : all_default_params[name]
     end
 
-    def set_field(name, value, opts = {})
+    def set_field(name, value, provided: true)
       config = get_field_config(name)
       value = attempt_cast(value, config) do |e|
         "Error during assignment of field `#{name}`: #{e}"
       end
-      param_groups[:provided][name] = value unless opts[:track_provided] == false
-      each_param_group_for_field(name) do |h|
-        h[name] = value
-      end
+
+      param_cache.clear
+      param_groups[:provided][name] = value if provided
+      param_groups[:default][name] = value unless provided
       value
     end
 
     def clear_field(name)
-      each_param_group_for_field(name) do |h|
-        h.delete(name)
-      end
+      param_groups[:provided].delete(name)
     end
 
     def fields_in_group(group_name)
       self.class.fields_in_group(group_name)
-    end
-
-    def ungrouped_fields
-      fields.select { |f| f.groups.empty? }.each_with_object({}) do |f, h|
-        h[f.name] = f
-      end
     end
 
     protected
@@ -265,20 +259,12 @@ module Subroutine
         end
 
         if original_params.key?(field_name)
-          set_field(field_name, original_params[field_name])
+          set_field(field_name, original_params[field_name], provided: true)
         end
 
         next unless config.has_default?
 
-        value = attempt_cast(config.get_default, config) do |e|
-          "Error for default `#{field}`: #{e}"
-        end
-
-        param_groups[:default][field_name] = value
-
-        if include_defaults_in_params && !original_params.key?(field_name)
-          set_field(field_name, value, track_provided: false)
-        end
+        set_field(field_name, config.get_default, provided: false)
       end
     end
 
@@ -287,19 +273,6 @@ module Subroutine
     rescue ::Subroutine::TypeCaster::TypeCastError => e
       message = block_given? ? yield(e) : e.to_s
       raise ::Subroutine::TypeCaster::TypeCastError, message, e.backtrace
-    end
-
-    def each_param_group_for_field(name)
-      config = get_field_config(name)
-      yield all_params
-
-      if config.groups.empty?
-        yield ungrouped_params
-      else
-        config.groups.each do |group_name|
-          yield param_groups[group_name]
-        end
-      end
     end
 
   end

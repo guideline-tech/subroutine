@@ -145,7 +145,6 @@ module Subroutine
       op = Whatever.new(foo: "bar", protekted_group_input: "pgi", bar: 8)
       assert_equal({ protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.sekret_params)
       assert_equal({ protekted_group_input: "pgi", foo: "bar", bar: 8 }.with_indifferent_access, op.params)
-      assert_equal({ foo: "bar" }.with_indifferent_access, op.ungrouped_params)
     end
 
     def test_fields_from_allows_merging_of_config
