@@ -25,6 +25,10 @@ module Subroutine
 
     end
 
+    class WhateverWithDefaultsIncluded < Whatever
+      self.include_defaults_in_params = true
+    end
+
     def test_fields_are_configured
       assert_equal 6, Whatever.field_configurations.size
       assert_equal :string, Whatever.field_configurations[:foo][:type]
@@ -75,14 +79,31 @@ module Subroutine
 
     def test_params_does_not_include_defaults
       instance = Whatever.new(foo: "abc")
+      assert_equal({ "foo" => "abc" }, instance.provided_params)
       assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
       assert_equal({ "foo" => "abc" }, instance.params)
       assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
     end
 
-    def test_named_params_do_not_include_defaults_unlesss_asked_for
+    def test_params_includes_defaults_if_opted_into
+      instance = WhateverWithDefaultsIncluded.new(foo: "abc")
+      assert_equal({ "foo" => "abc" }, instance.provided_params)
+      assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
+    end
+
+    def test_named_params_do_not_include_defaults_unless_asked_for
       instance = Whatever.new(foo: "abc")
+      assert_equal({}, instance.sekret_provided_params)
       assert_equal({}, instance.sekret_params)
+      assert_equal({ "bar" => 3 }, instance.sekret_params_with_defaults)
+    end
+
+    def test_named_params_include_defaults_if_configured
+      instance = WhateverWithDefaultsIncluded.new(foo: "abc")
+      assert_equal({}, instance.sekret_provided_params)
+      assert_equal({ "bar" => 3 }, instance.sekret_params)
       assert_equal({ "bar" => 3 }, instance.sekret_params_with_defaults)
     end
 
