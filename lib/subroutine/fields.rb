@@ -202,6 +202,7 @@ module Subroutine
       get_param_group(:default)
     end
     alias defaults all_default_params
+    alias default_params all_default_params
 
     def all_params
       if include_defaults_in_params
