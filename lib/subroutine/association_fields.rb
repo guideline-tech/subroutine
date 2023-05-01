@@ -193,15 +193,16 @@ module Subroutine
       scope.find_by!(config.find_by => value)
     end
 
-    def maybe_raise_on_association_type_mismatch!(config, record)
+    def maybe_raise_on_association_type_mismatch!(config, source)
       return if config.polymorphic?
-      return if record.nil?
+      return if source.nil?
 
       klass = config.inferred_foreign_type.constantize
+      source = source.__getobj__ if source.is_a?(::Delegator)
 
-      return if record.class <= klass || record.class >= klass
+      return if source.class <= klass || source.class >= klass
 
-      message = "#{klass}(##{klass.object_id}) expected, got #{record.class}(##{record.class.object_id})"
+      message = "#{klass}(##{klass.object_id}) expected, got #{source.class}(##{source.class.object_id})"
 
       errors.add(:base, message)
       raise Subroutine::AssociationFields::AssociationTypeMismatchError, self

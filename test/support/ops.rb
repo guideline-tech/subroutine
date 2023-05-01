@@ -72,6 +72,8 @@ class Account
 
 end
 
+class Decorator < ::SimpleDelegator; end
+
 ## Ops ##
 
 class SignupOp < ::Subroutine::Op

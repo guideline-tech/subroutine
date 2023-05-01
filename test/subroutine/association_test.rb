@@ -254,6 +254,14 @@ module Subroutine
       end
     end
 
+    def test_it_allows_simple_delegator_decorated_objects
+      decorated_doug = Decorator.new(doug)
+
+      op = SimpleAssociationOp.new(user: decorated_doug)
+
+      assert_equal decorated_doug, op.user
+    end
+
     def test_params_does_not_contain_association_key_if_not_provided
       op = SimpleAssociationOp.new
       assert_equal [], op.params.keys
