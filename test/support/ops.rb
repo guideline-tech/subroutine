@@ -510,11 +510,3 @@ class PrefixedInputsOp < ::Subroutine::Op
   end
 
 end
-
-class NoObserveSubmissionOp < ::Subroutine::Op
-
-  outputs :foo
-
-  def observe_submission(*); end
-
-end

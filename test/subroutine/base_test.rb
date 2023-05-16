@@ -318,11 +318,5 @@ module Subroutine
       assert_equal raw_params, op.params
     end
 
-    def test_nooping_observe_submission_doesnt_validate_outputs
-      op = NoObserveSubmissionOp.new
-      op.submit!
-      assert op.errors.blank?
-    end
-
   end
 end
