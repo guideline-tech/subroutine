@@ -49,25 +49,25 @@ module Subroutine
     end
 
     def submit!
-      observe_submission do
-        begin
+      begin
+        observe_submission do
           validate_and_perform
-        rescue Exception => e
-          if e.respond_to?(:record)
-            inherit_errors(e.record) unless e.record == self
-            new_e = _failure_class.new(self)
-            raise new_e, new_e.message, e.backtrace
-          else
-            raise
-          end
         end
-
-        if errors.empty?
-          validate_outputs!
-          self
+      rescue Exception => e
+        if e.respond_to?(:record)
+          inherit_errors(e.record) unless e.record == self
+          new_e = _failure_class.new(self)
+          raise new_e, new_e.message, e.backtrace
         else
-          raise _failure_class, self
+          raise
         end
+      end
+
+      if errors.empty?
+        validate_outputs!
+        self
+      else
+        raise _failure_class, self
       end
     end
 
