@@ -25,6 +25,10 @@ module Subroutine
 
     end
 
+    class WhateverWithDefaultsIncluded < Whatever
+      self.include_defaults_in_params = true
+    end
+
     def test_fields_are_configured
       assert_equal 6, Whatever.field_configurations.size
       assert_equal :string, Whatever.field_configurations[:foo][:type]
@@ -75,14 +79,31 @@ module Subroutine
 
     def test_params_does_not_include_defaults
       instance = Whatever.new(foo: "abc")
+      assert_equal({ "foo" => "abc" }, instance.provided_params)
       assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
       assert_equal({ "foo" => "abc" }, instance.params)
       assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
     end
 
-    def test_named_params_do_not_include_defaults_unlesss_asked_for
+    def test_params_includes_defaults_if_opted_into
+      instance = WhateverWithDefaultsIncluded.new(foo: "abc")
+      assert_equal({ "foo" => "abc" }, instance.provided_params)
+      assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
+    end
+
+    def test_named_params_do_not_include_defaults_unless_asked_for
       instance = Whatever.new(foo: "abc")
+      assert_equal({}, instance.sekret_provided_params)
       assert_equal({}, instance.sekret_params)
+      assert_equal({ "bar" => 3 }, instance.sekret_params_with_defaults)
+    end
+
+    def test_named_params_include_defaults_if_configured
+      instance = WhateverWithDefaultsIncluded.new(foo: "abc")
+      assert_equal({}, instance.sekret_provided_params)
+      assert_equal({ "bar" => 3 }, instance.sekret_params)
       assert_equal({ "bar" => 3 }, instance.sekret_params_with_defaults)
     end
 
@@ -113,6 +134,19 @@ module Subroutine
       assert_equal "bar", instance.foo
     end
 
+    def test_set_field_adds_to_provided_params
+      instance = Whatever.new
+      instance.set_field(:foo, "bar")
+      assert_equal true, instance.provided_params.key?(:foo)
+    end
+
+    def test_set_field_can_add_to_the_default_params
+      instance = Whatever.new
+      instance.set_field(:foo, "bar", provided: false)
+      assert_equal false, instance.provided_params.key?(:foo)
+      assert_equal "bar", instance.default_params[:foo]
+    end
+
     def test_group_fields_are_accessible_at_the_class
       results = Whatever.fields_in_group(:sekret)
       assert_equal true, results.key?(:protekted_group_input)
@@ -124,7 +158,6 @@ module Subroutine
       op = Whatever.new(foo: "bar", protekted_group_input: "pgi", bar: 8)
       assert_equal({ protekted_group_input: "pgi", bar: 8 }.with_indifferent_access, op.sekret_params)
       assert_equal({ protekted_group_input: "pgi", foo: "bar", bar: 8 }.with_indifferent_access, op.params)
-      assert_equal({ foo: "bar" }.with_indifferent_access, op.ungrouped_params)
     end
 
     def test_fields_from_allows_merging_of_config

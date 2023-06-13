@@ -113,20 +113,20 @@ module Subroutine
       out
     end
 
-    def set_field_with_association(field_name, value, opts = {})
+    def set_field_with_association(field_name, value, **opts)
       config = get_field_config(field_name)
 
       if config&.behavior == :association
         maybe_raise_on_association_type_mismatch!(config, value)
-        set_field(config.foreign_type_method, value&.class&.name, opts) if config.polymorphic?
-        set_field(config.foreign_key_method, value&.send(config.find_by), opts)
+        set_field(config.foreign_type_method, value&.class&.name, **opts) if config.polymorphic?
+        set_field(config.foreign_key_method, value&.send(config.find_by), **opts)
         association_cache[config.field_name] = value
       else
         if config&.behavior == :association_component
           clear_field_without_association(config.association_name)
         end
 
-        set_field_without_association(field_name, value, opts)
+        set_field_without_association(field_name, value, **opts)
       end
     end
 
