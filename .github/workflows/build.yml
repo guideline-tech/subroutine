@@ -1,5 +1,9 @@
 name: build
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+      branches:
+        - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,10 +18,13 @@ jobs:
             experimental: true
           - ruby-version: 3.1
             experimental: true
+          - ruby-version: 3.2
+            experimental: true
     steps:
       - uses: actions/checkout@v3
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true # runs `bundle install` and caches installed gems automatically
-      - run: bundle exec rake test
+      - run: bundle exec appraisal install
+      - run: bundle exec appraisal rake test
