@@ -22,6 +22,8 @@ jobs:
             experimental: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          show-progress: 'false'
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
