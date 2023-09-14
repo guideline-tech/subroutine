@@ -42,6 +42,32 @@ module Subroutine
       assert_equal 0.0, op.number_input
     end
 
+    def test_decimal_inputs
+      op.decimal_input = nil
+      assert_nil op.decimal_input
+
+      op.decimal_input = 4
+      assert_equal 4.0, op.decimal_input
+      assert op.decimal_input.is_a?(BigDecimal)
+
+      op.decimal_input = 0.5
+      assert_equal 0.5, op.decimal_input
+
+      op.decimal_input = 'foo'
+      assert_equal 0.0, op.decimal_input
+    end
+
+    def test_decimal_inputs_use_16_precision
+      op.decimal_input = 0.07
+      assert_equal BigDecimal('0.07', 0), op.decimal_input
+      assert op.decimal_input.is_a?(BigDecimal)
+
+      # Ruby 3+
+      if op.decimal_input.respond_to?(:precision)
+        assert_equal 1, op.decimal_input.precision
+      end
+    end
+
     def test_string_inputs
       op.string_input = nil
       assert_nil op.string_input

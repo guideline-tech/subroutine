@@ -56,7 +56,17 @@ end
 end
 
 ::Subroutine::TypeCaster.register :decimal, :big_decimal do |value, _options = {}|
-  ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_d, :to_f])
+  next nil if value.blank?
+
+  if value.respond_to?(:to_d)
+    begin
+      next BigDecimal(value.to_s, 0)
+    rescue ArgumentError
+      BigDecimal(0)
+    end
+  end
+
+  ::Subroutine::TypeCaster.cast(value, type: :number, methods: [:to_f])
 end
 
 ::Subroutine::TypeCaster.register :string, :text do |value, _options = {}|
@@ -65,10 +75,10 @@ end
 
 ::Subroutine::TypeCaster.register :foreign_key do |value, options = {}|
   next nil if value.blank?
-  
+
   calculated_type = options[:foreign_key_type].respond_to?(:call)
   calculated_value = calculated_type ? options[:foreign_key_type].call : options[:foreign_key_type]
-  
+
   next ::Subroutine::TypeCaster.cast(value, type: calculated_value) if calculated_value
   next ::Subroutine::TypeCaster.cast(value, type: :integer) if options[:name] && options[:name].to_s.end_with?("_id")
 
