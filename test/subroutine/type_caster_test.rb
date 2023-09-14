@@ -59,12 +59,13 @@ module Subroutine
 
     def test_decimal_inputs_use_16_precision
       op.decimal_input = 0.07
-      assert_equal BigDecimal('0.07', 0), op.decimal_input
+      expected_bd_value = BigDecimal('0.07', 0)
+      assert_equal expected_bd_value, op.decimal_input
       assert op.decimal_input.is_a?(BigDecimal)
 
       # Ruby 3+
       if op.decimal_input.respond_to?(:precision)
-        assert_equal 1, op.decimal_input.precision
+        assert_equal expected_bd_value.precision, op.decimal_input.precision
       end
     end
 
