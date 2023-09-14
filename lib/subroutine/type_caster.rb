@@ -62,7 +62,7 @@ end
     begin
       next BigDecimal(value.to_s, 0)
     rescue ArgumentError
-      BigDecimal(0)
+      next BigDecimal(0)
     end
   end
 
