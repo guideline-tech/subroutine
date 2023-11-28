@@ -510,3 +510,12 @@ class PrefixedInputsOp < ::Subroutine::Op
   end
 
 end
+
+class ObserveEntireSubmissionOp < ::Subroutine::Op
+
+  string :some_optional_thing
+  outputs :bar
+
+  def perform; end
+
+end

@@ -318,5 +318,20 @@ module Subroutine
       assert_equal raw_params, op.params
     end
 
+    def test_observe_entire_submission_skips_output_validation
+      assert_raises "OutputNotSetError: Expected output 'bar' to be set upon completion of perform but was not" do
+        ObserveEntireSubmissionOp.submit!
+      end
+
+      ObserveEntireSubmissionOp.define_method :observe_entire_submission do |&block|
+        return if some_optional_thing.blank?
+
+        block.call
+      end
+
+      op = ObserveEntireSubmissionOp.submit!
+      assert_nil op.bar
+    end
+
   end
 end

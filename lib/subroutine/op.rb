@@ -49,25 +49,27 @@ module Subroutine
     end
 
     def submit!
-      begin
-        observe_submission do
-          validate_and_perform
+      observe_entire_submission do
+        begin
+          observe_submission do
+            validate_and_perform
+          end
+        rescue Exception => e
+          if e.respond_to?(:record)
+            inherit_errors(e.record) unless e.record == self
+            new_e = _failure_class.new(self)
+            raise new_e, new_e.message, e.backtrace
+          else
+            raise
+          end
         end
-      rescue Exception => e
-        if e.respond_to?(:record)
-          inherit_errors(e.record) unless e.record == self
-          new_e = _failure_class.new(self)
-          raise new_e, new_e.message, e.backtrace
-        else
-          raise
-        end
-      end
 
-      if errors.empty?
-        validate_outputs!
-        self
-      else
-        raise _failure_class, self
+        if errors.empty?
+          validate_outputs!
+          self
+        else
+          raise _failure_class, self
+        end
       end
     end
 
@@ -88,6 +90,11 @@ module Subroutine
 
     # these enable you to 1) add log output or 2) add performance monitoring such as skylight.
     def observe_submission
+      yield
+    end
+
+    # similar to `observe_submission` but observes the entire `submit!` method
+    def observe_entire_submission
       yield
     end
 
