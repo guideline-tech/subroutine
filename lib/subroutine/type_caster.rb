@@ -86,7 +86,7 @@ end
 end
 
 ::Subroutine::TypeCaster.register :boolean, :bool do |value, _options = {}|
-  !!(String(value) =~ /^(yes|true|1|ok)$/)
+  !!(String(value) =~ /^(yes|true|1|ok)$/i)
 end
 
 ::Subroutine::TypeCaster.register :iso_date do |value, _options = {}|

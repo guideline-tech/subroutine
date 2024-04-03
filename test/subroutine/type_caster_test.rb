@@ -96,13 +96,43 @@ module Subroutine
       op.boolean_input = 'no'
       assert_equal false, op.boolean_input
 
+      op.boolean_input = 'Yes'
+      assert_equal true, op.boolean_input
+
+      op.boolean_input = 'No'
+      assert_equal false, op.boolean_input
+
+      op.boolean_input = 'YES'
+      assert_equal true, op.boolean_input
+
+      op.boolean_input = 'NO'
+      assert_equal false, op.boolean_input
+
       op.boolean_input = 'true'
       assert_equal true, op.boolean_input
 
       op.boolean_input = 'false'
       assert_equal false, op.boolean_input
 
+      op.boolean_input = 'True'
+      assert_equal true, op.boolean_input
+
+      op.boolean_input = 'False'
+      assert_equal false, op.boolean_input
+
+      op.boolean_input = 'TRUE'
+      assert_equal true, op.boolean_input
+
+      op.boolean_input = 'FALSE'
+      assert_equal false, op.boolean_input
+
       op.boolean_input = 'ok'
+      assert_equal true, op.boolean_input
+
+      op.boolean_input = 'OK'
+      assert_equal true, op.boolean_input
+
+      op.boolean_input = 'Ok'
       assert_equal true, op.boolean_input
 
       op.boolean_input = ''
