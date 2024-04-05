@@ -27,14 +27,9 @@ module Subroutine
     end
 
     included do
-      class_attribute :include_defaults_in_params
-      self.include_defaults_in_params = false
-
-      class_attribute :field_configurations
-      self.field_configurations = {}
-
-      class_attribute :field_groups
-      self.field_groups = Set.new
+      class_attribute :include_defaults_in_params, instance_accessor: false, instance_predicate: false
+      class_attribute :field_configurations, default: {}
+      class_attribute :field_groups, default: Set.new
     end
 
     module ClassMethods
@@ -90,6 +85,12 @@ module Subroutine
         field_configurations[field_name.to_sym]
       end
 
+      def include_defaults_in_params?
+        return include_defaults_in_params unless include_defaults_in_params.nil?
+
+        Subroutine.include_defaults_in_params?
+      end
+
       def respond_to_missing?(method_name, *args, &block)
         ::Subroutine::TypeCaster.casters.key?(method_name.to_sym) || super
       end
@@ -116,7 +117,7 @@ module Subroutine
 
         class_eval <<-EV, __FILE__, __LINE__ + 1
           def #{group_name}_params
-            include_defaults_in_params ?
+            include_defaults_in_params? ?
               #{group_name}_params_with_default_params :
               #{group_name}_provided_params
           end
@@ -177,6 +178,10 @@ module Subroutine
       mass_assign_initial_params
     end
 
+    def include_defaults_in_params?
+      self.class.include_defaults_in_params?
+    end
+
     def param_groups
       @param_groups ||= Hash.new { |h, k| h[k] = {}.with_indifferent_access }
     end
@@ -205,7 +210,7 @@ module Subroutine
     alias default_params all_default_params
 
     def all_params
-      if include_defaults_in_params
+      if include_defaults_in_params?
         all_params_with_defaults
       else
         provided_params

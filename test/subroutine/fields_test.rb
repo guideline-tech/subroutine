@@ -85,7 +85,18 @@ module Subroutine
       assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
     end
 
+    def test_params_include_defaults_if_globally_configured
+      Subroutine.stubs(:include_defaults_in_params?).returns(true)
+      instance = Whatever.new(foo: "abc")
+      assert Whatever.include_defaults_in_params?
+      assert_equal({ "foo" => "abc" }, instance.provided_params)
+      assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params)
+      assert_equal({ "foo" => "abc", "bar" => 3, "qux" => "qux" }, instance.params_with_defaults)
+    end
+
     def test_params_includes_defaults_if_opted_into
+      refute Subroutine.include_defaults_in_params?
       instance = WhateverWithDefaultsIncluded.new(foo: "abc")
       assert_equal({ "foo" => "abc" }, instance.provided_params)
       assert_equal({ "foo" => "foo", "bar" => 3, "qux" => "qux" }, instance.defaults)
