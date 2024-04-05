@@ -168,14 +168,14 @@ module Subroutine
 
     def test_set_field_can_add_to_the_default_params
       instance = Whatever.new
-      instance.set_field(:foo, "bar", provided: false)
+      instance.set_field(:foo, "bar", group_type: :default)
       assert_equal false, instance.provided_params.key?(:foo)
       assert_equal "bar", instance.default_params[:foo]
     end
 
     def test_group_fields_are_accessible_at_the_class
-      results = Whatever.field_groups[:sekret].sort
-      assert_equal %i[bar protekted_group_input], results
+      fields = Whatever.fields_by_group[:sekret].sort
+      assert_equal %i[bar protekted_group_input], fields
     end
 
     def test_groups_fields_are_accessible
@@ -206,12 +206,12 @@ module Subroutine
     end
 
     def test_group_fields_are_not_mutated_by_subclasses
-      assert_equal(%i[three_letter], MutationBase.field_groups.keys.sort)
-      assert_equal(%i[four_letter three_letter], MutationChild.field_groups.keys.sort)
+      assert_equal(%i[three_letter], MutationBase.fields_by_group.keys.sort)
+      assert_equal(%i[four_letter three_letter], MutationChild.fields_by_group.keys.sort)
 
-      assert_equal(%i[bar foo], MutationBase.field_groups[:three_letter].sort)
-      assert_equal(%i[bar foo qux], MutationChild.field_groups[:three_letter].sort)
-      assert_equal(%i[food], MutationChild.field_groups[:four_letter].sort)
+      assert_equal(%i[bar foo], MutationBase.fields_by_group[:three_letter].sort)
+      assert_equal(%i[bar foo qux], MutationChild.fields_by_group[:three_letter].sort)
+      assert_equal(%i[food], MutationChild.fields_by_group[:four_letter].sort)
     end
 
   end

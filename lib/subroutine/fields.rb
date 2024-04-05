@@ -29,7 +29,7 @@ module Subroutine
     included do
       class_attribute :include_defaults_in_params, instance_accessor: false, instance_predicate: false
       class_attribute :field_configurations, default: {}
-      class_attribute :field_groups, default: Hash.new { |h, k| h[k] = Set.new }
+      class_attribute :fields_by_group, default: Hash.new { |h, k| h[k] = Set.new }
     end
 
     module ClassMethods
@@ -43,12 +43,14 @@ module Subroutine
         ensure_field_accessors(config)
 
         if config.groups.any?
-          new_groups = self.field_groups.deep_dup
+          new_fields_by_group = self.fields_by_group.deep_dup
+
           config.groups.each do |group_name|
-            new_groups[group_name] << config.field_name
+            new_fields_by_group[group_name] << config.field_name
             ensure_group_accessors(group_name)
           end
-          self.field_groups = new_groups
+
+          self.fields_by_group = new_fields_by_group
         end
 
         config
@@ -110,32 +112,30 @@ module Subroutine
         class_eval <<-EV, __FILE__, __LINE__ + 1
           silence_redefinition_of_method def #{group_name}_params
             include_defaults_in_params? ?
-              #{group_name}_params_with_default_params :
+              #{group_name}_params_with_defaults :
               #{group_name}_provided_params
           end
 
           silence_redefinition_of_method def #{group_name}_provided_params
-            param_cache[:#{group_name}_provided] ||= begin
-              group_field_names = field_groups[:#{group_name}]
-              provided_params.slice(*group_field_names)
-            end
+            get_param_group(:#{group_name}_provided)
           end
 
           silence_redefinition_of_method def #{group_name}_default_params
-            param_cache[:#{group_name}_default] ||= begin
-              group_field_names = field_groups[:#{group_name}]
-              all_default_params.slice(*group_field_names)
-            end
+            get_param_group(:#{group_name}_default)
           end
           alias #{group_name}_defaults #{group_name}_default_params
 
           silence_redefinition_of_method def #{group_name}_params_with_default_params
-            param_cache[:#{group_name}_provided_and_default] ||= #{group_name}_default_params.merge(#{group_name}_provided_params)
+            param_cache[:#{group_name}_provided_and_default] ||= begin
+              #{group_name}_default_params.merge(#{group_name}_provided_params)
+            end
           end
           alias #{group_name}_params_with_defaults #{group_name}_params_with_default_params
 
           silence_redefinition_of_method def without_#{group_name}_params
-            param_cache[:without_#{group_name}] ||= all_params.except(*#{group_name}_params.keys)
+            param_cache[:without_#{group_name}] ||= begin
+              all_params.except(*#{group_name}_params.keys)
+            end
           end
         EV
       end
@@ -144,7 +144,7 @@ module Subroutine
         if config.field_writer?
           class_eval <<-EV, __FILE__, __LINE__ + 1
             silence_redefinition_of_method def #{config.field_name}=(v)
-              set_field(:#{config.field_name}, v, provided: true)
+              set_field(:#{config.field_name}, v, group_type: :provided)
             end
           EV
         end
@@ -164,7 +164,9 @@ module Subroutine
       if ::Subroutine::Fields.action_controller_params_loaded? && inputs.is_a?(::ActionController::Parameters)
         inputs = inputs.to_unsafe_h if inputs.respond_to?(:to_unsafe_h)
       end
-      param_groups[:original].merge!(inputs)
+      inputs.each_pair do |k, v|
+        set_param_group_value(:original, k, v)
+      end
       mass_assign_initial_params
     end
 
@@ -172,16 +174,24 @@ module Subroutine
       self.class.include_defaults_in_params?
     end
 
+    def param_cache
+      @param_cache ||= {}
+    end
+
     def param_groups
       @param_groups ||= Hash.new { |h, k| h[k] = {}.with_indifferent_access }
     end
 
-    def param_cache
-      @param_cache ||= Hash.new
+    def get_param_group(name)
+      name = name.to_sym
+      return param_groups[name] if param_groups.key?(name)
+
+      param_groups[name] = yield if block_given?
+      param_groups[name]
     end
 
-    def get_param_group(name)
-      param_groups[name.to_sym]
+    def set_param_group_value(name, key, value)
+      get_param_group(name)[key.to_sym] = value
     end
 
     def original_params
@@ -201,16 +211,17 @@ module Subroutine
 
     def all_params
       if include_defaults_in_params?
-        all_params_with_defaults
+        all_params_with_default_params
       else
-        provided_params
+        all_provided_params
       end
     end
     alias params all_params
 
-    def all_params_with_defaults
+    def all_params_with_default_params
       param_cache[:provided_and_default] ||= all_default_params.merge(all_provided_params)
     end
+    alias all_params_with_defaults all_params_with_default_params
     alias params_with_defaults all_params_with_defaults
 
 
@@ -223,23 +234,34 @@ module Subroutine
     end
 
     def get_field(name)
-      field_provided?(name) ? provided_params[name] : all_default_params[name]
+      all_params_with_default_params[name]
     end
 
-    def set_field(name, value, provided: true)
+    def set_field(name, value, group_type: :provided)
       config = get_field_config(name)
       value = attempt_cast(value, config) do |e|
         "Error during assignment of field `#{name}`: #{e}"
       end
 
+      set_param_group_value(group_type, config.field_name, value)
+
+      config.groups.each do |group_name|
+        set_param_group_value(:"#{group_name}_#{group_type}", config.field_name, value)
+      end
+
       param_cache.clear
-      param_groups[:provided][name] = value if provided
-      param_groups[:default][name] = value unless provided
+
       value
     end
 
     def clear_field(name)
-      param_groups[:provided].delete(name)
+      param_cache.clear
+      param_groups.each_pair do |key, group|
+        next if key == :original
+        next if key == :default
+
+        group.delete(name)
+      end
     end
 
     protected
@@ -251,12 +273,12 @@ module Subroutine
         end
 
         if original_params.key?(field_name)
-          set_field(field_name, original_params[field_name], provided: true)
+          set_field(field_name, original_params[field_name], group_type: :provided)
         end
 
         next unless config.has_default?
 
-        set_field(field_name, config.get_default, provided: false)
+        set_field(field_name, config.get_default, group_type: :default)
       end
     end
 

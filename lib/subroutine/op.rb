@@ -49,8 +49,7 @@ module Subroutine
     end
 
     def inspect
-      values = provided_params.to_a
-      values.map! do |(key, value)|
+      values = provided_params.map do |(key, value)|
         "#{key}: #{value.inspect}"
       end
       values.sort!
