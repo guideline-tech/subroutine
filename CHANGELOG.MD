@@ -1,4 +1,4 @@
-## Subroutine 3.1
+## Subroutine 4.0
 
 The `Subroutine::Fields` module now contains a class_attribute that allows the altering of param accessor behaviors. `include_defaults_in_params` is now available to opt into including the default values in usage of the `all_params (alias params)` method. Backwards compatibility is preserved by defaulting the value to `false`. If switched to true, when an input is omitted and the field is configured with a default value, it will be included in the `all_params` object.
 
