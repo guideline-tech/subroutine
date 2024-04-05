@@ -29,7 +29,7 @@ module Subroutine
     included do
       class_attribute :include_defaults_in_params, instance_accessor: false, instance_predicate: false
       class_attribute :field_configurations, default: {}
-      class_attribute :field_groups, default: Set.new
+      class_attribute :field_groups, default: Hash.new { |h, k| h[k] = Set.new }
     end
 
     module ClassMethods
@@ -42,8 +42,13 @@ module Subroutine
 
         ensure_field_accessors(config)
 
-        config.groups.each do |group_name|
-          ensure_group_accessors(group_name)
+        if config.groups.any?
+          new_groups = self.field_groups.deep_dup
+          config.groups.each do |group_name|
+            new_groups[group_name] << config.field_name
+            ensure_group_accessors(group_name)
+          end
+          self.field_groups = new_groups
         end
 
         config
@@ -72,14 +77,6 @@ module Subroutine
         end
       end
       alias inputs_from fields_from
-
-      def fields_in_group(group_name)
-        field_configurations.each_with_object({}) do |(field_name, config), h|
-          next unless config.in_group?(group_name)
-
-          h[field_name] = config
-        end
-      end
 
       def get_field_config(field_name)
         field_configurations[field_name.to_sym]
@@ -110,39 +107,34 @@ module Subroutine
       protected
 
       def ensure_group_accessors(group_name)
-        group_name = group_name.to_sym
-        return if field_groups.include?(group_name)
-
-        self.field_groups |= [group_name]
-
         class_eval <<-EV, __FILE__, __LINE__ + 1
-          def #{group_name}_params
+          silence_redefinition_of_method def #{group_name}_params
             include_defaults_in_params? ?
               #{group_name}_params_with_default_params :
               #{group_name}_provided_params
           end
 
-          def #{group_name}_provided_params
+          silence_redefinition_of_method def #{group_name}_provided_params
             param_cache[:#{group_name}_provided] ||= begin
-              group_field_names = fields_in_group(:#{group_name}).keys
+              group_field_names = field_groups[:#{group_name}]
               provided_params.slice(*group_field_names)
             end
           end
 
-          def #{group_name}_default_params
+          silence_redefinition_of_method def #{group_name}_default_params
             param_cache[:#{group_name}_default] ||= begin
-              group_field_names = fields_in_group(:#{group_name}).keys
+              group_field_names = field_groups[:#{group_name}]
               all_default_params.slice(*group_field_names)
             end
           end
           alias #{group_name}_defaults #{group_name}_default_params
 
-          def #{group_name}_params_with_default_params
+          silence_redefinition_of_method def #{group_name}_params_with_default_params
             param_cache[:#{group_name}_provided_and_default] ||= #{group_name}_default_params.merge(#{group_name}_provided_params)
           end
           alias #{group_name}_params_with_defaults #{group_name}_params_with_default_params
 
-          def without_#{group_name}_params
+          silence_redefinition_of_method def without_#{group_name}_params
             param_cache[:without_#{group_name}] ||= all_params.except(*#{group_name}_params.keys)
           end
         EV
@@ -151,8 +143,7 @@ module Subroutine
       def ensure_field_accessors(config)
         if config.field_writer?
           class_eval <<-EV, __FILE__, __LINE__ + 1
-            try(:silence_redefinition_of_method, :#{config.field_name}=)
-            def #{config.field_name}=(v)
+            silence_redefinition_of_method def #{config.field_name}=(v)
               set_field(:#{config.field_name}, v, provided: true)
             end
           EV
@@ -160,8 +151,7 @@ module Subroutine
 
         if config.field_reader?
           class_eval <<-EV, __FILE__, __LINE__ + 1
-            try(:silence_redefinition_of_method, :#{config.field_name})
-            def #{config.field_name}
+            silence_redefinition_of_method def #{config.field_name}
               get_field(:#{config.field_name})
             end
           EV
@@ -250,10 +240,6 @@ module Subroutine
 
     def clear_field(name)
       param_groups[:provided].delete(name)
-    end
-
-    def fields_in_group(group_name)
-      self.class.fields_in_group(group_name)
     end
 
     protected

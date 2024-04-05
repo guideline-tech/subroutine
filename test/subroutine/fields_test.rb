@@ -29,6 +29,21 @@ module Subroutine
       self.include_defaults_in_params = true
     end
 
+    class MutationBase
+      include Subroutine::Fields
+
+      field :foo, group: :three_letter
+      field :bar, group: :three_letter
+
+    end
+
+    class MutationChild < MutationBase
+
+      field :qux, group: :three_letter
+      field :food, group: :four_letter
+
+    end
+
     def test_fields_are_configured
       assert_equal 6, Whatever.field_configurations.size
       assert_equal :string, Whatever.field_configurations[:foo][:type]
@@ -159,10 +174,8 @@ module Subroutine
     end
 
     def test_group_fields_are_accessible_at_the_class
-      results = Whatever.fields_in_group(:sekret)
-      assert_equal true, results.key?(:protekted_group_input)
-      assert_equal true, results.key?(:bar)
-      assert_equal false, results.key?(:protekted)
+      results = Whatever.field_groups[:sekret].sort
+      assert_equal %i[bar protekted_group_input], results
     end
 
     def test_groups_fields_are_accessible
@@ -185,6 +198,20 @@ module Subroutine
       assert_equal(%i[debit_cents], ParentInheritanceOp::EarlyInheritanceOp.field_configurations.keys.sort)
       assert_equal(%i[amount_cents debit_cents], ParentInheritanceOp::LateInheritanceOp.field_configurations.keys.sort)
       assert_equal(%i[amount_cents credit_cents], OuterInheritanceOp.field_configurations.keys.sort)
+    end
+
+    def test_field_definitions_are_not_mutated_by_subclasses
+      assert_equal(%i[bar foo], MutationBase.field_configurations.keys.sort)
+      assert_equal(%i[bar foo food qux], MutationChild.field_configurations.keys.sort)
+    end
+
+    def test_group_fields_are_not_mutated_by_subclasses
+      assert_equal(%i[three_letter], MutationBase.field_groups.keys.sort)
+      assert_equal(%i[four_letter three_letter], MutationChild.field_groups.keys.sort)
+
+      assert_equal(%i[bar foo], MutationBase.field_groups[:three_letter].sort)
+      assert_equal(%i[bar foo qux], MutationChild.field_groups[:three_letter].sort)
+      assert_equal(%i[food], MutationChild.field_groups[:four_letter].sort)
     end
 
   end
