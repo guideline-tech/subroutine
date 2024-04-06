@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "delegate"
-require "active_support/concern"
 require "subroutine/association_fields/configuration"
 require "subroutine/association_fields/association_type_mismatch_error"
 
@@ -72,8 +70,7 @@ module Subroutine
             field config.foreign_type_method, config.build_foreign_type_field
           else
             class_eval <<-EV, __FILE__, __LINE__ + 1
-              try(:silence_redefinition_of_method, :#{config.foreign_type_method})
-              def #{config.foreign_type_method}
+              silence_redefinition_of_method def #{config.foreign_type_method}
                 #{config.inferred_foreign_type.inspect}
               end
             EV
@@ -180,7 +177,7 @@ module Subroutine
           get_field(config.foreign_type_method)
         end
 
-      klass = klass.classify.constantize if klass.is_a?(String)
+      klass = klass.camelize.constantize if klass.is_a?(String)
       return nil unless klass
 
       foreign_key = config.foreign_key_method

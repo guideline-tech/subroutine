@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-require "active_support/concern"
-require "active_support/core_ext/object/duplicable"
-require "active_support/core_ext/hash/indifferent_access"
-require "active_support/core_ext/object/deep_dup"
-
 require "subroutine/type_caster"
 require "subroutine/fields/configuration"
 require "subroutine/fields/mass_assignment_error"

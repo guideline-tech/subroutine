@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "active_support/concern"
 require "subroutine/outputs/configuration"
 require "subroutine/outputs/output_not_set_error"
 require "subroutine/outputs/unknown_output_error"
