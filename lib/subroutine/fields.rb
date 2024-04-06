@@ -111,9 +111,9 @@ module Subroutine
       def ensure_group_accessors(group_name)
         class_eval <<-EV, __FILE__, __LINE__ + 1
           silence_redefinition_of_method def #{group_name}_params
-            include_defaults_in_params? ?
-              #{group_name}_params_with_defaults :
-              #{group_name}_provided_params
+            return #{group_name}_params_with_defaults if include_defaults_in_params?
+
+            #{group_name}_provided_params
           end
 
           silence_redefinition_of_method def #{group_name}_provided_params
@@ -210,11 +210,9 @@ module Subroutine
     alias default_params all_default_params
 
     def all_params
-      if include_defaults_in_params?
-        all_params_with_default_params
-      else
-        all_provided_params
-      end
+      return all_params_with_default_params if include_defaults_in_params?
+
+      all_provided_params
     end
     alias params all_params
 
