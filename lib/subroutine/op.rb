@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "active_model"
-
 require "subroutine/failure"
 require "subroutine/fields"
 require "subroutine/outputs"

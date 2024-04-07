@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "delegate"
-
 module Subroutine
   module Outputs
     class Configuration < ::SimpleDelegator

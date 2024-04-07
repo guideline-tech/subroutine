@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
-require "delegate"
-
+require "active_model"
 require "active_support/concern"
-require "active_support/core_ext/object/duplicable"
 require "active_support/core_ext/hash/indifferent_access"
-require "active_support/core_ext/object/deep_dup"
 require "active_support/core_ext/module/redefine_method"
+require "active_support/core_ext/object/deep_dup"
+require "active_support/core_ext/object/duplicable"
+require "active_support/core_ext/string/inflections"
+require "delegate"
 
 require "subroutine/version"
 require "subroutine/fields"
