@@ -187,7 +187,7 @@ module Subroutine
       scope = klass.all
       scope = scope.unscoped if config.unscoped?
 
-      scope.find_by!(config.find_by => value)
+      scope.find_by(config.find_by => value)
     end
 
     def maybe_raise_on_association_type_mismatch!(config, record)
