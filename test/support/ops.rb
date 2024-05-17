@@ -27,10 +27,6 @@ class User
     new(params)
   end
 
-  def self.find_by!(params)
-    find_by(params) || raise
-  end
-
   def self.type_for_attribute(attribute)
     case attribute
     when :id
@@ -339,6 +335,12 @@ end
 class SimpleAssociationOp < ::OpWithAssociation
 
   association :user
+
+end
+
+class SafeAssociationOp < ::OpWithAssociation
+
+  association :user, raise_on_miss: false
 
 end
 

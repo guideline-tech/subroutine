@@ -335,5 +335,15 @@ module Subroutine
       assert_equal({}, op.without_info_params)
     end
 
+    def test_find_by_is_used_if_raise_on_miss_is_false
+      all_mock = mock
+
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by).with(id: 1).returns(nil)
+
+      op = SafeAssociationOp.new user_type: "User", user_id: 1
+      assert_nil op.user
+    end
+
   end
 end
