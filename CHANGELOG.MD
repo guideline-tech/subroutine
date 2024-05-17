@@ -1,6 +1,6 @@
-## Subroutine 4.1
+## Subroutine 4.0.1
 
-Association fields now use `find_by()` instead of `find_by!()`, placing the responsibility on the op to manage nil cases rather than handling RecordNotFound errors.
+Association fields can now use `find_by()` instead of `find_by!()` by passing a `raise_on_miss: false` option. This places the responsibility on the op to manage nil cases rather than handling RecordNotFound errors.
 
 ## Subroutine 4.0
 

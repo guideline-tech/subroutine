@@ -30,6 +30,10 @@ module Subroutine
         !!config[:polymorphic]
       end
 
+      def raise_on_miss?
+        config[:raise_on_miss] != false
+      end
+
       def as
         config[:as] || field_name
       end

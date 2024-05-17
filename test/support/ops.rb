@@ -338,6 +338,12 @@ class SimpleAssociationOp < ::OpWithAssociation
 
 end
 
+class SafeAssociationOp < ::OpWithAssociation
+
+  association :user, raise_on_miss: false
+
+end
+
 class SimpleAssociationWithStringIdOp < ::OpWithAssociation
 
   association :string_id_user

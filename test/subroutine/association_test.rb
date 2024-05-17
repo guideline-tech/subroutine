@@ -41,7 +41,7 @@ module Subroutine
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = SimpleAssociationOp.new user_type: "User", user_id: doug.id
       assert_equal doug, op.user
@@ -51,7 +51,7 @@ module Subroutine
       all_mock = mock
 
       ::StringIdUser.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: "ABACABADABACABA").returns(murphy)
+      all_mock.expects(:find_by!).with(id: "ABACABADABACABA").returns(murphy)
 
       op = ::SimpleAssociationWithStringIdOp.new(string_id_user_id: murphy.id)
       assert_equal murphy, op.string_id_user
@@ -61,7 +61,7 @@ module Subroutine
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = SimpleAssociationOp.new user_id: doug.id
       assert_equal doug, op.user
@@ -73,7 +73,7 @@ module Subroutine
 
       ::User.expects(:all).returns(all_mock)
       all_mock.expects(:unscoped).returns(unscoped_mock)
-      unscoped_mock.expects(:find_by).with(id: 1).returns(doug)
+      unscoped_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = UnscopedSimpleAssociationOp.new user_id: doug.id
       assert_equal doug, op.user
@@ -83,7 +83,7 @@ module Subroutine
       all_mock = mock
       ::User.expects(:all).never
       ::AdminUser.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = PolymorphicAssociationOp.new(admin_type: "AdminUser", admin_id: doug.id)
       assert_equal doug, op.admin
@@ -97,7 +97,7 @@ module Subroutine
     def test_it_allows_foreign_key_to_be_set
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 10).returns(doug)
+      all_mock.expects(:find_by!).with(id: 10).returns(doug)
 
       op = ::AssociationWithForeignKeyOp.new(owner_id: 10)
       assert_equal doug, op.user
@@ -107,7 +107,7 @@ module Subroutine
     def test_the_foreign_key_is_cast
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 10).returns(doug)
+      all_mock.expects(:find_by!).with(id: 10).returns(doug)
 
       op = ::AssociationWithForeignKeyOp.new(owner_id: "10")
       assert_equal doug, op.user
@@ -118,7 +118,7 @@ module Subroutine
     def test_it_allows_a_foreign_key_and_find_by_to_be_set
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(email_address: "foo@bar.com").returns(doug)
+      all_mock.expects(:find_by!).with(email_address: "foo@bar.com").returns(doug)
 
       op = ::AssociationWithFindByAndForeignKeyOp.new(email_address: "foo@bar.com")
       assert_equal doug, op.user
@@ -129,7 +129,7 @@ module Subroutine
     def test_it_allows_a_find_by_to_be_set
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(email_address: doug.email_address).returns(doug)
+      all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
 
       op = ::AssociationWithFindByKeyOp.new(user_id: doug.email_address)
       assert_equal doug, op.user
@@ -139,7 +139,7 @@ module Subroutine
     def test_it_allows_a_find_by_to_be_set_with_implicit_string
       all_mock = mock
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(email_address: doug.email_address).returns(doug)
+      all_mock.expects(:find_by!).with(email_address: doug.email_address).returns(doug)
 
       op = ::AssociationWithImplicitStringFindByOp.new(user_id: doug.email_address)
       assert_equal doug, op.user
@@ -169,7 +169,7 @@ module Subroutine
       all_mock = mock
 
       ::User.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = ::InheritedSimpleAssociation.new(user_type: "User", user_id: doug.id)
       assert_equal doug, op.user
@@ -183,7 +183,7 @@ module Subroutine
 
       ::User.expects(:all).returns(all_mock)
       all_mock.expects(:unscoped).returns(unscoped_mock)
-      unscoped_mock.expects(:find_by).with(id: 1).returns(doug)
+      unscoped_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = ::InheritedUnscopedAssociation.new(user_type: "User", user_id: doug.id)
       assert_equal doug, op.user
@@ -195,7 +195,7 @@ module Subroutine
       all_mock = mock
       ::User.expects(:all).never
       ::AdminUser.expects(:all).returns(all_mock)
-      all_mock.expects(:find_by).with(id: 1).returns(doug)
+      all_mock.expects(:find_by!).with(id: 1).returns(doug)
 
       op = ::InheritedPolymorphicAssociationOp.new(admin_type: "AdminUser", admin_id: doug.id)
       assert_equal doug, op.admin
@@ -333,6 +333,16 @@ module Subroutine
       assert_equal({ "user_id" => 1, "user_type" => "User" }, op.params)
       assert_equal({ "user_id" => 1, "user_type" => "User" }, op.info_params)
       assert_equal({}, op.without_info_params)
+    end
+
+    def test_find_by_is_used_if_raise_on_miss_is_false
+      all_mock = mock
+
+      ::User.expects(:all).returns(all_mock)
+      all_mock.expects(:find_by).with(id: 1).returns(nil)
+
+      op = SafeAssociationOp.new user_type: "User", user_id: 1
+      assert_nil op.user
     end
 
   end
