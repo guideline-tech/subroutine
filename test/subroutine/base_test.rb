@@ -318,5 +318,11 @@ module Subroutine
       assert_equal raw_params, op.params
     end
 
+    def test_inspect_is_pretty
+      op = SignupOp.new({ email: "foo@bar.com", password: "password123!" })
+      oid = format('%x', (op.object_id << 1))
+      assert_equal "#<SignupOp:0x#{oid} email: \"foo@bar.com\", password: \"password123!\">", op.inspect
+    end
+
   end
 end

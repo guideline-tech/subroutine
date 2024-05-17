@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "active_model"
-
 require "subroutine/failure"
 require "subroutine/fields"
 require "subroutine/outputs"
@@ -46,6 +44,17 @@ module Subroutine
       setup_fields(inputs)
       setup_outputs
       yield self if block_given?
+    end
+
+    def inspect
+      values = provided_params.map do |(key, value)|
+        "#{key}: #{value.inspect}"
+      end
+      values.sort!
+      values = values.join(", ")
+
+      oid = format('%x', (object_id << 1))
+      "#<#{self.class}:0x#{oid} #{values}>"
     end
 
     def submit!

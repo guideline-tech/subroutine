@@ -2,10 +2,10 @@
 
 module Subroutine
 
-  MAJOR = 3
+  MAJOR = 4
   MINOR = 0
-  PATCH = 2
-  PRE   = nil
+  PATCH = 0
+  PRE   = "alpha"
 
   VERSION = [MAJOR, MINOR, PATCH, PRE].compact.join(".")
 
