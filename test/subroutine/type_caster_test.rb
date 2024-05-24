@@ -175,6 +175,34 @@ module Subroutine
 
       op.object_input = { 'foo' => { 'bar' => :baz } }
       assert_equal({ 'foo' => { 'bar' => :baz } }, op.object_input)
+
+      op.object_input = { foo: "bar" }
+      assert op.object_input.is_a?(ActiveSupport::HashWithIndifferentAccess)
+    end
+
+    def test_hash_inputs_can_opt_out_of_indifferent_access_behavior
+      op.no_indifferent_object_input = nil
+      assert_nil op.no_indifferent_object_input
+
+      op.no_indifferent_object_input = ''
+      assert_equal({}, op.no_indifferent_object_input)
+
+      op.no_indifferent_object_input = [[:a, :b]]
+      assert_equal({ a: :b }, op.no_indifferent_object_input)
+
+      op.no_indifferent_object_input = { foo: "bar" }
+      assert_equal({ foo: "bar" }, op.no_indifferent_object_input)
+      assert op.no_indifferent_object_input.key?(:foo)
+      refute op.no_indifferent_object_input.key?("foo")
+      refute op.no_indifferent_object_input.is_a?(ActiveSupport::HashWithIndifferentAccess)
+      assert op.no_indifferent_object_input.is_a?(Hash)
+
+      op.no_indifferent_object_input = { "foo" => "bar" }
+      assert_equal({ "foo" => "bar" }, op.no_indifferent_object_input)
+      assert op.no_indifferent_object_input.key?("foo")
+      refute op.no_indifferent_object_input.key?(:foo)
+      refute op.no_indifferent_object_input.is_a?(ActiveSupport::HashWithIndifferentAccess)
+      assert op.no_indifferent_object_input.is_a?(Hash)
     end
 
     def test_array_inputs

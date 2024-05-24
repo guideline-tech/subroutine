@@ -176,6 +176,7 @@ class TypeCastOp < ::Subroutine::Op
   iso_date :iso_date_input
   iso_time :iso_time_input
   object :object_input
+  object :no_indifferent_object_input, bypass_indifferent_assignment: true
   array :array_input, default: "foo"
   array :type_array_input, of: :integer
   file :file_input
