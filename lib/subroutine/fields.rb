@@ -189,7 +189,7 @@ module Subroutine
       config = get_field_config(key)
       group = get_param_group(name)
 
-      if config&.bypass_indifferent?
+      if config&.bypass_indifferent_assignment?
         group.regular_writer(group.send(:convert_key, key), value)
       else
         group[key.to_sym] = value

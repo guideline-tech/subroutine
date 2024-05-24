@@ -76,8 +76,8 @@ module Subroutine
         config[:field_reader] != false
       end
 
-      def bypass_indifferent?
-        config[:bypass_indifferent] == true
+      def bypass_indifferent_assignment?
+        config[:bypass_indifferent_assignment] == true
       end
 
       def groups

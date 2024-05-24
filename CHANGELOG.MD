@@ -1,3 +1,16 @@
+## Subroutine 4.1.0
+
+A field can no opt out of the natural assignment behavior of ActiveSupport::HashWithIndifferentAccess. Top level param groups are still accessible via indifferent access but if a field sets the `bypass_indifferent_assignment` option to `true` the HashWithIndifferentAccess assignment behavior will be bypassed in favor of direct Hash-like assignment.
+
+```ruby
+class MyOp < Subroutine::Op
+
+  object :some_hash
+  object :some_other_hash, bypass_indifferent_assignment: true
+
+end
+```
+
 ## Subroutine 4.0.1
 
 Association fields can now use `find_by()` instead of `find_by!()` by passing a `raise_on_miss: false` option. This places the responsibility on the op to manage nil cases rather than handling RecordNotFound errors.
