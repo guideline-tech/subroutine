@@ -8,7 +8,7 @@ updates:
       time: "09:00"
       timezone: "America/New_York"
     commit-message:
-      prefix: "[github-actions] "      
+      prefix: "[github-actions] "
   - package-ecosystem: "bundler"
     directory: "/"
     schedule:
@@ -19,6 +19,6 @@ updates:
     open-pull-requests-limit: 20
     insecure-external-code-execution: deny
     allow:
-      - dependency-type: "all"    
+      - dependency-type: "all"
     commit-message:
-      prefix: "[bundler] "      
+      prefix: "[bundler] "
