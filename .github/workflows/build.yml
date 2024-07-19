@@ -23,5 +23,11 @@ jobs:
           bundler: ${{ env.BUNDLER }}
           bundler-cache: false
       - run: bundle install
+        env:
+          BUNDLE_PATH: vendor/bundle/${{ matrix.ruby-version }}
       - run: bundle exec appraisal install
+        env:
+          BUNDLE_PATH: vendor/bundle/${{ matrix.ruby-version }}
       - run: bundle exec appraisal rake test
+        env:
+          BUNDLE_PATH: vendor/bundle/${{ matrix.ruby-version }}
