@@ -2,31 +2,32 @@ name: build
 on:
   pull_request:
   push:
-      branches:
-        - main
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: [2.7.8]
-        experimental: [false]
-        include:
-          - ruby-version: 3.0
-            experimental: true
-          - ruby-version: 3.1
-            experimental: true
-          - ruby-version: 3.2
-            experimental: true
+        ruby-version: [3.0, 3.1, 3.2]
     steps:
       - uses: actions/checkout@v4
         with:
-          show-progress: 'false'
+          show-progress: "false"
+      - name: get bundler version
+        run: echo "BUNDLER=$(cat .bundler-version)" >> $GITHUB_ENV
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true # runs `bundle install` and caches installed gems automatically
+          bundler: ${{ env.BUNDLER }}
+          bundler-cache: false
+      - run: bundle install
+        env:
+          BUNDLE_PATH: vendor/bundle/${{ matrix.ruby-version }}
       - run: bundle exec appraisal install
+        env:
+          BUNDLE_PATH: vendor/bundle/${{ matrix.ruby-version }}
       - run: bundle exec appraisal rake test
+        env:
+          BUNDLE_PATH: vendor/bundle/${{ matrix.ruby-version }}
