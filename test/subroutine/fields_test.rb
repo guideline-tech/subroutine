@@ -44,6 +44,20 @@ module Subroutine
 
     end
 
+    class WhateverWithValidations
+
+      include ::ActiveModel::Validations
+      include Subroutine::Fields
+
+      string :foo, presence: true, length: { maximum: 10 }
+
+      def initialize(options = {})
+        setup_fields(options)
+      end
+
+    end
+
+
     def test_fields_are_configured
       assert_equal 6, Whatever.field_configurations.size
       assert_equal :string, Whatever.field_configurations[:foo][:type]
@@ -212,6 +226,20 @@ module Subroutine
       assert_equal(%i[bar foo], MutationBase.fields_by_group[:three_letter].sort)
       assert_equal(%i[bar foo qux], MutationChild.fields_by_group[:three_letter].sort)
       assert_equal(%i[food], MutationChild.fields_by_group[:four_letter].sort)
+    end
+
+    def test_can_pass_validator_in_option_to_field
+      # Use WhateverWithValidations to test that the validations are applied
+      op = WhateverWithValidations.new(foo: "12345678901")
+      assert_equal false, op.valid?
+      assert_equal ["Foo is too long (maximum is 10 characters)"], op.errors.full_messages
+
+      op = WhateverWithValidations.new(foo: "1234567890")
+      assert_equal true, op.valid?
+
+      op = WhateverWithValidations.new(foo: nil)
+      assert_equal false, op.valid?
+      assert_equal ["Foo can't be blank"], op.errors.full_messages
     end
 
   end
