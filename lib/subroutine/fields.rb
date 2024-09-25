@@ -29,6 +29,12 @@ module Subroutine
 
     module ClassMethods
 
+      VALIDATOR_KEYS = ::ActiveModel::Validations.constants.filter_map do |constant|
+        next unless constant.to_s.end_with?("Validator")
+
+        constant.to_s.gsub(/Validator$/, "").underscore.to_sym
+      end.freeze
+
       def field(field_name, options = {})
         config = ::Subroutine::Fields::Configuration.from(field_name, options)
         config.validate!
@@ -47,6 +53,8 @@ module Subroutine
 
           self.fields_by_group = new_fields_by_group
         end
+
+        add_validations_from_options(field_name, options)
 
         config
       end
@@ -153,6 +161,19 @@ module Subroutine
         end
       end
 
+      def add_validations_from_options(field_name, options)
+        options.each do |key, value|
+          next unless VALIDATOR_KEYS.include?(key)
+
+          # Format the validation depending on whether the value is a hash or simple value
+          validation_str = value.is_a?(Hash) ? value.inspect : value
+
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            validates :#{field_name}, #{key}: #{validation_str}
+          RUBY
+        end
+      end
+
     end
 
     def setup_fields(inputs = {})
@@ -223,7 +244,6 @@ module Subroutine
     end
     alias all_params_with_defaults all_params_with_default_params
     alias params_with_defaults all_params_with_defaults
-
 
     def get_field_config(field_name)
       self.class.get_field_config(field_name)

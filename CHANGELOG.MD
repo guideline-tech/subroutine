@@ -1,3 +1,16 @@
+## Subroutine 4.2.0
+
+Common ActiveModel validations can now be passed to fields. Can pass multiple validators can be passed to the same field.
+
+```ruby
+class MyOp < Subroutine::Op
+
+  association :user, presence: true
+  string :first_name, length: { maximum: 20 }
+
+end
+```
+
 ## Subroutine 4.1.0
 
 A field can no opt out of the natural assignment behavior of ActiveSupport::HashWithIndifferentAccess. Top level param groups are still accessible via indifferent access but if a field sets the `bypass_indifferent_assignment` option to `true` the HashWithIndifferentAccess assignment behavior will be bypassed in favor of direct Hash-like assignment.
