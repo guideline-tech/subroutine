@@ -26,8 +26,7 @@ module Subroutine
   end
 
   def self.inheritable_field_options=(opts)
-    inheritable_field_options
-    @inheritable_field_options |= opts.map(&:to_sym)
+    @inheritable_field_options = opts.map(&:to_sym)
   end
 
   def self.inheritable_field_options
