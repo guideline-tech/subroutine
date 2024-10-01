@@ -5,7 +5,6 @@ module Subroutine
     class Configuration < ::SimpleDelegator
 
       PROTECTED_GROUP_IDENTIFIERS = %i[all original default].freeze
-      INHERITABLE_OPTIONS = %i[mass_assignable field_reader field_writer groups aka].freeze
       NO_GROUPS = [].freeze
 
       def self.from(field_name, options)
@@ -61,7 +60,7 @@ module Subroutine
       end
 
       def inheritable_options
-        config.slice(*INHERITABLE_OPTIONS)
+        config.slice(*Subroutine.inheritable_field_options)
       end
 
       def mass_assignable?

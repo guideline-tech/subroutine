@@ -345,5 +345,20 @@ module Subroutine
       assert_nil op.user
     end
 
+    def test_inheritable_options_are_inherited_by_child_fields
+      Subroutine.stubs(:inheritable_field_options).returns(%i[foo bar])
+      klass = Class.new(OpWithAssociation) do
+        association :buster, foo: true, bar: false, baz: true
+        association :mister, polymorphic: true, foo: true, bar: false, baz: true
+      end
+
+      %i[buster_id mister_id mister_type].each do |field_name|
+        field = klass.field_configurations.fetch(field_name)
+        assert_equal true, field[:foo]
+        assert_equal false, field[:bar]
+        assert_equal false, field.config.key?(:baz)
+      end
+    end
+
   end
 end
