@@ -4,9 +4,11 @@ require 'date'
 require 'time'
 require 'bigdecimal'
 require 'securerandom'
+require 'active_support/core_ext/object/acts_like'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/object/try'
 require 'active_support/core_ext/array/wrap'
+require 'active_support/core_ext/time/acts_like'
 
 module Subroutine
   module TypeCaster
@@ -118,7 +120,11 @@ end
 ::Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, _options = {}|
   next nil unless value.present?
 
-  ::Time.parse(String(value))
+  if value.try(:acts_like?, :time)
+    value
+  else
+    ::Time.parse(String(value))
+  end
 end
 
 ::Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _options = {}|
