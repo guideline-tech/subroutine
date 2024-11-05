@@ -1,3 +1,9 @@
+## Subroutine 4.1.1
+
+Fields using the time/timestamp/datetime caster will now return exactly the passed in value
+if it acts like a time object (`acts_like?(:time)`/`acts_like_time?`), instead of serializing
+to string and re-parsing to a Time object. This fixes issues with losing usec precision.
+
 ## Subroutine 4.1.0
 
 A field can no opt out of the natural assignment behavior of ActiveSupport::HashWithIndifferentAccess. Top level param groups are still accessible via indifferent access but if a field sets the `bypass_indifferent_assignment` option to `true` the HashWithIndifferentAccess assignment behavior will be bypassed in favor of direct Hash-like assignment.
