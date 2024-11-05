@@ -256,7 +256,7 @@ module Subroutine
       assert_equal 0, op.time_input.min
       assert_equal 0, op.time_input.sec
 
-      op.time_input = '2023-05-05T10:00:30Z'
+      op.time_input = '2023-05-05T10:00:30.123456Z'
       assert_equal ::Time, op.time_input.class
       refute_equal ::DateTime, op.time_input.class
 
@@ -266,6 +266,12 @@ module Subroutine
       assert_equal 10, op.time_input.hour
       assert_equal 0, op.time_input.min
       assert_equal 30, op.time_input.sec
+      assert_equal 123456, op.time_input.usec
+
+      time = Time.at(1678741605.123456)
+      op.time_input = time
+      assert_equal time, op.time_input
+      assert_equal time.object_id, op.time_input.object_id
     end
 
     def test_iso_date_inputs
