@@ -4,11 +4,14 @@ require 'date'
 require 'time'
 require 'bigdecimal'
 require 'securerandom'
+require 'active_support/core_ext/date_time/acts_like'
+require 'active_support/core_ext/date_time/calculations'
 require 'active_support/core_ext/object/acts_like'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/object/try'
 require 'active_support/core_ext/array/wrap'
 require 'active_support/core_ext/time/acts_like'
+require 'active_support/core_ext/time/calculations'
 
 module Subroutine
   module TypeCaster
@@ -117,13 +120,23 @@ end
   ::Date.parse(String(value))
 end
 
-::Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, _options = {}|
+::Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, options = {}|
   next nil unless value.present?
 
-  if value.try(:acts_like?, :time)
-    value
-  else
-    ::Time.parse(String(value))
+  if options[:precision] == :high
+    if value.try(:acts_like?, :time)
+      value.to_time
+    else
+      ::Time.parse(String(value))
+    end
+  else # precision == :seconds
+    time = if value.try(:acts_like?, :time)
+      value.to_time
+    else
+      ::Time.parse(String(value))
+    end
+
+    time.change(usec: 0)
   end
 end
 
