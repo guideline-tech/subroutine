@@ -241,7 +241,7 @@ module Subroutine
       assert_nil op.date_input
     end
 
-    def test_time_inputs
+    def test_time_inputs__with_seconds_precision
       op.time_input = nil
       assert_nil op.time_input
 
@@ -256,22 +256,139 @@ module Subroutine
       assert_equal 0, op.time_input.min
       assert_equal 0, op.time_input.sec
 
+      op.time_input = ::DateTime.new(2022, 12, 22)
+      assert_equal ::Time, op.time_input.class
+      refute_equal ::DateTime, op.time_input.class
+
+      assert_equal 0, op.time_input.utc_offset
+      assert_equal 2022, op.time_input.year
+      assert_equal 12, op.time_input.month
+      assert_equal 22, op.time_input.day
+      assert_equal 0, op.time_input.hour
+      assert_equal 0, op.time_input.min
+      assert_equal 0, op.time_input.sec
+
       op.time_input = '2023-05-05T10:00:30.123456Z'
       assert_equal ::Time, op.time_input.class
       refute_equal ::DateTime, op.time_input.class
 
+      assert_equal 0, op.time_input.utc_offset
       assert_equal 2023, op.time_input.year
       assert_equal 5, op.time_input.month
       assert_equal 5, op.time_input.day
       assert_equal 10, op.time_input.hour
       assert_equal 0, op.time_input.min
       assert_equal 30, op.time_input.sec
-      assert_equal 123456, op.time_input.usec
+      assert_equal 0, op.time_input.usec
 
-      time = Time.at(1678741605.123456)
+      op.time_input = '2023-05-05T10:00:30Z'
+      assert_equal ::Time, op.time_input.class
+      assert_equal 0, op.time_input.utc_offset
+      assert_equal 2023, op.time_input.year
+      assert_equal 5, op.time_input.month
+      assert_equal 5, op.time_input.day
+      assert_equal 10, op.time_input.hour
+      assert_equal 0, op.time_input.min
+      assert_equal 30, op.time_input.sec
+      assert_equal 0, op.time_input.usec
+
+      op.time_input = '2024-11-11T16:42:23.246+0100'
+      assert_equal ::Time, op.time_input.class
+      assert_equal 3600, op.time_input.utc_offset
+      assert_equal 2024, op.time_input.year
+      assert_equal 11, op.time_input.month
+      assert_equal 11, op.time_input.day
+      assert_equal 16, op.time_input.hour
+      assert_equal 42, op.time_input.min
+      assert_equal 23, op.time_input.sec
+      assert_equal 0, op.time_input.usec
+
+      time = Time.at(1678741605.123456).utc
       op.time_input = time
-      assert_equal time, op.time_input
-      assert_equal time.object_id, op.time_input.object_id
+      refute_equal time, op.time_input
+      refute_equal time.object_id, op.time_input.object_id
+      assert_equal 2023, op.time_input.year
+      assert_equal 3, op.time_input.month
+      assert_equal 13, op.time_input.day
+      assert_equal 21, op.time_input.hour
+      assert_equal 6, op.time_input.min
+      assert_equal 45, op.time_input.sec
+      assert_equal 0, op.time_input.usec
+    end
+
+    def test_time_inputs__with_high_precision
+      op.precise_time_input = nil
+      assert_nil op.precise_time_input
+
+      op.precise_time_input = '2022-12-22'
+      assert_equal ::Time, op.precise_time_input.class
+      refute_equal ::DateTime, op.precise_time_input.class
+
+      assert_equal 2022, op.precise_time_input.year
+      assert_equal 12, op.precise_time_input.month
+      assert_equal 22, op.precise_time_input.day
+      assert_equal 0, op.precise_time_input.hour
+      assert_equal 0, op.precise_time_input.min
+      assert_equal 0, op.precise_time_input.sec
+
+      op.precise_time_input = ::DateTime.new(2022, 12, 22)
+      assert_equal ::Time, op.precise_time_input.class
+      refute_equal ::DateTime, op.precise_time_input.class
+
+      assert_equal 0, op.precise_time_input.utc_offset
+      assert_equal 2022, op.precise_time_input.year
+      assert_equal 12, op.precise_time_input.month
+      assert_equal 22, op.precise_time_input.day
+      assert_equal 0, op.precise_time_input.hour
+      assert_equal 0, op.precise_time_input.min
+      assert_equal 0, op.precise_time_input.sec
+
+      op.precise_time_input = '2023-05-05T10:00:30.123456Z'
+      assert_equal ::Time, op.precise_time_input.class
+      refute_equal ::DateTime, op.precise_time_input.class
+
+      assert_equal 0, op.precise_time_input.utc_offset
+      assert_equal 2023, op.precise_time_input.year
+      assert_equal 5, op.precise_time_input.month
+      assert_equal 5, op.precise_time_input.day
+      assert_equal 10, op.precise_time_input.hour
+      assert_equal 0, op.precise_time_input.min
+      assert_equal 30, op.precise_time_input.sec
+      assert_equal 123456, op.precise_time_input.usec
+
+      op.precise_time_input = '2023-05-05T10:00:30Z'
+      assert_equal ::Time, op.precise_time_input.class
+      assert_equal 0, op.precise_time_input.utc_offset
+      assert_equal 2023, op.precise_time_input.year
+      assert_equal 5, op.precise_time_input.month
+      assert_equal 5, op.precise_time_input.day
+      assert_equal 10, op.precise_time_input.hour
+      assert_equal 0, op.precise_time_input.min
+      assert_equal 30, op.precise_time_input.sec
+      assert_equal 0, op.precise_time_input.usec
+
+      op.precise_time_input = '2024-11-11T16:42:23.246+0100'
+      assert_equal ::Time, op.precise_time_input.class
+      assert_equal 3600, op.precise_time_input.utc_offset
+      assert_equal 2024, op.precise_time_input.year
+      assert_equal 11, op.precise_time_input.month
+      assert_equal 11, op.precise_time_input.day
+      assert_equal 16, op.precise_time_input.hour
+      assert_equal 42, op.precise_time_input.min
+      assert_equal 23, op.precise_time_input.sec
+      assert_equal 246000, op.precise_time_input.usec
+
+      time = Time.at(1678741605.123456).utc
+      op.precise_time_input = time
+      assert_equal time, op.precise_time_input
+      assert_equal time.object_id, op.precise_time_input.object_id
+      assert_equal 2023, op.precise_time_input.year
+      assert_equal 3, op.precise_time_input.month
+      assert_equal 13, op.precise_time_input.day
+      assert_equal 21, op.precise_time_input.hour
+      assert_equal 6, op.precise_time_input.min
+      assert_equal 45, op.precise_time_input.sec
+      assert_equal 123456, op.precise_time_input.usec
     end
 
     def test_iso_date_inputs
