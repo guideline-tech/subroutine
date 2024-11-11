@@ -173,6 +173,7 @@ class TypeCastOp < ::Subroutine::Op
   boolean :boolean_input
   date :date_input
   time :time_input, default: -> { Time.now }
+  time :precise_time_input, precision: :high
   iso_date :iso_date_input
   iso_time :iso_time_input
   object :object_input

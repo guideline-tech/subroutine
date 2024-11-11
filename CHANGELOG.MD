@@ -1,3 +1,13 @@
+## Subroutine 4.1.4
+
+Fields using the time/timestamp/datetime caster will now default back to the old behavior, and use a `precision:` option to opt-in to the new behavior introduced in `v4.1.1`.
+
+`precision: :seconds` will retain the old behavior of always parsing to a new Time object
+with floored sub-second precision, but applied more forcefully than before as it would have parsed whatever you passed to it. (This is the default, now.)
+
+`precision: :high` will now use the new functionality of re-using Time objects when they
+are passed in, or if not parsing exactly the provided string as to a Time object.
+
 ## Subroutine 4.1.1
 
 Fields using the time/timestamp/datetime caster will now return exactly the passed in value

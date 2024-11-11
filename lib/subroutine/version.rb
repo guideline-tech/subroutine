@@ -4,7 +4,7 @@ module Subroutine
 
   MAJOR = 4
   MINOR = 1
-  PATCH = 3
+  PATCH = 4
   PRE   = nil
 
   VERSION = [MAJOR, MINOR, PATCH, PRE].compact.join(".")
