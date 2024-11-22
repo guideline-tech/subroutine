@@ -4,6 +4,8 @@ require 'date'
 require 'time'
 require 'bigdecimal'
 require 'securerandom'
+require 'active_support'
+require 'active_support/json'
 require 'active_support/core_ext/date_time/acts_like'
 require 'active_support/core_ext/date_time/calculations'
 require 'active_support/core_ext/object/acts_like'
@@ -111,7 +113,7 @@ end
   t ||= value if value.is_a?(::Time)
   t ||= value if value.try(:acts_like?, :time)
   t ||= ::Time.parse(String(value))
-  t.utc.iso8601
+  t.utc.iso8601(::ActiveSupport::JSON::Encoding.time_precision)
 end
 
 ::Subroutine::TypeCaster.register :date do |value, _options = {}|
@@ -123,21 +125,16 @@ end
 ::Subroutine::TypeCaster.register :time, :timestamp, :datetime do |value, options = {}|
   next nil unless value.present?
 
-  if options[:precision] == :high
-    if value.try(:acts_like?, :time)
-      value.to_time
-    else
-      ::Time.parse(String(value))
-    end
-  else # precision == :seconds
-    time = if value.try(:acts_like?, :time)
-      value.to_time
-    else
-      ::Time.parse(String(value))
-    end
-
-    time.change(usec: 0)
+  value = if value.try(:acts_like?, :time)
+    value.to_time
+  else
+    ::Time.parse(String(value))
   end
+
+  # High precision must be opted into. The original implementation is to set usec:0
+  next value if options[:precision] == :high || ::Subroutine.preserve_time_precision?
+
+  value.change(usec: 0)
 end
 
 ::Subroutine::TypeCaster.register :hash, :object, :hashmap, :dict do |value, _options = {}|

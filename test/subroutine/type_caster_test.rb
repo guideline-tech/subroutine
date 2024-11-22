@@ -410,11 +410,11 @@ module Subroutine
 
       op.iso_time_input = '2022-12-22T10:30:24Z'
       assert_equal ::String, op.iso_time_input.class
-      assert_equal '2022-12-22T10:30:24Z', op.iso_time_input
+      assert_equal '2022-12-22T10:30:24.000Z', op.iso_time_input
 
-      op.iso_time_input = Time.parse('2022-12-22T10:30:24Z')
+      op.iso_time_input = Time.parse('2022-12-22T10:30:24.123456Z')
       assert_equal ::String, op.iso_time_input.class
-      assert_equal '2022-12-22T10:30:24Z', op.iso_time_input
+      assert_equal '2022-12-22T10:30:24.123Z', op.iso_time_input
     end
 
     def test_file_inputs
