@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "active_model"
+require "active_support"
 require "active_support/concern"
 require "active_support/core_ext/hash/indifferent_access"
 require "active_support/core_ext/module/redefine_method"
@@ -38,7 +39,9 @@ module Subroutine
   end
 
   def self.preserve_time_precision?
-    !!@preserve_time_precision
+    return !!@preserve_time_precision if defined?(@preserve_time_precision)
+
+    false
   end
 
 end
