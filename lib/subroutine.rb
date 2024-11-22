@@ -3,3 +3,17 @@
 require "subroutine/version"
 require "subroutine/fields"
 require "subroutine/op"
+
+module Subroutine
+
+  def self.preserve_time_precision=(bool)
+    @preserve_time_precision = !!bool
+  end
+
+  def self.preserve_time_precision?
+    return !!@preserve_time_precision if defined?(@preserve_time_precision)
+
+    false
+  end
+
+end
