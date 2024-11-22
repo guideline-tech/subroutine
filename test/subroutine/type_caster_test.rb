@@ -344,6 +344,20 @@ module Subroutine
       assert_equal 0, op.time_input.usec
     end
 
+    def test_time_inputs__with_preserve_time_precision
+      Subroutine.stubs(:preserve_time_precision?).returns(true)
+
+      time = Time.at(1678741605.123456).utc
+      op.time_input = time
+      assert_equal 2023, op.time_input.year
+      assert_equal 3, op.time_input.month
+      assert_equal 13, op.time_input.day
+      assert_equal 21, op.time_input.hour
+      assert_equal 6, op.time_input.min
+      assert_equal 45, op.time_input.sec
+      assert_equal 123456, op.time_input.usec
+    end
+
     def test_time_inputs__with_high_precision
       op.precise_time_input = nil
       assert_nil op.precise_time_input
