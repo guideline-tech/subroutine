@@ -33,4 +33,12 @@ module Subroutine
     @inheritable_field_options ||= %i[mass_assignable field_reader field_writer groups aka]
   end
 
+  def self.preserve_time_precision=(bool)
+    @preserve_time_precision = !!bool
+  end
+
+  def self.preserve_time_precision?
+    !!@preserve_time_precision
+  end
+
 end
