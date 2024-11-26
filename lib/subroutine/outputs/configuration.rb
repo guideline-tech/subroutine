@@ -13,7 +13,10 @@ module Subroutine
         end
       end
 
-      DEFAULT_OPTIONS = { required: true }.freeze
+      DEFAULT_OPTIONS = {
+        required: true,
+        lazy: false
+      }.freeze
 
       attr_reader :output_name
 
@@ -26,6 +29,10 @@ module Subroutine
 
       def required?
         !!config[:required]
+      end
+
+      def lazy?
+        !!config[:lazy]
       end
 
       def inspect

@@ -10,6 +10,20 @@ module Subroutine
       end
     end
 
+    class LazyOutputOp < ::Subroutine::Op
+      outputs :foo, lazy: true
+      outputs :baz, lazy: true, type: String
+
+      def perform
+        output :foo, -> { call_me }
+        output :baz, -> { call_baz }
+      end
+
+      def call_me; end
+
+      def call_baz; end
+    end
+
     class MissingOutputSetOp < ::Subroutine::Op
       outputs :foo
       def perform
@@ -99,5 +113,50 @@ module Subroutine
         op.submit
       end
     end
+
+    ################
+    # lazy outputs #
+    ################
+
+    def test_it_does_not_call_lazy_output_values_if_not_accessed
+      op = LazyOutputOp.new
+      op.expects(:call_me).never
+      op.submit!
+    end
+
+    def test_it_calls_lazy_output_values_if_accessed
+      op = LazyOutputOp.new
+      op.expects(:call_me).once
+      op.submit!
+      op.foo
+    end
+
+    def test_it_validates_type_when_lazy_output_is_accessed
+      op = LazyOutputOp.new
+      op.expects(:call_baz).once.returns("a string")
+      op.submit!
+      assert_silent do
+        op.baz
+      end
+    end
+
+    def test_it_raises_error_on_invalid_type_when_lazy_output_is_accessed
+      op = LazyOutputOp.new
+      op.expects(:call_baz).once.returns(10)
+      op.submit!
+      error = assert_raises(Subroutine::Outputs::InvalidOutputTypeError) do
+        op.baz
+      end
+      assert_match(/Invalid output type for 'baz' expected String but got Integer/, error.message)
+    end
+
+    def test_it_returns_outputs
+      op = LazyOutputOp.new
+      op.expects(:call_me).once.returns(1)
+      op.expects(:call_baz).once.returns("a string")
+      op.submit!
+      assert_equal({ foo: 1, baz: "a string" }, op.outputs)
+    end
+
   end
 end
