@@ -1,3 +1,16 @@
+# Changelog
+
+## Subroutine 4.2.0
+
+If you are using polymorphic association fields, you can now customize how Subroutine
+resolves those class names to a ruby class by setting a global callable/lambda/proc:
+
+```ruby
+::Subroutine.constantize_polymorphic_class_name = ->(class_name) do
+  class_name.classify.constantize
+end
+```
+
 ## Subroutine 4.1.4
 
 Fields using the time/timestamp/datetime caster will now default back to the old behavior, and use a `precision:` option to opt-in to the new behavior introduced in `v4.1.1`.
@@ -16,7 +29,7 @@ to string and re-parsing to a Time object. This fixes issues with losing usec pr
 
 ## Subroutine 4.1.0
 
-A field can no opt out of the natural assignment behavior of ActiveSupport::HashWithIndifferentAccess. Top level param groups are still accessible via indifferent access but if a field sets the `bypass_indifferent_assignment` option to `true` the HashWithIndifferentAccess assignment behavior will be bypassed in favor of direct Hash-like assignment.
+A field can now opt out of the natural assignment behavior of ActiveSupport::HashWithIndifferentAccess. Top level param groups are still accessible via indifferent access but if a field sets the `bypass_indifferent_assignment` option to `true` the HashWithIndifferentAccess assignment behavior will be bypassed in favor of direct Hash-like assignment.
 
 ```ruby
 class MyOp < Subroutine::Op
@@ -36,6 +49,9 @@ Association fields can now use `find_by()` instead of `find_by!()` by passing a 
 The `Subroutine::Fields` module now contains a class_attribute that allows the altering of param accessor behaviors. `include_defaults_in_params` is now available to opt into including the default values in usage of the `all_params (alias params)` method. Backwards compatibility is preserved by defaulting the value to `false`. If switched to true, when an input is omitted and the field is configured with a default value, it will be included in the `all_params` object.
 
 Removed all usage of `ungrouped` params and refactored the storage of grouped params. Params are now stored in either the provided group or the defaults group and accessed via provided_params, params, default_params, and params_with_defaults. Grouped params are accessed the same way but with the group name prefixed eg. `my_private_default_params`.
+
+Polymorphic association fields now resolve class names via `klass.camelize.constantize`,
+previously was `klass.classify.constantize`.
 
 ## Subroutine 3.0
 
