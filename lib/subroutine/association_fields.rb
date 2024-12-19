@@ -177,7 +177,7 @@ module Subroutine
           get_field(config.foreign_type_method)
         end
 
-      klass = klass.camelize.constantize if klass.is_a?(String)
+      klass = Subroutine.constantize_polymorphic_class_name(klass) if klass.is_a?(String)
       return nil unless klass
 
       foreign_key = config.foreign_key_method

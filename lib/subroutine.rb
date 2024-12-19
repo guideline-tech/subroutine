@@ -16,6 +16,18 @@ require "subroutine/op"
 
 module Subroutine
 
+  # Used by polymorphic association fields to resolve the class name to a ruby class
+  def self.constantize_polymorphic_class_name(class_name)
+    return @constantize_polymorphic_class_name.call(class_name) if defined?(@constantize_polymorphic_class_name)
+
+    class_name.camelize.constantize
+  end
+
+  # When you need to customize how a polymorphic class name is resolved, you can set this callable/lambda/proc
+  def self.constantize_polymorphic_class_name=(callable)
+    @constantize_polymorphic_class_name = callable
+  end
+
   def self.include_defaults_in_params=(bool)
     @include_defaults_in_params = !!bool
   end
