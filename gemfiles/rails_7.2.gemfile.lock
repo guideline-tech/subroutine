@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    subroutine (4.2.0)
+    subroutine (4.2.1)
       activemodel (>= 6.1)
       activesupport (>= 6.1)
 
@@ -46,18 +46,18 @@ GEM
       thor (>= 0.14.0)
     base64 (0.2.0)
     benchmark (0.4.0)
-    bigdecimal (3.1.8)
+    bigdecimal (3.1.9)
     builder (3.3.0)
     byebug (11.1.3)
-    concurrent-ruby (1.3.4)
-    connection_pool (2.4.1)
+    concurrent-ruby (1.3.5)
+    connection_pool (2.5.0)
     crass (1.0.6)
     drb (2.2.1)
     erubi (1.13.1)
-    i18n (1.14.6)
+    i18n (1.14.7)
       concurrent-ruby (~> 1.0)
-    logger (1.6.4)
-    loofah (2.23.1)
+    logger (1.6.5)
+    loofah (2.24.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
     m (1.6.2)
@@ -72,13 +72,14 @@ GEM
       ruby-progressbar
     mocha (2.7.1)
       ruby2_keywords (>= 0.0.5)
-    nokogiri (1.17.2-arm64-darwin)
+    nokogiri (1.18.2-arm64-darwin)
       racc (~> 1.4)
     racc (1.8.1)
     rack (3.1.8)
-    rack-session (2.0.0)
+    rack-session (2.1.0)
+      base64 (>= 0.1.0)
       rack (>= 3.0.0)
-    rack-test (2.1.0)
+    rack-test (2.2.0)
       rack (>= 1.3)
     rails-dom-testing (2.2.0)
       activesupport (>= 5.0.0)
@@ -112,4 +113,4 @@ DEPENDENCIES
   subroutine!
 
 BUNDLED WITH
-   2.5.22
+   2.6.3
