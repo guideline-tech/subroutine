@@ -22,6 +22,7 @@ class SignupOp < ::Subroutine::Op
 
   outputs :user
   outputs :business, type: Business # validate that output type is an instance of Business
+  outputs :heavy_operation, lazy: true # delay the execution of the output until accessed
 
   protected
 
@@ -33,6 +34,7 @@ class SignupOp < ::Subroutine::Op
 
     output :user, u
     output :business, b
+    output :heavy_operation, -> { some_heavy_operation }
   end
 
   def create_user!
@@ -41,7 +43,11 @@ class SignupOp < ::Subroutine::Op
 
   def create_business!(owner)
     Business.create!(company_name: company_name, owner: owner)
-   end
+  end
+
+  def some_heavy_operation
+    # ...
+  end
 
   def deliver_welcome_email(u)
     UserMailer.welcome(u.id).deliver_later
