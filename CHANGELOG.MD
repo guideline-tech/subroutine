@@ -1,5 +1,10 @@
 # Changelog
 
+## Subroutine 4.3.0
+
+Default repository to Ruby 3.3.7, and gem to a minimum version of 3.2.0.
+Tests continue to run against both Ruby 3.2 and Ruby 3.3.
+
 ## Subroutine 4.2.0
 
 If you are using polymorphic association fields, you can now customize how Subroutine
