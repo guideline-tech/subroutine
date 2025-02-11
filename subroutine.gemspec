@@ -29,4 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest-reporters"
   spec.add_development_dependency "mocha"
   spec.add_development_dependency "rake"
+
+  spec.required_ruby_version = ">= 3.2.0"
 end
