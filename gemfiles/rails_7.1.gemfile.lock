@@ -4,6 +4,10 @@ PATH
     subroutine (4.3.0)
       activemodel (>= 6.1)
       activesupport (>= 6.1)
+      base64
+      bigdecimal
+      logger
+      mutex_m
 
 GEM
   remote: https://rubygems.org/

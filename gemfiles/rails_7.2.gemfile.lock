@@ -4,6 +4,10 @@ PATH
     subroutine (4.3.0)
       activemodel (>= 6.1)
       activesupport (>= 6.1)
+      base64
+      bigdecimal
+      logger
+      mutex_m
 
 GEM
   remote: https://rubygems.org/
@@ -72,6 +76,7 @@ GEM
       ruby-progressbar
     mocha (2.7.1)
       ruby2_keywords (>= 0.0.5)
+    mutex_m (0.3.0)
     nokogiri (1.18.7-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.7-aarch64-linux-musl)
@@ -158,6 +163,7 @@ CHECKSUMS
   minitest (5.25.5) sha256=391b6c6cb43a4802bfb7c93af1ebe2ac66a210293f4a3fb7db36f2fc7dc2c756
   minitest-reporters (1.7.1) sha256=5060413a0c95b8c32fe73e0606f3631c173a884d7900e50013e15094eb50562c
   mocha (2.7.1) sha256=8f7d538d5d3ebc75fc788b3d92fbab913a93a78462d2a3ce99d1bdde7af7f851
+  mutex_m (0.3.0) sha256=cfcb04ac16b69c4813777022fdceda24e9f798e48092a2b817eb4c0a782b0751
   nokogiri (1.18.7-aarch64-linux-gnu) sha256=57a064ab5440814a69a0e040817bd8154adea68a30d2ff2b3aa515a6a06dbb5f
   nokogiri (1.18.7-aarch64-linux-musl) sha256=3e442dc5b69376e84288295fe37cbb890a21ad816a7e571e5e9967b3c1e30cd3
   nokogiri (1.18.7-arm-linux-gnu) sha256=337d9149deb5ae01022dff7c90f97bed81715fd586aacab0c5809ef933994c5e
