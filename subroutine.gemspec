@@ -21,6 +21,10 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "activemodel", ">= 6.1"
   spec.add_dependency "activesupport", ">= 6.1"
+  spec.add_dependency "base64"
+  spec.add_dependency "bigdecimal"
+  spec.add_dependency "logger"
+  spec.add_dependency "mutex_m"
 
   spec.add_development_dependency "actionpack", ">= 6.1"
   spec.add_development_dependency "byebug"
