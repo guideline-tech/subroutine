@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["mike@mnelson.io"]
   spec.summary       = "Feature-driven operation objects."
   spec.description   = "An interface for creating feature-driven operations."
-  spec.homepage      = "https://github.com/mnelson/subroutine"
+  spec.homepage      = "https://github.com/guideline-tech/subroutine"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
