@@ -14,10 +14,14 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/guideline-tech/subroutine"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files -z`.split("\x0")
+  # Specify which files should be added to the gem when it is released.
+  spec.files = Dir["lib/**/*"] + Dir["*.gemspec"]
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(gemfiles|test)/})
   spec.require_paths = ["lib"]
+
+  puts spec.files
+  puts spec.executables
+
 
   spec.add_dependency "activemodel", ">= 6.1"
   spec.add_dependency "activesupport", ">= 6.1"
