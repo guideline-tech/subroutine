@@ -94,7 +94,7 @@ GEM
     nokogiri (1.18.7-x86_64-linux-musl)
       racc (~> 1.4)
     racc (1.8.1)
-    rack (3.1.12)
+    rack (3.1.13)
     rack-session (2.1.0)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -173,7 +173,7 @@ CHECKSUMS
   nokogiri (1.18.7-x86_64-linux-gnu) sha256=3a0bf946eb2defde13d760f869b61bc8b0c18875afdd3cffa96543cfa3a18005
   nokogiri (1.18.7-x86_64-linux-musl) sha256=9d83f8ec1fc37a305fa835d7ee61a4f37899e6ccc6dcb05be6645fa9797605af
   racc (1.8.1) sha256=4a7f6929691dbec8b5209a0b373bc2614882b55fc5d2e447a21aaa691303d62f
-  rack (3.1.12) sha256=00d83055c89273eb13679ab562767b8826955aa6c4371d7d161deb975c50c540
+  rack (3.1.13) sha256=170c79db621882884d9a28d9cd5bd228c663fddcd367c4dea22c9a1808645792
   rack-session (2.1.0) sha256=437c3916535b58ef71c816ce4a2dee0a01c8a52ae6077dc2b6cd19085760a290
   rack-test (2.2.0) sha256=005a36692c306ac0b4a9350355ee080fd09ddef1148a5f8b2ac636c720f5c463
   rails-dom-testing (2.2.0) sha256=e515712e48df1f687a1d7c380fd7b07b8558faa26464474da64183a7426fa93b
@@ -188,4 +188,4 @@ CHECKSUMS
   useragent (0.16.11) sha256=700e6413ad4bb954bb63547fa098dddf7b0ebe75b40cc6f93b8d54255b173844
 
 BUNDLED WITH
-   2.6.7
+   2.6.8
