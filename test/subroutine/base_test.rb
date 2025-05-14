@@ -127,6 +127,15 @@ module Subroutine
       assert_equal ["has gotta be @admin.com"], op.errors[:email]
     end
 
+    def test_validation_errors_can_be_inherited_with_both_type_and_message
+      op = ::AdminSignupOp.new(password: "password123")
+
+      refute op.submit
+
+      assert op.errors.added?(:email, :blank)
+      assert_equal ["can't be blank"], op.errors[:email]
+    end
+
     def test_validation_errors_can_be_inherited_and_prefixed
       op = PrefixedInputsOp.new(user_email_address: "foo@bar.com")
       refute op.submit
