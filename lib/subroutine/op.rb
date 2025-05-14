@@ -135,7 +135,7 @@ module Subroutine
         end
 
         if field_config
-          errors.add(field_config.field_name, error.message)
+          errors.add(field_config.field_name, error.type, message: error.message)
         else
           errors.add(:base, error_object.full_message(field_name, error.message))
         end
