@@ -1,5 +1,15 @@
 # Changelog
 
+## Subroutine 4.5.0
+
+Include both type and message when inheriting field-level errors.
+
+## Subroutine 4.4.0
+
+Add lazy option to outputs to delay execution of output if not needed.
+Support ActiveRecord 8 tests
+Dependency updates
+
 ## Subroutine 4.3.0
 
 Default repository to Ruby 3.3.7, and gem to a minimum version of 3.2.0.
