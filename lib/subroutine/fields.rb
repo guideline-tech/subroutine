@@ -34,7 +34,12 @@ module Subroutine
       def field(field_name, options = {})
 
         if field_configurations.key?(field_name.to_sym) && !options[:allow_override]
-          raise DuplicateFieldError, "#{field_name} is already defined on #{self}. Add `allow_override: true` to reconfigure the field."
+          case Subroutine.field_redefinition_behavior
+          when :error
+            raise DuplicateFieldError, "[subroutine] #{self} redefined `#{field_name}`. Add `allow_override: true` to reconfigure the field."
+          when :warn
+            Subroutine.logger&.warn("[subroutine] #{self} redefines `#{field_name}`. Add `allow_override: true` to silence this warning.\nCalled from: #{caller.join("\n")}")
+          end
         end
 
         config = ::Subroutine::Fields::Configuration.from(field_name, options)
