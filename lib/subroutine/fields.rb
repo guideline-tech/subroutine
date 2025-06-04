@@ -7,6 +7,8 @@ require "subroutine/fields/mass_assignment_error"
 module Subroutine
   module Fields
 
+    DuplicateFieldError = Class.new(StandardError)
+
     extend ActiveSupport::Concern
 
     def self.allowed_input_classes
@@ -30,6 +32,11 @@ module Subroutine
     module ClassMethods
 
       def field(field_name, options = {})
+
+        if field_configurations.key?(field_name.to_sym) && !options[:allow_override]
+          raise DuplicateFieldError, "#{field_name} is already defined on #{self}. Add `allow_override: true` to reconfigure the field."
+        end
+
         config = ::Subroutine::Fields::Configuration.from(field_name, options)
         config.validate!
 
