@@ -12,9 +12,9 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    actionpack (7.2.2.1)
-      actionview (= 7.2.2.1)
-      activesupport (= 7.2.2.1)
+    actionpack (7.2.2.2)
+      actionview (= 7.2.2.2)
+      activesupport (= 7.2.2.2)
       nokogiri (>= 1.8.5)
       racc
       rack (>= 2.2.4, < 3.2)
@@ -23,15 +23,15 @@ GEM
       rails-dom-testing (~> 2.2)
       rails-html-sanitizer (~> 1.6)
       useragent (~> 0.16)
-    actionview (7.2.2.1)
-      activesupport (= 7.2.2.1)
+    actionview (7.2.2.2)
+      activesupport (= 7.2.2.2)
       builder (~> 3.1)
       erubi (~> 1.11)
       rails-dom-testing (~> 2.2)
       rails-html-sanitizer (~> 1.6)
-    activemodel (7.2.2.1)
-      activesupport (= 7.2.2.1)
-    activesupport (7.2.2.1)
+    activemodel (7.2.2.2)
+      activesupport (= 7.2.2.2)
+    activesupport (7.2.2.2)
       base64
       benchmark (>= 0.3)
       bigdecimal
@@ -139,10 +139,10 @@ DEPENDENCIES
   subroutine!
 
 CHECKSUMS
-  actionpack (7.2.2.1) sha256=17b2160a7bcbd5a569d06b1ae54a4bb5ccc7ba0815d73ff5768100a79dc1f734
-  actionview (7.2.2.1) sha256=69fc880cf3d8b1baf21b048cf7bb68f1eef08760ff8104d7d60a6a1be8b359a5
-  activemodel (7.2.2.1) sha256=8398861f9ee2c4671a8357ab39e9b38a045fd656f6685a3dd5890c2419dbfdaf
-  activesupport (7.2.2.1) sha256=842bcbf8a92977f80fb4750661a237cf5dd4fdd442066b3c35e88afb488647f5
+  actionpack (7.2.2.2) sha256=ccd2f96ffb378060dd02e86318bca3faae1ecf483603a525fabfd84197c86a6e
+  actionview (7.2.2.2) sha256=5bf67e9716fbd159f09cbc8cf87f4813d3e8725f0197a7321910e9dc8c165b07
+  activemodel (7.2.2.2) sha256=6898b91af028d725729f65d8e0f6ccfef5993e085ed70d5b93c42ba1bf7384dd
+  activesupport (7.2.2.2) sha256=c54e84bb3d9027f1f372fb8f68203538fcfe0d5ff42801774c03974daa15bef0
   ansi (1.5.0) sha256=5408253274e33d9d27d4a98c46d2998266fd51cba58a7eb9d08f50e57ed23592
   appraisal (2.5.0) sha256=36989221be127913b0dba8d114da2001e6b2dceea7bd4951200eaba764eed3ce
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
