@@ -27,10 +27,12 @@ updates:
         patterns:
           - "*" 
         exclude-patterns:
-          - "active*"
           - "rails"
+          - "active*"
+          - "action*"
       rails:
         patterns:
           - "rails"
           - "active*"
+          - "action*"
 
