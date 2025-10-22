@@ -22,3 +22,15 @@ updates:
       - dependency-type: "all"
     commit-message:
       prefix: "[bundler] "
+    groups:
+      monthly:
+        patterns:
+          - "*" 
+        exclude-patterns:
+          - "active*"
+          - "rails"
+      rails:
+        patterns:
+          - "rails"
+          - "active*"
+
