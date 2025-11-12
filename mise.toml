@@ -1,0 +1,5 @@
+[settings]
+ruby.ruby_build_opts = "--disable-install-doc"
+disable_tools = ["lefthook"]
+not_found_auto_install = true
+
