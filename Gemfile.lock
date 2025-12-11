@@ -59,7 +59,7 @@ GEM
     erubi (1.13.1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
-    json (2.17.1)
+    json (2.18.0)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -158,7 +158,7 @@ CHECKSUMS
   drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
   erubi (1.13.1) sha256=a082103b0885dbc5ecf1172fede897f9ebdb745a4b97a5e8dc63953db1ee4ad9
   i18n (1.14.7) sha256=ceba573f8138ff2c0915427f1fc5bdf4aa3ab8ae88c8ce255eb3ecf0a11a5d0f
-  json (2.17.1) sha256=e0e4824541336a44915436f53e7ea74c687314fb8f88080fa1456f6a34ead92e
+  json (2.18.0) sha256=b10506aee4183f5cf49e0efc48073d7b75843ce3782c68dbeb763351c08fd505
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   loofah (2.24.1) sha256=655a30842b70ec476410b347ab1cd2a5b92da46a19044357bbd9f401b009a337
   m (1.6.2) sha256=2fb85aff050b6b699e6dbca47b45d426e2136ccdfabb64437e9630230d29108e
