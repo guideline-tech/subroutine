@@ -2,7 +2,7 @@
 
 require "subroutine"
 require "minitest/autorun"
-require "minitest/unit"
+require "minitest/unit" if Minitest::VERSION.to_i < 6
 
 require "minitest/reporters"
 require "mocha/minitest"
