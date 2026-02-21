@@ -214,5 +214,32 @@ module Subroutine
       assert_equal(%i[food], MutationChild.fields_by_group[:four_letter].sort)
     end
 
+    def test_redefinition_of_field__error
+      Subroutine.stubs(:field_redefinition_behavior).returns(:error)
+      Subroutine.stubs(:logger).returns(mock)
+      Subroutine.logger.expects(:warn).never
+      assert_raises Subroutine::Fields::DuplicateFieldError do
+        Whatever.send(:field, :foo, type: :string, default: "foo")
+      end
+    end
+
+    def test_redefinition_of_field__warn
+      Subroutine.stubs(:field_redefinition_behavior).returns(:warn)
+      Subroutine.stubs(:logger).returns(mock)
+      Subroutine.logger.expects(:warn).with(includes("[subroutine] #{Whatever} redefines `foo`. Add `allow_override: true` to silence this warning.")).once
+      Whatever.send(:field, :foo, type: :string, default: "foo")
+    end
+
+    def test_redefinition_of_field__ignore
+      Subroutine.stubs(:field_redefinition_behavior).returns(:ignore)
+      Subroutine.stubs(:logger).returns(mock)
+      Subroutine.logger.expects(:warn).never
+
+      foo_config1 = Whatever.field_configurations[:foo]
+      Whatever.send(:field, :foo, type: :string, default: "foo")
+      foo_config2 = Whatever.field_configurations[:foo]
+      refute_equal foo_config1.object_id, foo_config2.object_id
+    end
+
   end
 end

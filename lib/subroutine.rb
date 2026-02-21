@@ -14,7 +14,17 @@ require "subroutine/version"
 require "subroutine/fields"
 require "subroutine/op"
 
+require "logger"
+
 module Subroutine
+
+  def self.logger
+    @logger
+  end
+
+  def self.logger=(logger)
+    @logger = logger
+  end
 
   # Used by polymorphic association fields to resolve the class name to a ruby class
   def self.constantize_polymorphic_class_name(class_name)
@@ -36,6 +46,18 @@ module Subroutine
     return !!@include_defaults_in_params if defined?(@instance_defaults_in_params)
 
     false
+  end
+
+  def self.field_redefinition_behavior
+    @field_redefinition_behavior ||= :warn
+  end
+
+  def self.field_redefinition_behavior=(symbol)
+    symbol = symbol.to_sym
+    possible = %i[error warn ignore]
+    raise ArgumentError, "#{symbol} must be one of #{possible.inspect}" unless possible.include?(symbol)
+
+    @field_redefinition_behavior = symbol
   end
 
   def self.inheritable_field_options=(opts)
