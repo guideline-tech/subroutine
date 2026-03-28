@@ -85,6 +85,7 @@ module Subroutine
         child_opts = inheritable_options
         child_opts.merge!(opts)
         child_opts[:association_name] = as
+        child_opts[:allow_override] = true
         ComponentConfiguration.new(name, child_opts)
       end
 
