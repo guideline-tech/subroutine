@@ -33,7 +33,7 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    ansi (1.5.0)
+    ansi (1.6.0)
     appraisal (2.5.0)
       bundler
       rake
@@ -138,7 +138,7 @@ CHECKSUMS
   actionview (6.1.7.10) sha256=23b7a38c696eecea244d2fe1c74317e703ab24f32bf3b0ba271d3862ab07bcc2
   activemodel (6.1.7.10) sha256=562d9b1d0597f450437ec7cd6540b13f3e074cce5c7b237ac76e7435a15d4b8c
   activesupport (6.1.7.10) sha256=3f8e1f787a7bfbf765959ba509ef70af8293b35cb864078919365a12bf33d470
-  ansi (1.5.0) sha256=5408253274e33d9d27d4a98c46d2998266fd51cba58a7eb9d08f50e57ed23592
+  ansi (1.6.0) sha256=ac9ea0c0ea8d32fb4e271348e609963ac78882f34b73836c2a02b3622e666658
   appraisal (2.5.0) sha256=36989221be127913b0dba8d114da2001e6b2dceea7bd4951200eaba764eed3ce
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bigdecimal (4.1.0) sha256=6dc07767aa3dc456ccd48e7ae70a07b474e9afd7c5bc576f80bd6da5c8dd6cae
