@@ -66,6 +66,8 @@ module Subroutine
         if options[:type]&.to_sym == :association
           config = ::Subroutine::AssociationFields::Configuration.new(field_name, options)
 
+          field_without_association(config.as, config)
+
           if config.polymorphic?
             field config.foreign_type_method, config.build_foreign_type_field
           else
@@ -77,8 +79,6 @@ module Subroutine
           end
 
           field config.foreign_key_method, config.build_foreign_key_field
-
-          field_without_association(config.as, config)
         else
           field_without_association(field_name, options)
         end
