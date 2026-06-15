@@ -1,5 +1,9 @@
 # Changelog
 
+## Subroutine 4.7.0
+
+Bump minimum `activesupport` and `activemodel` to `>= 8.0`. Gemspec metadata cleanup: add `source_code_uri`, `changelog_uri`, `homepage_uri`, `github_repo`.
+
 ## Subroutine 4.5.0
 
 Include both type and message when inheriting field-level errors.
