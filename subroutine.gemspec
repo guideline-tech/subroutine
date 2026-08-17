@@ -29,8 +29,8 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activemodel", ">= 8.0"
-  spec.add_dependency "activesupport", ">= 8.0"
+  spec.add_dependency "activemodel", ">= 8.1"
+  spec.add_dependency "activesupport", ">= 8.1"
   spec.add_dependency "base64"
   spec.add_dependency "bigdecimal"
   spec.add_dependency "logger"
