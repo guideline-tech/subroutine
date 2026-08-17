@@ -1,5 +1,9 @@
 # Changelog
 
+## Subroutine 4.8.0
+
+Raise minimum `activemodel`/`activesupport` (and development `actionpack`) to `>= 8.1`, and drop the `rails-8.0` appraisal.
+
 ## Subroutine 4.7.0
 
 Bump minimum `activesupport` and `activemodel` to `>= 8.0`. Gemspec metadata cleanup: add `source_code_uri`, `changelog_uri`, `homepage_uri`, `github_repo`.
