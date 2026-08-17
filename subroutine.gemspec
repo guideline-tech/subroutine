@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "logger"
   spec.add_dependency "mutex_m"
 
-  spec.add_development_dependency "actionpack", ">= 8.0"
+  spec.add_development_dependency "actionpack", ">= 8.1"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "m"
   spec.add_development_dependency "minitest"

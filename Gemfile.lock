@@ -136,7 +136,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  actionpack (>= 8.0)
+  actionpack (>= 8.1)
   appraisal
   byebug
   m
