@@ -18,8 +18,8 @@ module Subroutine
         self._failure_class = klass
       end
 
-      def submit!(*args)
-        raise ArgumentError, "Blocks cannot be provided to `submit!`" if block_given?
+      def submit!(*args, &block)
+        raise ArgumentError, "Blocks cannot be provided to `submit!`" if block
 
         op = new(*args)
         op.submit!
@@ -27,8 +27,8 @@ module Subroutine
         op
       end
 
-      def submit(*args)
-        raise ArgumentError, "Blocks cannot be provided to `submit`." if block_given?
+      def submit(*args, &block)
+        raise ArgumentError, "Blocks cannot be provided to `submit`." if block
 
         op = new(*args)
         op.submit
