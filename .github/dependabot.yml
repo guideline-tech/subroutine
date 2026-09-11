@@ -20,6 +20,9 @@ updates:
     insecure-external-code-execution: deny
     allow:
       - dependency-type: "all"
+    ignore:
+      - dependency-name: "json"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "[bundler] "
     groups:
