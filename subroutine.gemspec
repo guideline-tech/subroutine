@@ -7,8 +7,8 @@ require "subroutine/version"
 Gem::Specification.new do |spec|
   spec.name          = "subroutine"
   spec.version       = Subroutine::VERSION
-  spec.authors       = ["Mike Nelson"]
-  spec.email         = ["mike@mnelson.io"]
+  spec.authors       = ["Gusto"]
+  spec.email         = ["gusto-opensource-buildkite@gusto.com"]
   spec.summary       = "Feature-driven operation objects."
   spec.description   = "An interface for creating feature-driven operations."
   spec.license       = "MIT"
