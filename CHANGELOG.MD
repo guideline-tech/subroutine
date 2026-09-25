@@ -1,5 +1,9 @@
 # Changelog
 
+## Subroutine 4.9.0
+
+Run CI on `ubuntu-26.04`.
+
 ## Subroutine 4.8.0
 
 Raise minimum `activemodel`/`activesupport` (and development `actionpack`) to `>= 8.1`, and drop the `rails-8.0` appraisal.
