@@ -1,5 +1,9 @@
 # Changelog
 
+## Subroutine 4.10.0
+
+Standardize `LICENSE` to MIT, Copyright (c) 2026 Gusto, and include it in the packaged gem.
+
 ## Subroutine 4.9.0
 
 Run CI on `ubuntu-26.04`.
