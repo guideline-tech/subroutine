@@ -14,3 +14,4 @@ mkmf.log
 *.gem
 .byebug_history
 /gemfiles/*.lock
+mise.lock
